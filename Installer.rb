@@ -21,7 +21,9 @@ class Installer
 
   # Runs the whole thing
   # calls onError if fails
-  def run()
+  def run
+
+    success "Starting RubySetupSystem run."
 
     if not OnlyMainProject
       @Libraries.each do |x|

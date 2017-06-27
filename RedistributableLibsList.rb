@@ -7,6 +7,8 @@ def isGoodLDDFound(lib)
   case lib
   when /.*swresample.*/i
     true
+  when /.*ilbc.*/i
+    true
   when /.*vorbis.*/i
     true
   when /.*theora.*/i

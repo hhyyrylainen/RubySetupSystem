@@ -2,6 +2,7 @@
 #### Windows stuff
 
 require_relative "RubyCommon.rb"
+require_relative "Helpers.rb"
 
 # Run visual studio environment configure .bat file
 def bringVSToPath()
@@ -105,11 +106,25 @@ end
 
 
 # Run msbuild with specific target and configuration
-def runVSCompiler(threads, project = "ALL_BUILD.vcxproj", configuration = "RelWithDebInfo",
+def runVSCompiler(threads, project = "ALL_BUILD.vcxproj", configuration = CMakeBuildType,
                   platform = "x64")
-  
-  onError "runVSCompiler called on non-windows os" if !OS.windows?
-  system "#{bringVSToPath} && MSBuild.exe #{project} /maxcpucount:#{threads} " + 
-         "/p:Configuration=#{configuration} /p:Platform=\"#{platform}\""
 
+  onError "runVSCompiler called on non-windows os" if !OS.windows?
+  
+  runOpen3(bringVSToPath, "&&", "MSBuild.exe", project, "/maxcpucount:#{threads}",
+           "/p:Configuration=#{configuration}", "/p:Platform=\"#{platform}\"")
 end
+
+
+def openVSSolutionIfAutoOpen(solutionFile)
+
+  if not AutoOpenVS
+    return
+  end
+
+  runOpen3 "start", solutionFile
+
+  system "pause"
+  
+end
+

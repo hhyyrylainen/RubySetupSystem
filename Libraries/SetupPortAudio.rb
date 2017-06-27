@@ -90,8 +90,7 @@ class PortAudio < BaseDep
       
       Dir.chdir("build") do
         
-        runCMakeConfigure @Options.join(' ')
-        return $?.exitstatus == 0
+        return runCMakeConfigure @Options
       end
     else
 
@@ -106,15 +105,12 @@ class PortAudio < BaseDep
       Dir.chdir("build") do
         
         # If we ran cmake again here with 32 bit windows (probably in a 'build-32' folder)
-        # we could probably also build the 32-bit version as it has a different file name        
-        runVSCompiler CompileThreads, "portaudio.vcxproj", "Release", "x64"
-        
-        return $?.exitstatus == 0
+        # we could probably also build the 32-bit version as it has a different file name 
+        return runVSCompiler CompileThreads, "portaudio.vcxproj", "Release", "x64"
       end
     else
 
-      runCompiler CompileThreads
-      return $?.exitstatus == 0
+      return runCompiler CompileThreads
     end
   end
 

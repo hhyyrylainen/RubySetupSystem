@@ -1,19 +1,47 @@
 # Random functions to be used by the install things
 # CMake configure
+require "open3"
+
 require_relative "RubyCommon.rb"
 
-def runCMakeConfigure(additionalArgs)
+# Runs Open3 for the commad, returns exit status
+def runOpen3(*cmdAndArgs, errorPrefix: "error: ")
+
+  if cmdAndArgs.length < 1
+    onError "Empty runOpen3 command"
+  end
+
+  requireCMD cmdAndArgs[0]
+
+  Open3.popen3(*cmdAndArgs) {|stdin, stdout, stderr, wait_thr|
+
+    stdout.each {|line|
+      puts line
+    }
+
+    stderr.each {|line|
+      puts (errorPrefix + line).red
+    }
+    
+    exit_status = wait_thr.value
+    return exit_status
+  }
+
+  onError "Execution shouldn't reach here"
   
-  requireCMD "cmake"
+end
+
+# Runs cmake with options and returns true on success
+def runCMakeConfigure(additionalArgs)
   
   if OS.windows?
 
-    system "cmake .. -G \"#{VSVersion}\" #{additionalArgs}"
-    
+    return runOpen3("cmake", "..", "-G", VSVersion, *additionalArgs,
+                    errorPrefix: "cmake configure: ") == 0
   else
     
-    system "cmake .. -DCMAKE_BUILD_TYPE=#{CMakeBuildType} #{additionalArgs}"
-    
+    return runOpen3("cmake", "..", "-DCMAKE_BUILD_TYPE=#{CMakeBuildType}", *additionalArgs,
+                    errorPrefix: "cmake configure: ") == 0
   end
 end
 
@@ -21,32 +49,16 @@ end
 def runCompiler(threads)
   
   if OS.windows?
-    #system "start \"ms\" \"MSBuild.exe\" "
-    # Would use this if used project.sln file: /target:ALL_BUILD 
-    system "#{bringVSToPath} && MSBuild.exe ALL_BUILD.vcxproj /maxcpucount:#{threads} /p:Configuration=RelWithDebInfo"
+
+    # Let's hope that WindowsHelpers.rb has been included
+    runVSCompiler threads
     
   else
     
     system "make -j #{threads}"
-    
-  end
-end
 
-
-# Running platform standard cmake install
-def runInstall()
-  
-  if OS.windows?
+    runOpen3 "make", "-j", threads
     
-    info "Running install script as Administrator"
-
-    # Requires admin privileges
-    runWindowsAdmin("#{bringVSToPath} && MSBuild.exe INSTALL.vcxproj /p:Configuration=RelWithDebInfo")
-    
-  else
-    
-    system "sudo make install"
-
   end
 end
 
@@ -71,6 +83,20 @@ def installDepsList(deps)
     askRunSudo "sudo apt-get install #{deps.join(' ')}"
 
     return
+  end
+
+  if os == "arch"
+
+    askRunSudo "sudo pacman -S #{deps.join(' ')}"
+    
+    return
+  end
+
+  if os == "opensuse"
+
+    askRunSudo "sudo zypper in #{deps.join(' ')}"
+    
+    return 
   end
 
   onError "unkown linux os '#{os}' for package manager installing " +
@@ -183,15 +209,5 @@ def runGlobberAndCopy(glob, targetFolder)
   FileUtils.cp_r glob.getResult, targetFolder
 end
 
-
-def createDependencyTargetFolder()
-
-  FileUtils.mkdir_p ProjectDebDirLibs
-  
-  FileUtils.mkdir_p ProjectDebDirBinaries
-  
-  FileUtils.mkdir_p ProjectDebDirInclude
-  
-end
 
 

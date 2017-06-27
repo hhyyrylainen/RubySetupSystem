@@ -10,7 +10,8 @@ require_relative "Helpers.rb"
 # :installPath => path where to install the built files (if this dep uses install)
 # :noInstallSudo => don't use sudo when installing (on windows administrator might be
 #     used instead if this isn't specified)
-# :options => override project configure options (extraOptions should be used instead)
+# :options => override project configure options (shouldn't be used,
+#     extraOptions should be used instead)
 # :extraOptions => extra things to add to :options, see the individual dependencies
 #     as to what specific options they support
 # :preCreateInstallFolder => If installPath is specified will create
@@ -29,10 +30,19 @@ class BaseDep
     if args[:options]
 
       @Options = args[:options]
+
+      onError "Provided :options is nil" if @Options.nil?
+      
       puts "#{@Name}: using options: #{@Options}"
     else
 
-      @Options = self.getDefaultOptions
+      if self.respond_to? "getDefaultOptions"
+        @Options = self.getDefaultOptions
+      end
+
+      if @Options.nil?
+        @Options = []
+      end
       
     end
 
@@ -156,6 +166,36 @@ class BaseDep
     end
 
     $?.exitstatus == 0
+  end
+  
+  # Windows VS cmake INSTALL target
+  def vsInstallHelper
+    
+    if shouldUseSudo(@InstallSudo)
+      
+      onError "TODO: reimplement administrator installation"
+      
+      # Requires admin privileges
+      # runWindowsAdmin("#{bringVSToPath} && MSBuild.exe INSTALL.vcxproj
+      # /p:Configuration=RelWithDebInfo")
+    else
+
+      if @InstallSudo
+        warning "Dependency '#{@name}' should have been installed as administrator"
+      end
+      
+      return runVSCompiler 1, project: "INSTALL.vcxproj"
+    end
+  end
+
+  def cmakeUniversalInstallHelper
+
+    if OS.windows?
+      self.vsInstallHelper
+    else
+      self.linuxMakeInstallHelper
+    end
+    
   end
 
   def standardGitUpdate
