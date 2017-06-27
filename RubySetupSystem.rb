@@ -39,6 +39,11 @@ OptionParser.new do |opts|
     options[:onlyDeps] = true
   end
 
+  opts.on("--no-packagemanager", "Skip using the system package manager " +
+                                 "to download libraries") do |b|
+    options[:noPackager] = true
+  end
+
   opts.on("-h", "--help", "Show this message") do
     puts opts
     if defined? extraHelp
@@ -77,6 +82,9 @@ OnlyMainProject = if options[:onlyProject] then true else false end
 
 # If true skips the main project
 OnlyDependencies = if options[:onlyDeps] then true else false end
+
+# If true skips running package installs
+SkipPackageManager = if options[:noPackager] then true else false end
 
 # If true new version of depot tools and breakpad won't be fetched on install
 NoBreakpadUpdateOnWindows = false

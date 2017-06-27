@@ -55,9 +55,7 @@ def runCompiler(threads)
     
   else
     
-    system "make -j #{threads}"
-
-    runOpen3 "make", "-j", threads
+    runOpen3 "make", "-j", threads.to_s
     
   end
 end

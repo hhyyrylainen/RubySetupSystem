@@ -57,29 +57,33 @@ class Newton < BaseDep
   def DoInstall
     
     # Copy files to ProjectDir dependencies folder
-    onError "todo"
-    createDependencyTargetFolder
+    installer = CustomInstaller.new(@InstallPath, @Folder)
 
-    runGlobberAndCopy(Globber.new("Newton.h", File.join(@Folder, "coreLibrary_300/source")),
-                      ProjectDebDirInclude)
+    installer.addInclude(Globber.new("Newton.h",
+                                     File.join(@Folder, "coreLibrary_300/source")).getResult)
+    
     
     if OS.linux?
 
-      runGlobberAndCopy(Globber.new("libNewton.so", File.join(@Folder, "build/lib")),
-                        ProjectDebDirLibs)
+      installer.addLibrary(Globber.new("libNewton.so",
+                                       File.join(@Folder, "build/lib")).getResult)
 
     elsif OS.windows?
 
-      runGlobberAndCopy(Globber.new("newton.dll",
-                                    File.join(@Folder, "coreLibrary_300/projects/windows")),
-                        ProjectDebDirBinaries)
+      installer.addLibrary(
+        Globber.new("newton.dll", File.join(@Folder, "coreLibrary_300/projects/windows")).
+          getResult)
 
-      runGlobberAndCopy(Globber.new("newton.lib",
-                                    File.join(@Folder, "coreLibrary_300/projects/windows")),
-                        ProjectDebDirLibs)
+
+      installer.addLibrary(
+        Globber.new("newton.lib", File.join(@Folder, "coreLibrary_300/projects/windows")).
+          getResult)
     else
       onError "Unkown os"
     end
+
+    installer.run
+    
     true
   end
 end

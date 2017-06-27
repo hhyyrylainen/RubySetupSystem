@@ -25,7 +25,7 @@ class Installer
 
     success "Starting RubySetupSystem run."
 
-    if not OnlyMainProject
+    if not OnlyMainProject and
       @Libraries.each do |x|
 
         if x.respond_to?(:installPrerequisites)
@@ -46,7 +46,7 @@ class Installer
           
           onError "empty deps" if !deps
           
-          if !DoSudoInstalls
+          if !DoSudoInstalls or SkipPackageManager
 
             warning "Automatic dependency installation is disabled!: please install: " +
                     "'#{deps.join(' ')}' manually for #{x.Name}"

@@ -22,13 +22,13 @@ class CustomInstaller
   end
 
   # Add include files to install
-  def addInclude(includes)
-    
+  def addInclude(*includes)
+    @Includes.push *includes
   end
 
   # Add library files to install (these are *.lib, *.dll, *.a or *.so files)
-  def addLibrary(libraryfiles)
-  
+  def addLibrary(*libraryFiles)
+    @Libraries.push *libraryFiles
   end
 
   def run
@@ -39,6 +39,7 @@ class CustomInstaller
 
     info "Starting custom install library files to: #{@BasePath}"
 
+    # FileUtils.mkdir_p 
     
     onError "todo"
     success "Done running install"
