@@ -1,35 +1,7 @@
 # Random functions to be used by the install things
 # CMake configure
-require "open3"
-
 require_relative "RubyCommon.rb"
 
-# Runs Open3 for the commad, returns exit status
-def runOpen3(*cmdAndArgs, errorPrefix: "error: ")
-
-  if cmdAndArgs.length < 1
-    onError "Empty runOpen3 command"
-  end
-
-  requireCMD cmdAndArgs[0]
-
-  Open3.popen3(*cmdAndArgs) {|stdin, stdout, stderr, wait_thr|
-
-    stdout.each {|line|
-      puts line
-    }
-
-    stderr.each {|line|
-      puts (errorPrefix + line).red
-    }
-    
-    exit_status = wait_thr.value
-    return exit_status
-  }
-
-  onError "Execution shouldn't reach here"
-  
-end
 
 # Runs cmake with options and returns true on success
 def runCMakeConfigure(additionalArgs)
@@ -55,7 +27,7 @@ def runCompiler(threads)
     
   else
     
-    runOpen3 "make", "-j", threads.to_s
+    runOpen3("make", "-j", threads.to_s) == 0
     
   end
 end
@@ -68,9 +40,9 @@ def installDepsList(deps)
   if os == "fedora" || os == "centos" || os == "rhel"
 
     if HasDNF
-      askRunSudo "sudo dnf install #{deps.join(' ')}"
+      askRunSudo "sudo", "dnf", "install", *deps
     else
-      askRunSudo "sudo yum install #{deps.join(' ')}"
+      askRunSudo "sudo", "yum", "install", *deps
     end
 
     return
@@ -78,21 +50,21 @@ def installDepsList(deps)
 
   if os == "ubuntu"
 
-    askRunSudo "sudo apt-get install #{deps.join(' ')}"
+    askRunSudo "sudo", "apt-get", "install", *deps
 
     return
   end
 
   if os == "arch"
 
-    askRunSudo "sudo pacman -S #{deps.join(' ')}"
+    askRunSudo "sudo", "pacman", "-S", *deps
     
     return
   end
 
   if os == "opensuse"
 
-    askRunSudo "sudo zypper in #{deps.join(' ')}"
+    askRunSudo "sudo", "zypper", "in", *deps
     
     return 
   end
@@ -124,27 +96,23 @@ class GitVersionType
       return BRANCH
     end
 
-    output = %x{git show-ref --verify refs/heads/#{versionStr}}
-    
-    if $?.exitstatus == 0
+    if runOpen3Suppressed("git", "show-ref", "--verify",
+                          "refs/heads/#{versionStr}") == 0
       return BRANCH
     end
 
-    output = %x{git rev-parse --verify "#{versionStr}^{commit}"}
-    
-    if $?.exitstatus == 0
+    if runOpen3Suppressed("git", "rev-parse", "--verify",
+                          "#{versionStr}^{commit}") == 0
       return HASH
     end
     
-    output = %x{git show-ref --verify refs/tags/#{versionStr}}
-    
-    if $?.exitstatus == 0
+    if runOpen3Suppressed("git", "show-ref", "--verify",
+                          "refs/tags/#{versionStr}") == 0
       return TAG
     end
 
-    output = %x{git show-ref --verify refs/remote/#{versionStr}}
-    
-    if $?.exitstatus == 0
+    if runOpen3Suppressed("git", "show-ref", "--verify",
+                          "refs/remote/#{versionStr}") == 0
       return REMOTE
     end
 
@@ -170,7 +138,9 @@ def gitPullIfOnBranch(version)
 
   case versionType
   when GitVersionType::UNSPECIFIED, GitVersionType::BRANCH
-    system "git pull origin #{version}"
+    if runOpen3("git", "pull", "origin", version) != 0
+      onError "git pull update failed"
+    end
   end
 end
 
@@ -180,7 +150,7 @@ end
 # the file
 def gitFixCRLFEndings(fileToCheckWith)
 
-  system "git config core.autocrlf off"
+  runOpen3Checked "git", "config", "core.autocrlf", "off"
 
   puts "Deleting files and re-checking them out"
   `git ls-files`.strip.lines.each{|f|
@@ -191,7 +161,8 @@ def gitFixCRLFEndings(fileToCheckWith)
       FileUtils.rm f
     end
   }
-  system "git checkout ."
+  
+  runOpen3Checked "git", "checkout", "."
 
   onError("Line endings fix failed. See the troubleshooting in the build guide.") if
     getFileLineEndings(fileToCheckWith) != "\n"

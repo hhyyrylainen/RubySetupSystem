@@ -3,6 +3,7 @@ require 'os'
 require 'colorize'
 require 'fileutils'
 require 'open-uri'
+require "open3"
 
 # To get all possible colour values print String.colors
 #puts String.colors
@@ -32,11 +33,68 @@ def error(message)
   puts message.to_s.colorize(:red)
 end
 
-# Runs a command and calls onError if it fails
-def systemChecked(*command)
+# Runs Open3 for the commad, returns exit status
+def runOpen3(*cmdAndArgs, errorPrefix: "", redError: false)
+
+  if cmdAndArgs.length < 1
+    onError "Empty runOpen3 command"
+  end
+
+  requireCMD cmdAndArgs[0]
+
+  Open3.popen3(*cmdAndArgs) {|stdin, stdout, stderr, wait_thr|
+
+    stdout.each {|line|
+      puts line
+    }
+
+    stderr.each {|line|
+      if redError
+        puts (errorPrefix + line).red
+      else
+        puts errorPrefix + line
+      end
+    }
+    
+    exit_status = wait_thr.value
+    return exit_status
+  }
+
+  onError "Execution shouldn't reach here"
   
-  system *command
-  onError "Command '#{command.join(' ')}' failed" if $?.exitstatus > 0
+end
+
+# Runs Open3 with suppressed output
+def runOpen3Suppressed(*cmdAndArgs)
+
+  if cmdAndArgs.length < 1
+    onError "Empty runOpen3 command"
+  end
+
+  requireCMD cmdAndArgs[0]
+
+  Open3.popen2e(*cmdAndArgs) {|stdin, out, wait_thr|
+
+    out.each {|l|}
+    
+    exit_status = wait_thr.value
+    return exit_status
+  }
+
+  onError "Execution shouldn't reach here"
+  
+end
+
+# verifies that runOpen3 succeeded
+def runOpen3Checked(*cmdAndArgs, errorPrefix: "", redError: false)
+
+  result = runOpen3(*cmdAndArgs, errorPrefix: errorPrefix, redError: redError)
+
+  if result != 0
+    onError "Running command failed (if you try running this manually you need to " +
+            "make sure that all the comma separated parts are quoted if they aren't " +
+            "whole words): " + cmdAndArgs.join(", ")
+  end
   
 end
 
@@ -56,11 +114,11 @@ def which(cmd)
 end
 
 
-def askRunSudo(cmd)
+def askRunSudo(*cmd)
 
-  info "About to run '#{cmd}' as sudo. Be prepared to type sudo password"
+  info "About to run '#{cmd.join ' '}' as sudo. Be prepared to type sudo password"
   
-  systemChecked(cmd)
+  runOpen3Checked(*cmd)
   
 end
 
