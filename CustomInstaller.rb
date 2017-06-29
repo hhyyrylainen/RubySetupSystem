@@ -4,6 +4,8 @@ require 'fileutils'
 
 class CustomInstaller
 
+  attr_accessor :IncludeFolder
+
   # @param basepath Is the target folder to install to
   # @param sourceroot Is the main level folder relative to which include files are copied
   def initialize(basepath, sourceroot)
@@ -18,7 +20,10 @@ class CustomInstaller
 
     @Includes = []
     @Libraries = []
-    
+
+    # Target folders
+    @IncludeFolder = "include"
+    @Libfolder = "lib"
   end
 
   # Add include files to install
@@ -37,12 +42,39 @@ class CustomInstaller
       onError "CustomInstaller has empty file lists"
     end
 
-    info "Starting custom install library files to: #{@BasePath}"
+    # Flatten the things
+    @Includes.flatten!
+    @Libraries.flatten!
 
-    # FileUtils.mkdir_p 
+    info "Starting custom install library files to: #{@BasePath}"
+    count = 0
     
-    onError "todo"
-    success "Done running install"
+    includeTarget = File.join(@BasePath, @IncludeFolder)
+
+    @Includes.each{|f|
+
+      relativePart = Pathname.new(f).relative_path_from(Pathname.new @SourcePath)
+
+      # relativePart includes the filename so strip that
+      targetFolder = File.join(includeTarget, relativePart.dirname)
+
+      FileUtils.mkdir_p targetFolder
+
+      copyPreserveSymlinks f, targetFolder
+      count += 1
+    }
+
+    libraryTarget = File.join(@BasePath, @Libfolder)
+
+    FileUtils.mkdir_p libraryTarget
+
+    @Libraries.each{|f|
+
+      copyPreserveSymlinks f, libraryTarget
+      count += 1
+    }
+    
+    success "Done running install. Copied #{count} files/folders"
     
   end
 
