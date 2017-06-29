@@ -74,6 +74,13 @@ class Installer
       end
 
       success "Successfully retrieved all dependencies. Beginning compile"
+
+    else
+
+      if SkipPullUpdates
+        warning "Not updating dependencies. This may or may not work"
+      end
+      
     end
 
     if not OnlyMainProject

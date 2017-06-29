@@ -44,6 +44,11 @@ OptionParser.new do |opts|
     options[:noPackager] = true
   end
 
+  opts.on("--no-updates", "Skips downloading dependencies / making sure they "+
+                          "are up to date") do |b|
+    options[:noUpdates] = true
+  end  
+
   opts.on("-h", "--help", "Show this message") do
     puts opts
     if defined? extraHelp
@@ -75,7 +80,7 @@ CompileThreads = Etc.nprocessors
 DoSudoInstalls = if options.include?(:sudo) then options[:sudo] else true end
 
 # If true dependencies won't be updated from remote repositories
-SkipPullUpdates = false
+SkipPullUpdates = if options[:noUpdates] then true else false end
 
 # If true skips all dependencies
 OnlyMainProject = if options[:onlyProject] then true else false end
