@@ -11,9 +11,7 @@ class AngelScript < BaseDep
   end
 
   def DoClone
-    requireCMD "svn"
-    system "svn co #{@WantedURL} angelscript"
-    $?.exitstatus == 0
+    runOpen3("svn", "co", @WantedURL, "angelscript") == 0
   end
 
   def DoUpdate
@@ -29,12 +27,12 @@ class AngelScript < BaseDep
       
       info "Switching AngelScript tag from #{currenturl} to #{@WantedURL}"
       
-      system "svn switch #{@WantedURL}"
-      onError "Failed to switch svn url" if $?.exitstatus > 0
+      if runOpen3("svn", "switch", @WantedURL) != 0
+        onError "Failed to switch svn url"
+      end
     end
     
-    system "svn update"
-    $?.exitstatus == 0
+    runOpen3("svn", "update") == 0
   end
 
   def DoSetup
@@ -72,16 +70,34 @@ class AngelScript < BaseDep
   
   def DoInstall
 
-    # Copy files to Project folder
-    createDependencyTargetFolder
+    # Copy files to the install target folder
+    installer = CustomInstaller.new(@InstallPath,
+                                    File.join(@Folder, "sdk/angelscript/include"))
 
-    # First header files and addons
-    FileUtils.cp File.join(@Folder, "sdk/angelscript/include", "angelscript.h"),
-                 ProjectDebDirInclude
+    
+    # First header files and libs
+    installer.addInclude(File.join(@Folder, "sdk/angelscript/include", "angelscript.h"))
 
-    addondir = File.join(ProjectDebDirInclude, "add_on")
+    
+    # The library
+    if OS.linux?
 
-    FileUtils.mkdir_p addondir
+      installer.addLibrary File.join(@Folder, "sdk/angelscript/lib", "libangelscript.a")
+      
+    elsif OS.windows?
+      # todo bitness
+      installer.addLibrary File.join(@Folder, "sdk/angelscript/lib", "angelscript64.lib")
+    else
+      onError "Unkown OS"
+    end
+    
+    installer.run
+
+    # Then the addons
+    installer = CustomInstaller.new(@InstallPath,
+                                    File.join(@Folder, "sdk/add_on/"))
+
+    installer.IncludeFolder = "include/add_on"
 
     # All the addons from
     # `ls -m | awk 'BEGIN { RS = ","; ORS = ", "}; NF { print "\""$1"\""};'`
@@ -93,22 +109,11 @@ class AngelScript < BaseDep
 
     addonnames.each do |x|
 
-      FileUtils.copy_entry File.join(@Folder, "sdk/add_on/", x),
-                           File.join(addondir, x)
+      installer.addInclude File.join(@Folder, "sdk/add_on/", x)
     end
 
-    # Then the library
-    if OS.linux?
+    installer.run
 
-      FileUtils.cp File.join(@Folder, "sdk/angelscript/lib", "libangelscript.a"),
-                   ProjectDebDirLibs
-      
-    elsif OS.windows?
-      FileUtils.cp File.join(@Folder, "sdk/angelscript/lib", "angelscript64.lib"),
-                   ProjectDebDirLibs
-    else
-      onError "Unkown OS"
-    end
     true
   end
 end
