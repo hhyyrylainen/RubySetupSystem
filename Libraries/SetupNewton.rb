@@ -12,9 +12,8 @@ class Newton < BaseDep
   end
 
   def DoClone
-    requireCMD "git"
-    system "git clone https://github.com/MADEAPPS/newton-dynamics.git"
-    $?.exitstatus == 0
+    runOpen3("git", "clone",
+             "https://github.com/MADEAPPS/newton-dynamics.git") == 0
   end
 
   def DoUpdate
@@ -56,12 +55,12 @@ class Newton < BaseDep
   
   def DoInstall
     
-    # Copy files to ProjectDir dependencies folder
-    installer = CustomInstaller.new(@InstallPath, @Folder)
-
-    installer.addInclude(Globber.new("Newton.h",
-                                     File.join(@Folder, "coreLibrary_300/source")).getResult)
+    # Copy files to the install target folder
+    baseSourcePath = File.join(@Folder, "coreLibrary_300/source")
     
+    installer = CustomInstaller.new(@InstallPath, baseSourcePath)
+    
+    installer.addInclude(Globber.new("Newton.h", baseSourcePath).getResult)
     
     if OS.linux?
 
