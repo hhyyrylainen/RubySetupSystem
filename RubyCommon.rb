@@ -133,7 +133,8 @@ def copyPreserveSymlinks(sourceFile, targetFolder)
     
   else
 
-    FileUtils.cp sourceFile, targetFolder
+    # Recursive copy should work for normal files and directories
+    FileUtils.cp_r sourceFile, targetFolder
     
   end
 end
