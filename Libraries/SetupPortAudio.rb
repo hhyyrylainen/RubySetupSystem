@@ -8,7 +8,7 @@ class PortAudio < BaseDep
 
     if @InstallPath
       if usesCMake
-        @Options.push "-DCMAKE_INSTALL_PREFIX=\"#{@InstallPath}\""
+        @Options.push "-DCMAKE_INSTALL_PREFIX=#{@InstallPath}"
       else
         @Options.push "--prefix='#{@InstallPath}'"
       end  

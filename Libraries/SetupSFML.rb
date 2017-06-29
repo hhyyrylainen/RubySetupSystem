@@ -5,7 +5,7 @@ class SFML < BaseDep
     super("SFML", "SFML", args)
 
     if @InstallPath
-      @Options.push "-DCMAKE_INSTALL_PREFIX=\"#{@InstallPath}\""
+      @Options.push "-DCMAKE_INSTALL_PREFIX=#{@InstallPath}"
     end
   end
 

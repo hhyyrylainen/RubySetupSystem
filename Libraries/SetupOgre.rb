@@ -6,7 +6,7 @@ class Ogre < BaseDep
     super("Ogre", "ogre", args)
 
     if @InstallPath
-      @Options.push "-DCMAKE_INSTALL_PREFIX=\"#{@InstallPath}\""
+      @Options.push "-DCMAKE_INSTALL_PREFIX=#{@InstallPath}"
     end
   end
 

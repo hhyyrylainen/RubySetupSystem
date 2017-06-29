@@ -7,7 +7,7 @@ class CEGUI < BaseDep
     super("CEGUI", "cegui", args)
 
     if @InstallPath
-      @Options.push "-DCMAKE_INSTALL_PREFIX=\"#{@InstallPath}\""
+      @Options.push "-DCMAKE_INSTALL_PREFIX=#{@InstallPath}"
     end
 
     if @PythonBindings
