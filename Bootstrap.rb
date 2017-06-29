@@ -2,9 +2,12 @@
 # be easily loaded from a git submodule
 
 # RubySetupSystem Bootstrap
-system "git submodule init && git submodule update"
+if not File.exists? "RubySetupSystem/RubySetupSystem.rb"
+  puts "Initializing RubySetupSystem"
+  system "git submodule init && git submodule update"
 
-if $?.exitstatus != 0
-  abort("Failed to initialize or update git submodules. " +
-        "Please make sure git is in path and running 'git submodule init' works.")
+  if $?.exitstatus != 0
+    abort("Failed to initialize or update git submodules. " +
+          "Please make sure git is in path and running 'git submodule init' works.")
+  end
 end
