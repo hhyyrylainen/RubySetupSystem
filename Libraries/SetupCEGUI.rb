@@ -29,6 +29,7 @@ class CEGUI < BaseDep
       "-DCEGUI_SAMPLES_ENABLED=OFF",
       "-DCEGUI_BUILD_RENDERER_OGRE=ON",
       "-DCEGUI_BUILD_RENDERER_OPENGL=OFF",
+      "-DCEGUI_BUILD_RENDERER_OPENGL3=OFF",
     ]
   end
 
@@ -55,7 +56,6 @@ class CEGUI < BaseDep
   end
   
   def DoCompile
-
     Dir.chdir("build") do
       return runCompiler CompileThreads 
     end

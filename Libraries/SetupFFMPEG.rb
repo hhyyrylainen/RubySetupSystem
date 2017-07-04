@@ -92,9 +92,7 @@ class FFMPEG < BaseDep
   end
 
   def DoClone
-    requireCMD "git"
-    system "git clone https://github.com/FFmpeg/FFmpeg.git ffmpeg"
-    $?.exitstatus == 0
+    runOpen3("git", "clone", "https://github.com/FFmpeg/FFmpeg.git", "ffmpeg") == 0
   end
 
   def DoUpdate
@@ -138,7 +136,7 @@ class FFMPEG < BaseDep
           |stdin, out, wait_thr|
           
           out.each {|line|
-            puts " " + line
+            puts line
           }
           
           exit_status = wait_thr.value
@@ -148,8 +146,7 @@ class FFMPEG < BaseDep
       
     else
 
-      system "./configure #{@Options.join(' ')}"
-      return $?.exitstatus == 0
+      return runOpen3("./configure", @Options) == 0
     end
   end
   

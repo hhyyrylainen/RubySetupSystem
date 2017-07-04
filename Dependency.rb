@@ -49,6 +49,7 @@ class BaseDep
     raise AssertionError if !@Options.kind_of?(Array)
 
     if args[:extraOptions]
+      onError ":extraOptions need to be an array" if !args[:extraOptions].kind_of?(Array)
       @Options += args[:extraOptions]
       puts "#{@Name}: using extra options: #{args[:extraOptions]}"
     end
