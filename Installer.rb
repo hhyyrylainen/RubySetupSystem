@@ -65,16 +65,19 @@ class Installer
     end
 
     if not SkipPullUpdates and not OnlyMainProject
+      puts ""
       info "Retrieving dependencies"
-
+      puts ""
+      
       @Libraries.each do |x|
 
         x.Retrieve
         
       end
 
+      puts ""
       success "Successfully retrieved all dependencies. Beginning compile"
-
+      puts ""
     else
 
       if SkipPullUpdates
@@ -92,12 +95,16 @@ class Installer
         x.Setup
         x.Compile
         x.Install
+        puts ""
         
       end
 
+      puts ""
       success "Dependencies done, configuring main project"
     end
 
+    puts ""
+    
     if OnlyDependencies
 
       success "All done. Skipping main project"

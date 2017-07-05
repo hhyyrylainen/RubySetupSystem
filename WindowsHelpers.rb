@@ -92,7 +92,7 @@ def runWindowsAdmin(cmd)
   
   # TODO: find a proper way to wait here
   info "Please wait while the install script runs and then press any key to continue"
-  system "pause"
+  runOpen3 "pause"
 end
 
 def askToRunAdmin(cmd)
@@ -101,7 +101,7 @@ def askToRunAdmin(cmd)
   info "You need to open a new cmd window as administrator and run the following command: "
   info cmd
   info "Sorry, windows is such a pain in the ass"
-  system "pause"
+  runOpen3 "pause"
 end
 
 
@@ -124,7 +124,7 @@ def openVSSolutionIfAutoOpen(solutionFile)
 
   runOpen3 "start", solutionFile
 
-  system "pause"
+  runOpen3 "pause"
   
 end
 

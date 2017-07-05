@@ -163,7 +163,7 @@ class BaseDep
         warning "Dependency '#{@name}' should have been installed with sudo"
       end
       
-      system "make install"
+      runOpen3 "make", "install"
     end
 
     $?.exitstatus == 0
@@ -201,13 +201,16 @@ class BaseDep
 
   def standardGitUpdate
 
-    system "git fetch"
+    runOpen3 "git", "fetch"
     
-    system "git checkout #{@Version}"
-    
+    if runOpen3("git", "checkout", @Version) != 0
+      return false
+    end
+
+    # this doesn't return an error code
     gitPullIfOnBranch @Version
     
-    $?.exitstatus == 0    
+    true
   end
   
   def clearEmptyOptions

@@ -73,9 +73,7 @@ class PortAudio < BaseDep
   end
 
   def DoClone
-    requireCMD "git"
-    system "git clone https://git.assembla.com/portaudio.git portaudio"
-    $?.exitstatus == 0
+    runOpen3("git", "clone", "https://git.assembla.com/portaudio.git", "portaudio") == 0
   end
 
   def DoUpdate
@@ -94,8 +92,7 @@ class PortAudio < BaseDep
       end
     else
 
-      system "./configure #{@Options.join(' ')}"
-      return $?.exitstatus == 0
+      runOpen3("./configure", @Options.join) == 0
     end
   end
   

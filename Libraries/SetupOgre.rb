@@ -72,22 +72,20 @@ class Ogre < BaseDep
   end
   
   def DoClone
-    requireCMD "hg"
-    if OS.windows?
 
-      system "hg clone https://bitbucket.org/sinbad/ogre"
-      if $?.exitstatus > 0
-        return false
-      end
-      
+    if runOpen3("hg", "clone", "https://bitbucket.org/sinbad/ogre") != 0
+      return false
+    end
+    
+    if OS.windows?
+            
       Dir.chdir(@Folder) do
 
-        system "hg clone https://bitbucket.org/cabalistic/ogredeps Dependencies"
+        return runOpen3("hg", "clone", "https://bitbucket.org/cabalistic/ogredeps",
+                        "Dependencies") == 0
       end
-      return $?.exitstatus == 0
     else
-      system "hg clone https://bitbucket.org/sinbad/ogre"
-      return $?.exitstatus == 0
+      return true
     end
   end
 
@@ -95,18 +93,16 @@ class Ogre < BaseDep
     
     if OS.windows?
       Dir.chdir("Dependencies") do
-        system "hg pull"
-        system "hg update"
-        
-        if $?.exitstatus > 0
+        runOpen3 "hg", "pull"
+
+        if runOpen3("hg", "update") != 0
           return false
         end
       end
     end
-    
-    system "hg pull"
-    system "hg update #{@Version}"
-    $?.exitstatus == 0
+
+    runOpen3 "hg", "pull"
+    runOpen3("hg", "update", @Version) == 0
   end
 
   def DoSetup
@@ -118,13 +114,14 @@ class Ogre < BaseDep
       Dir.chdir("Dependencies") do
 
         # there was a no build sdl2 here...
-        systemChecked "cmake ."
+        runOpen3Checked "cmake", "."
 
-        if !runVSCompiler(CompileThreads)
+        if !runVSCompiler CompileThreads
 
           onError "Failed to compile Ogre dependencies "
         end
-        
+
+        onError "check can this actually be ran automatically"
         info "Please open the solution SDL2 in Release and x64: "+
              "#{@Folder}/Dependencies/src/SDL2/VisualC/SDL_VS2013.sln"
 
@@ -162,10 +159,7 @@ class Ogre < BaseDep
         return false
       end
       
-      if OS.windows?
-
-        ENV["OGRE_HOME"] = File.join @InstallPath, "sdk"
-      end
+      ENV["OGRE_HOME"] = File.join @InstallPath, "sdk"
     end
 
     true

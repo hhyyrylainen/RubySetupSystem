@@ -2,6 +2,7 @@
 require 'os'
 require 'colorize'
 require 'fileutils'
+require 'pathname'
 require 'open-uri'
 require "open3"
 
@@ -40,7 +41,10 @@ def runOpen3(*cmdAndArgs, errorPrefix: "", redError: false)
     onError "Empty runOpen3 command"
   end
 
-  requireCMD cmdAndArgs[0]
+  if !File.exists? cmdAndArgs[0] or !Pathname.new(cmdAndArgs[0]).absolute?
+    # check that the command exists if it is not a full path to a file
+    requireCMD cmdAndArgs[0]
+  end
 
   Open3.popen3(*cmdAndArgs) {|stdin, stdout, stderr, wait_thr|
 

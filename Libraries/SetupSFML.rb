@@ -32,9 +32,7 @@ class SFML < BaseDep
   end
 
   def DoClone
-    requireCMD "git"
-    system "git clone https://github.com/SFML/SFML.git"
-    $?.exitstatus == 0
+    runOpen3("git", "clone", "https://github.com/SFML/SFML.git") == 0
   end
 
   def DoUpdate

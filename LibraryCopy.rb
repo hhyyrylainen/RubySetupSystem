@@ -52,7 +52,7 @@ def copyPossibleSymlink(path, target, stripfiles = false, log = false)
     FileUtils.cp path, target
     
     if stripfiles
-      system "strip #{File.join(target, File.basename(path))}"
+      runOpen3Checked "strip", File.join(target, File.basename(path))
       info "Stripped file #{File.join(target, File.basename(path))}" if log
     end
   end
