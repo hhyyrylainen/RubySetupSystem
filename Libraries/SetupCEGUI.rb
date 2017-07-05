@@ -86,8 +86,7 @@ class CEGUIDependencies < BaseDep
 
   def DoClone
     requireCMD "hg"
-    runOpen3("hg clone https://bitbucket.org/cegui/cegui-dependencies"
-    $?.exitstatus == 0
+    runOpen3("hg clone https://bitbucket.org/cegui/cegui-dependencies") == 0
   end
 
   def DoUpdate
@@ -122,8 +121,8 @@ class CEGUIDependencies < BaseDep
   
   def DoInstall
 
+    onError "TODO: this needs to be set by the CEGUI build object"
     FileUtils.copy_entry File.join(@Folder, "build", "dependencies"),
-                         onError "TODO: this needs to be set by the CEGUI build object",
                          File.join(CurrentDir, "cegui", "dependencies")
     true
   end
