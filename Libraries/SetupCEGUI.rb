@@ -18,6 +18,7 @@ class CEGUI < BaseDep
 
     if OS.windows?
       onError "todo: subdependency"
+      @CEGUIWinDeps = CEGUIDependencies.new(self, {})
     end
   end
 
@@ -34,15 +35,12 @@ class CEGUI < BaseDep
   end
 
   def DoClone
-    requireCMD "hg"
-    system "hg clone https://bitbucket.org/cegui/cegui"
-    $?.exitstatus == 0
+    runOpen3("hg", "clone", "https://bitbucket.org/cegui/cegui") == 0
   end
 
   def DoUpdate
-    system "hg pull"
-    system "hg update #{@Version}"
-    $?.exitstatus == 0
+    runOpen3("hg", "pull")
+    runOpen3("hg", "update", @Version) == 0
   end
 
   def DoSetup
@@ -77,7 +75,7 @@ end
 # Windows only CEGUI dependencies
 # TODO: fix this
 class CEGUIDependencies < BaseDep
-  def initialize(args)
+  def initialize(parent, args)
     super("CEGUI Dependencies", "cegui-dependencies", args)
 
     if not OS.windows?
@@ -88,14 +86,13 @@ class CEGUIDependencies < BaseDep
 
   def DoClone
     requireCMD "hg"
-    system "hg clone https://bitbucket.org/cegui/cegui-dependencies"
+    runOpen3("hg clone https://bitbucket.org/cegui/cegui-dependencies"
     $?.exitstatus == 0
   end
 
   def DoUpdate
-    system "hg pull"
-    system "hg update default"
-    $?.exitstatus == 0
+    runOpen3("hg", "pull")
+    runOpen3("hg", "update", "default") == 0
   end
 
   def DoSetup
@@ -126,7 +123,7 @@ class CEGUIDependencies < BaseDep
   def DoInstall
 
     FileUtils.copy_entry File.join(@Folder, "build", "dependencies"),
-                         # TODO: this needs to be set by the CEGUI build object
+                         onError "TODO: this needs to be set by the CEGUI build object",
                          File.join(CurrentDir, "cegui", "dependencies")
     true
   end
