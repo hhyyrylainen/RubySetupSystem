@@ -1,10 +1,12 @@
 # Random functions to be used by the install things
 # CMake configure
 require_relative "RubyCommon.rb"
-
+require_relative "WindowsHelpers.rb"
 
 # Runs cmake with options and returns true on success
 def runCMakeConfigure(additionalArgs)
+
+  onError "additionalArgs must be an array" if not additionalArgs.is_a? Array
   
   if OS.windows?
 
@@ -22,7 +24,6 @@ def runCompiler(threads)
   
   if OS.windows?
 
-    # Let's hope that WindowsHelpers.rb has been included
     runVSCompiler threads
     
   else
