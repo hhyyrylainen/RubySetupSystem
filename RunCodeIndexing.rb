@@ -2,7 +2,6 @@
 
 require 'find'
 
-
 if File.exists? "RunCodeIndexing.rb"
   runFolder = "../"
 else
@@ -13,11 +12,31 @@ Dir.chdir(runFolder){
 
   file_paths = []
   Find.find('.') do |path|
-    file_paths << path if (not path =~ /.*\/Build\/.*/i) and
-      (not path =~ /.*\/Staging\/.*/i) and
-      (not path =~ /.*\/cmake_build\/.*/i) and ((path =~ /.*\.h/) or
-                                         (path =~ /.*\.cpp/))
+
+    if path !~ /\.h(pp)?$/ and path !~ /\.cpp$/
+      next
+    end
+
+    # Special case, installed third party header
+    if path =~ /\/build\/ThirdParty\/include/i
+
+    else
+
+      if path =~ /\/Build\//i or
+        path =~ /\/Staging\//i or
+        path =~ /\/cmake_build\//i or
+        path =~ /\/\.\w+\//i or
+        # third party folder might be wanted sometimes so
+        # TODO: option to disable this check
+        path =~ /\/ThirdParty\//i
+        next
+      end
+    end
+    
+    file_paths << path 
   end
+
+  puts "Indexing #{file_paths.length} files"
 
   File.open("cscope.files", "w") do |f|
     f.puts(file_paths)
