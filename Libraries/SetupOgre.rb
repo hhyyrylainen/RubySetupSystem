@@ -1,4 +1,4 @@
-# Will set OGRE_HOME when DoInstall is called
+# Will set OGRE_HOME when Enable is called
 # Supported extra options:
 # TODO: all the render system and component flags
 class Ogre < BaseDep
@@ -159,9 +159,12 @@ class Ogre < BaseDep
         return false
       end
       
-      ENV["OGRE_HOME"] = File.join @InstallPath, "sdk"
     end
 
     true
+  end
+
+  def Enable
+    ENV["OGRE_HOME"] = File.join @InstallPath, "sdk"
   end
 end

@@ -95,6 +95,11 @@ class Installer
         x.Setup
         x.Compile
         x.Install
+
+        if x.respond_to?(:Enable)
+          x.Enable
+        end
+        
         puts ""
         
       end
@@ -109,6 +114,14 @@ class Installer
 
       success "All done. Skipping main project"
       exit 0
+    end
+
+    # Make sure dependencies are enabled even if they aren't built this run
+    @Libraries.each do |x|
+
+      if x.respond_to?(:Enable)
+        x.Enable
+      end
     end
     
   end
