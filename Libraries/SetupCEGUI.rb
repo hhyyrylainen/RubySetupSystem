@@ -126,5 +126,9 @@ class CEGUIDependencies < BaseDep
                          File.join(CurrentDir, "cegui", "dependencies")
     true
   end
+
+  def Enable
+    ENV["CEGUI_HOME"] = File.join @InstallPath
+  end
 end
 

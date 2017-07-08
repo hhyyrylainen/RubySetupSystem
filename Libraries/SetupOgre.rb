@@ -165,6 +165,6 @@ class Ogre < BaseDep
   end
 
   def Enable
-    ENV["OGRE_HOME"] = File.join @InstallPath, "sdk"
+    ENV["OGRE_HOME"] = File.join @InstallPath
   end
 end
