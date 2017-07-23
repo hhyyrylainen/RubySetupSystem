@@ -173,6 +173,33 @@ def gitFixCRLFEndings(fileToCheckWith)
 end
 
 
+#
+# SVN things
+#
+def verifySVNUrl(wantedurl)
+
+  match = `svn info`.strip.match(/.*URL:\s?(.*thrive\S+).*/i)
+
+  onError("'svn info' unable to find URL with regex") if !match
+
+  currenturl = match.captures[0]
+
+  if currenturl != wantedurl
+
+    info "SVN url is not the target url with username, #{currenturl} != #{WantedURL}"
+
+    systemChecked "svn relocate #{WantedURL}"
+
+    success "svn URL updated"
+    
+  end
+
+  info "svn URL is correct"
+  
+end
+
+
+
 def runGlobberAndCopy(glob, targetFolder)
   onError "globbing for library failed #{glob.LibName}" if not glob.run
   
