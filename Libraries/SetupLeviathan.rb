@@ -27,6 +27,7 @@ class Leviathan < BaseDep
     # Dir.chdir("build") do
     #   return runCMakeConfigure @Options
     # end
+    true
   end
   
   def DoCompile
@@ -42,5 +43,6 @@ class Leviathan < BaseDep
     # Dir.chdir("build") do
     #   return self.cmakeUniversalInstallHelper
     # end
+    true
   end
 end
