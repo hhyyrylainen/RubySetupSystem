@@ -17,7 +17,11 @@ class Leviathan < BaseDep
   end
 
   def DoUpdate
-    self.standardGitUpdate
+    if !self.standardGitUpdate 
+      return false
+    end
+    runOpen3Checked("git", "submodule", "init")
+    runOpen3("git", "submodule", "update")
   end  
 
   def DoSetup
