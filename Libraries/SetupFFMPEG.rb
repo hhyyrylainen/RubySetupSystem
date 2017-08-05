@@ -10,8 +10,7 @@ class FFMPEG < BaseDep
 
     if @InstallPath
 
-      @Options.push(if OS.windows? then "--prefix=#{@InstallPath}" else 
-                     "--prefix='#{@InstallPath}'" end)
+      @Options.push("--prefix=#{@InstallPath}")
       
     end
 
@@ -146,7 +145,7 @@ class FFMPEG < BaseDep
       
     else
 
-      return runOpen3("./configure", @Options) == 0
+      return runOpen3("./configure", *@Options) == 0
     end
   end
   

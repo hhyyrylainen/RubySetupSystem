@@ -200,6 +200,11 @@ end
 # Requires that command is found in path. Otherwise shows an error
 def requireCMD(cmdName, extraHelp = nil)
 
+  if(cmdName.start_with? "./" or File.exists? cmdName)
+    # Skip relative paths
+    return
+  end
+
   if which(cmdName) != nil
     # Command found
     return
