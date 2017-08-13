@@ -22,6 +22,28 @@ class CEGUI < BaseDep
     end
   end
 
+  def depsList
+    os = getLinuxOS
+
+    if os == "fedora" || os == "centos" || os == "rhel"
+      return [
+        "glm-devel"
+      ]
+    end
+
+    if os == "ubuntu"
+      return [
+        "libglm-dev"
+      ]
+    end
+    
+    onError "#{@name} unknown packages for os: #{os}"
+  end
+
+  def installPrerequisites
+    installDepsList depsList
+  end  
+
   def getDefaultOptions
     [
       # Use UTF-8 strings with CEGUI (string class 1)
