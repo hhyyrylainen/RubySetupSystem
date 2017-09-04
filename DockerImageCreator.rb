@@ -68,6 +68,9 @@ def runDockerCreate(libsList, mainProjectAsDep = nil)
 
     packageNames.push(*lib.depsList)
   }
+
+  # We need lsb_release
+  packageNames.push "redhat-lsb-core"
   
   puts ""
   success "Successfully ran package collection"
