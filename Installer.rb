@@ -31,11 +31,11 @@ class Installer
     # Verifying that it works
     begin
       # Require that this list method exists
-      deps = x.depsList
+      deps = lib.depsList
     rescue RuntimeError
       # Not used on platform. Should always be used on non-windows
       if !OS.windows?
-        onError "Dependency #{x.Name} prerequisites fetch failed. This needs to " + 
+        onError "Dependency #{lib.Name} prerequisites fetch failed. This needs to " + 
                 "work on non-windows platforms"
       end
       
@@ -47,13 +47,13 @@ class Installer
     if !DoSudoInstalls or SkipPackageManager
 
       warning "Automatic dependency installation is disabled!: please install: " +
-              "'#{deps.join(' ')}' manually for #{x.Name}"
+              "'#{deps.join(' ')}' manually for #{lib.Name}"
     else
       
       # Actually install
-      info "Installing prerequisites for #{x.Name}..."
+      info "Installing prerequisites for #{lib.Name}..."
       
-      x.installPrerequisites
+      lib.installPrerequisites
       
       success "Prerequisites installed."
       
