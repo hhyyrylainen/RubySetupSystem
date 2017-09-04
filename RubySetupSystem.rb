@@ -23,30 +23,32 @@ require 'zip'
 # Parse options
 #
 
-options = {}
+$options = {}
 OptionParser.new do |opts|
-  opts.banner = "Usage: Setup.rb [OPTIONS]"
+  # Default banner is fine, scripts calling this can add their options and their banners
+  # will be correct. See DockerImageCreator.rb for an example
+  #opts.banner = "Usage: Setup.rb [OPTIONS]"
 
   opts.on("--[no-]sudo", "Run commands that need sudo. " +
                          "This may be needed to run successfuly") do |b|
-    options[:sudo] = b
+    $options[:sudo] = b
   end 
   opts.on("--only-project", "Skip all dependencies setup") do |b|
-    options[:onlyProject] = true
+    $options[:onlyProject] = true
   end
 
   opts.on("--only-deps", "Skip the main project setup") do |b|
-    options[:onlyDeps] = true
+    $options[:onlyDeps] = true
   end
 
   opts.on("--no-packagemanager", "Skip using the system package manager " +
                                  "to download libraries") do |b|
-    options[:noPackager] = true
+    $options[:noPackager] = true
   end
 
   opts.on("--no-updates", "Skips downloading dependencies / making sure they "+
                           "are up to date") do |b|
-    options[:noUpdates] = true
+    $options[:noUpdates] = true
   end  
 
   opts.on("-h", "--help", "Show this message") do
@@ -55,6 +57,11 @@ OptionParser.new do |opts|
       puts extraHelp
     end
     exit
+  end
+
+  # If you want to add flags they need to be in this method instead of parseExtraArgs
+  if defined? getExtraOptions
+    getExtraOptions opts
   end
   
 end.parse!
@@ -77,19 +84,19 @@ CMakeBuildType = "RelWithDebInfo"
 CompileThreads = Etc.nprocessors
 
 # If set to false won't install libs that need sudo
-DoSudoInstalls = if options.include?(:sudo) then options[:sudo] else true end
+DoSudoInstalls = if $options.include?(:sudo) then $options[:sudo] else true end
 
 # If true dependencies won't be updated from remote repositories
-SkipPullUpdates = if options[:noUpdates] then true else false end
+SkipPullUpdates = if $options[:noUpdates] then true else false end
 
 # If true skips all dependencies
-OnlyMainProject = if options[:onlyProject] then true else false end
+OnlyMainProject = if $options[:onlyProject] then true else false end
 
 # If true skips the main project
-OnlyDependencies = if options[:onlyDeps] then true else false end
+OnlyDependencies = if $options[:onlyDeps] then true else false end
 
 # If true skips running package installs
-SkipPackageManager = if options[:noPackager] then true else false end
+SkipPackageManager = if $options[:noPackager] then true else false end
 
 # If true new version of depot tools and breakpad won't be fetched on install
 NoBreakpadUpdateOnWindows = false

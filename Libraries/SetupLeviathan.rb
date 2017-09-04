@@ -11,6 +11,29 @@ class Leviathan < BaseDep
     end
   end
 
+  def depsList
+    os = getLinuxOS
+
+    if os == "fedora" || os == "centos" || os == "rhel"
+      return [
+        "cscope"
+      ]
+    end
+
+    if os == "ubuntu"
+      return [
+        "cscope"
+      ]
+    end
+    
+    onError "#{@name} unknown packages for os: #{os}"
+  end
+
+  def installPrerequisites
+
+    installDepsList depsList
+  end  
+
   def DoClone
     runOpen3("git", "clone", "https://hhyyrylainen@bitbucket.org/hhyyrylainen/leviathan.git",
             "leviathan") == 0
