@@ -132,7 +132,7 @@ class Installer
 
     if $options.include?(:projectFullParallel)
       if $options.include?(:projectFullParallelLimit)
-        $compileThreads = $options[:projectFullParallelLimit]
+        $compileThreads = [Etc.nprocessors, $options[:projectFullParallelLimit]].min
       else
         $compileThreads = Etc.nprocessors
       end

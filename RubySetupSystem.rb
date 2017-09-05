@@ -53,7 +53,7 @@ OptionParser.new do |opts|
 
   opts.on("-j threads", "--parallel-compiles threads",
           "Number of simultaneous compiler instances to run") do |j|
-    $options[:parallel] = j
+    $options[:parallel] = j.to_i
   end
 
   opts.on("--fully-parallel-project-compile",
@@ -64,7 +64,7 @@ OptionParser.new do |opts|
 
   opts.on("--project-parallel threads",
           "Restricts fully parallel project compile to specific number of threads") do |t|
-    $options[:projectFullParallelLimit] = t
+    $options[:projectFullParallelLimit] = t.to_i
   end  
 
   
@@ -165,7 +165,7 @@ puts "Using #{$compileThreads} threads to compile, configuration: #{CMakeBuildTy
 if $options.include?(:projectFullParallel)
   puts "Main project uses all cores (#{Etc.nprocessors})"
   if $options.include?(:projectFullParallelLimit)
-    puts "With limit extra limit set to #{$options[:projectFullParallelLimit]}"
+    puts "With extra limit set to #{$options[:projectFullParallelLimit]}"
   end
 end
 
