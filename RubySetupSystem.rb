@@ -49,6 +49,11 @@ OptionParser.new do |opts|
   opts.on("--no-updates", "Skips downloading dependencies / making sure they "+
                           "are up to date") do |b|
     $options[:noUpdates] = true
+  end
+
+  opts.on("-j threads", "--parallel-compiles threads",
+          "Number of simultaneous compiler instances to run ") do |j|
+    $options[:parallel] = j
   end  
 
   opts.on("-h", "--help", "Show this message") do
@@ -81,7 +86,8 @@ end
 
 ### Setup variables
 CMakeBuildType = "RelWithDebInfo"
-CompileThreads = Etc.nprocessors
+CompileThreads = if $options.include?(:parallel) then $options[:parallel] else
+                   Etc.nprocessors end
 
 # If set to false won't install libs that need sudo
 DoSudoInstalls = if $options.include?(:sudo) then $options[:sudo] else true end
