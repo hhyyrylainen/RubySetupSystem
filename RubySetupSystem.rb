@@ -62,6 +62,13 @@ OptionParser.new do |opts|
     $options[:projectFullParallel] = true
   end
 
+  opts.on("--project-parallel threads",
+          "Restricts fully parallel project compile to specific number of threads") do |t|
+    $options[:projectFullParallelLimit] = t
+  end  
+
+  
+
   opts.on("-h", "--help", "Show this message") do
     puts opts
     if defined? extraHelp
@@ -156,8 +163,13 @@ end
 puts "Using #{$compileThreads} threads to compile, configuration: #{CMakeBuildType}"
 
 if $options.include?(:projectFullParallel)
-  puts "Main project uses all cores (#{Etc.nprocessors})" 
+  puts "Main project uses all cores (#{Etc.nprocessors})"
+  if $options.include?(:projectFullParallelLimit)
+    puts "With limit extra limit set to #{$options[:projectFullParallelLimit]}"
+  end
 end
+
+puts ""
 
 require_relative "Installer.rb"
 require_relative "RubyCommon.rb"

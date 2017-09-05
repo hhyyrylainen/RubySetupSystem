@@ -131,8 +131,13 @@ class Installer
     end
 
     if $options.include?(:projectFullParallel)
-      info "Using fully parallel build for main project"
-      $compileThreads = Etc.nprocessors
+      if $options.include?(:projectFullParallelLimit)
+        $compileThreads = $options[:projectFullParallelLimit]
+      else
+        $compileThreads = Etc.nprocessors
+      end
+      
+      info "Using fully parallel build for main project, threads: #{$compileThreads}"
     end
 
     # Install project dependencies
