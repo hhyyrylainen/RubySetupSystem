@@ -1,4 +1,6 @@
 # Installer class
+require 'etc'
+
 ## Install runner
 class Installer
   # basedepstoinstall Is an array of BaseDep derived objects that install
@@ -126,6 +128,11 @@ class Installer
 
       success "All done. Skipping main project"
       exit 0
+    end
+
+    if $options.include?(:projectFullParallel)
+      info "Using fully parallel build for main project"
+      $compileThreads = Etc.nprocessors
     end
 
     # Install project dependencies

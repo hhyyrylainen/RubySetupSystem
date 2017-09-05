@@ -36,7 +36,7 @@ class OpenAL < BaseDep
   def DoCompile
 
     Dir.chdir("build") do
-      runCompiler CompileThreads
+      runCompiler $compileThreads
     end
     $?.exitstatus == 0
   end
@@ -98,7 +98,7 @@ class CAudio < BaseDep
   def DoCompile
 
     Dir.chdir("build") do
-      runCompiler CompileThreads
+      runCompiler $compileThreads
     end
     $?.exitstatus == 0
   end
@@ -261,7 +261,7 @@ class Breakpad < BaseDep
         system "start #{CurrentDir}/breakpad/src/src/client/windows/breakpad_client.sln" if AutoOpenVS
         system "pause"
       else
-        system "make -j #{CompileThreads}"
+        system "make -j #{$compileThreads}"
         
         if $?.exitstatus > 0
           pathedit.Restore

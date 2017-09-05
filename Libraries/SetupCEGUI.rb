@@ -77,7 +77,7 @@ class CEGUI < BaseDep
   
   def DoCompile
     Dir.chdir("build") do
-      return runCompiler CompileThreads 
+      return runCompiler $compileThreads 
     end
   end
   
@@ -129,12 +129,12 @@ class CEGUIDependencies < BaseDep
 
     Dir.chdir("build") do
 
-      if not runVSCompiler CompileThreads, configuration: "Debug"
+      if not runVSCompiler $compileThreads, configuration: "Debug"
 
         return false
       end
       
-      if not runVSCompiler CompileThreads, configuration: "RelWithDebInfo"
+      if not runVSCompiler $compileThreads, configuration: "RelWithDebInfo"
         return false
       end
     end

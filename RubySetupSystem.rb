@@ -52,9 +52,15 @@ OptionParser.new do |opts|
   end
 
   opts.on("-j threads", "--parallel-compiles threads",
-          "Number of simultaneous compiler instances to run ") do |j|
+          "Number of simultaneous compiler instances to run") do |j|
     $options[:parallel] = j
-  end  
+  end
+
+  opts.on("--fully-parallel-project-compile",
+          "Even if not all cores are used for compiling dependencies (-j flag) the main " +
+          "project is compiled with all cores") do |b|
+    $options[:projectFullParallel] = true
+  end
 
   opts.on("-h", "--help", "Show this message") do
     puts opts
@@ -86,8 +92,8 @@ end
 
 ### Setup variables
 CMakeBuildType = "RelWithDebInfo"
-CompileThreads = if $options.include?(:parallel) then $options[:parallel] else
-                   Etc.nprocessors end
+$compileThreads = if $options.include?(:parallel) then $options[:parallel] else
+                    Etc.nprocessors end
 
 # If set to false won't install libs that need sudo
 DoSudoInstalls = if $options.include?(:sudo) then $options[:sudo] else true end
@@ -147,7 +153,11 @@ if HasDNF
   info "Using dnf package manager"
 end
 
-puts "Using #{CompileThreads} threads to compile, configuration: #{CMakeBuildType}"
+puts "Using #{$compileThreads} threads to compile, configuration: #{CMakeBuildType}"
+
+if $options.include?(:projectFullParallel)
+  puts "Main project uses all cores (#{Etc.nprocessors})" 
+end
 
 require_relative "Installer.rb"
 require_relative "RubyCommon.rb"

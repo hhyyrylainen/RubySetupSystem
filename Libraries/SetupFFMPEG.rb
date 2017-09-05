@@ -155,7 +155,7 @@ class FFMPEG < BaseDep
       requireCMD "make", "Please make sure you have installed 'make' with cygwin"
       runWithModifiedPath([getVSLinkerFolder, @YasmFolder], true){
         Open3.popen2e(*[runVSVarsAll, "&&", "make", "-j", 
-                        CompileThreads.to_s].flatten) {|stdin, out, wait_thr|
+                        $compileThreads.to_s].flatten) {|stdin, out, wait_thr|
           
           out.each {|line|
             puts " " + line
@@ -167,7 +167,7 @@ class FFMPEG < BaseDep
       }
     else
 
-      runCompiler CompileThreads
+      runCompiler $compileThreads
       return $?.exitstatus == 0
     end
   end

@@ -116,7 +116,7 @@ class Ogre < BaseDep
         # there was a no build sdl2 here...
         runOpen3Checked "cmake", "."
 
-        if !runVSCompiler CompileThreads
+        if !runVSCompiler $compileThreads
 
           onError "Failed to compile Ogre dependencies "
         end
@@ -147,7 +147,7 @@ class Ogre < BaseDep
   def DoCompile
     Dir.chdir("build") do
 
-      return runCompiler CompileThreads
+      return runCompiler $compileThreads
     end
   end
   

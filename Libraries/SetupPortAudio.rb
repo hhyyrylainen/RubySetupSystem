@@ -103,11 +103,11 @@ class PortAudio < BaseDep
         
         # If we ran cmake again here with 32 bit windows (probably in a 'build-32' folder)
         # we could probably also build the 32-bit version as it has a different file name 
-        return runVSCompiler CompileThreads, "portaudio.vcxproj", "Release", "x64"
+        return runVSCompiler $compileThreads, "portaudio.vcxproj", "Release", "x64"
       end
     else
 
-      return runCompiler CompileThreads
+      return runCompiler $compileThreads
     end
   end
 

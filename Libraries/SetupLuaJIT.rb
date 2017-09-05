@@ -10,6 +10,6 @@ File.open("Makefile", 'w') do |out|
   out << outdata
 end  
 
-runCompiler CompileThreads
+runCompiler $compileThreads
 
 onError "Failed to compile luajit" if $?.exitstatus > 0

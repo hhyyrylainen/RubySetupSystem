@@ -63,7 +63,7 @@ class Newton < BaseDep
   def DoCompile
     if OS.windows?
       
-      return runVSCompiler(CompileThreads,
+      return runVSCompiler($compileThreads,
                            project: "packages/projects/visualStudio_2015_dll/build.sln",
                            configuration: "release",
                            platform: "x64")
@@ -72,7 +72,7 @@ class Newton < BaseDep
     else
       Dir.chdir("build") do
         
-        return runCompiler CompileThreads
+        return runCompiler $compileThreads
         
       end
     end

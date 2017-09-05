@@ -56,7 +56,7 @@ class SFML < BaseDep
 
     Dir.chdir("build") do
             
-      return runCompiler CompileThreads
+      return runCompiler $compileThreads
       
     end
   end
