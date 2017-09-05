@@ -31,7 +31,7 @@ class Ogre < BaseDep
       
       return [
         "gcc-c++", "libXaw-devel", "freetype-devel", "freeimage-devel", "zziplib-devel",
-        "cmake", "ois-devel"
+        "cmake", "ois-devel", "libatomic"
       ]
       
     end
@@ -41,7 +41,7 @@ class Ogre < BaseDep
       return [
         "build-essential", "automake", "libtool", "libfreetype6-dev", "libfreeimage-dev",
         "libzzip-dev", "libxrandr-dev", "libxaw7-dev", "freeglut3-dev", "libgl1-mesa-dev",
-        "libglu1-mesa-dev", "libois-dev"
+        "libglu1-mesa-dev", "libois-dev", "libatomic1"
       ]
     end
 

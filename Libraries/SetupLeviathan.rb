@@ -16,13 +16,13 @@ class Leviathan < BaseDep
 
     if os == "fedora" || os == "centos" || os == "rhel"
       return [
-        "cscope"
+        "cscope", "boost-devel", "SDL2-devel", "ImageMagick"
       ]
     end
 
     if os == "ubuntu"
       return [
-        "cscope"
+        "cscope", "libboost-dev", "libsdl2-dev", "imagemagick"
       ]
     end
     

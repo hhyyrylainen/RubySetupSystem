@@ -71,6 +71,11 @@ def runDockerCreate(libsList, mainProjectAsDep = nil)
 
   # We need lsb_release
   packageNames.push "redhat-lsb-core"
+
+  # Might as well install all the svc tools
+  packageNames.push "git", "svn", "mercurial"
+
+  packageNames.uniq!
   
   puts ""
   success "Successfully ran package collection"
@@ -89,6 +94,12 @@ def runDockerCreate(libsList, mainProjectAsDep = nil)
     file.puts("RUN gem install os colorize rubyzip")    
     file.puts("RUN dnf install -y --setopt=deltarpm=false #{packageNames.join ' '}; exit 0")
     file.puts("RUN dnf install -y --setopt=deltarpm=false #{packageNames.join ' '}")
+
+    # vnc setup part
+    # This doesn't seem to actually help with a missing x server
+    # file.puts("RUN dnf install -y x11vnc")
+    # file.puts("RUN mkdir /root/.vnc")
+    # file.puts(%q(RUN x11vnc -storepasswd "vncdocker" ~/.vnc/passwd))
   }
 
   if !$doBuild
