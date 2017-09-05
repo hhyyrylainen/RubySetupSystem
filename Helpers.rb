@@ -28,7 +28,7 @@ def runCompiler(threads)
     
   else
     
-    runOpen3("make", "-j", threads.to_s) == 0
+    runOpen3StuckPrevention("make", "-j", threads.to_s) == 0
     
   end
 end
