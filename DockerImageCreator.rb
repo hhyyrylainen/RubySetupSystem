@@ -49,6 +49,32 @@ def getLinuxOS
   "fedora"
 end
 
+def doDockerBuild(folder)
+
+  if runOpen3("docker", "build", folder) != 0
+
+    warning "Failed to run docker as normal user, trying sudo"
+    
+    runOpen3Checked("sudo", "docker", "build", folder)
+    
+  end
+  
+end
+
+def writeCommonDockerFile(file, packageNames)
+  file.puts("FROM fedora:latest")
+  file.puts("RUN dnf install -y --setopt=deltarpm=false ruby ruby-devel")
+  file.puts("RUN gem install os colorize rubyzip")    
+  file.puts("RUN dnf install -y --setopt=deltarpm=false #{packageNames.join ' '}; exit 0")
+  file.puts("RUN dnf install -y --setopt=deltarpm=false #{packageNames.join ' '}")
+
+  # vnc setup part
+  # This doesn't seem to actually help with a missing x server
+  # file.puts("RUN dnf install -y x11vnc")
+  # file.puts("RUN mkdir /root/.vnc")
+  # file.puts(%q(RUN x11vnc -storepasswd "vncdocker" ~/.vnc/passwd))  
+end
+
 # Main run method
 def runDockerCreate(libsList, mainProjectAsDep = nil)
 
@@ -83,24 +109,32 @@ def runDockerCreate(libsList, mainProjectAsDep = nil)
 
   info "Package count: #{packageNames.count}"
 
-  dockerFile = File.join CurrentDir, "Dockerfile"
+  FileUtils.mkdir_p File.join(CurrentDir, "simple")
+  FileUtils.mkdir_p File.join(CurrentDir, "jenkins")
+
+  dockerFile = File.join CurrentDir, "simple", "Dockerfile"
   
   puts "Writing docker file at '#{dockerFile}'"
 
   File.open(dockerFile, 'w'){|file|
-    
-    file.puts("FROM fedora:latest")
-    file.puts("RUN dnf install -y --setopt=deltarpm=false ruby ruby-devel")
-    file.puts("RUN gem install os colorize rubyzip")    
-    file.puts("RUN dnf install -y --setopt=deltarpm=false #{packageNames.join ' '}; exit 0")
-    file.puts("RUN dnf install -y --setopt=deltarpm=false #{packageNames.join ' '}")
 
-    # vnc setup part
-    # This doesn't seem to actually help with a missing x server
-    # file.puts("RUN dnf install -y x11vnc")
-    # file.puts("RUN mkdir /root/.vnc")
-    # file.puts(%q(RUN x11vnc -storepasswd "vncdocker" ~/.vnc/passwd))
+    writeCommonDockerFile file, packageNames
   }
+
+  jenkinsDocker = File.join CurrentDir, "jenkins", "Dockerfile"
+  
+  puts "Writing docker (jenkins) file at '#{jenkinsDocker}'"
+
+  File.open(jenkinsDocker, 'w'){|file|
+    
+    writeCommonDockerFile file, packageNames
+
+    # Needed things for jenkins.
+    # From here: https://wiki.jenkins.io/display/JENKINS/Docker+Plugin
+    file.puts("RUN dnf install -y --setopt=deltarpm=false openssh-server java-1.8.0-openjdk")
+    file.puts("RUN systemctl enable sshd")
+    file.puts("RUN adduser -m jenkins -p jenkinsbuilder")
+  }  
 
   if !$doBuild
 
@@ -108,15 +142,10 @@ def runDockerCreate(libsList, mainProjectAsDep = nil)
     exit 0
   end  
 
-  success "Done writing docker file. Building the image..."
+  success "Done writing docker file. Building the image(s)..."
 
-  if runOpen3("docker", "build", CurrentDir) != 0
-
-    warning "Failed to run docker as normal user, trying sudo"
-    
-    runOpen3Checked("sudo", "docker", "build", CurrentDir)
-    
-  end
+  doDockerBuild File.join(CurrentDir, "simple")
+  doDockerBuild File.join(CurrentDir, "jenkins")
   
   success "Done. See above output for the created image details"
 end
