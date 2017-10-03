@@ -97,7 +97,15 @@ class Installer
       if SkipPullUpdates
         warning "Not updating dependencies. This may or may not work"
       end
-      
+
+      # Make sure the folders exist, at least
+      @Libraries.each do |x|
+
+        if x.RequiresClone
+          info "Dependency is missing, downloading it despite update pulling is disabled"
+          x.Retrieve
+        end
+      end      
     end
 
     if not OnlyMainProject
