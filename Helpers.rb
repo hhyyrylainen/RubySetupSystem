@@ -28,7 +28,7 @@ def runCompiler(threads)
     
   else
     
-    runOpen3("make", "-j", threads.to_s) == 0
+    runOpen3StuckPrevention("make", "-j", threads.to_s) == 0
     
   end
 end
@@ -38,12 +38,15 @@ def installDepsList(deps)
 
   os = getLinuxOS
 
+  # TODO: if we used some terminal redirecting or something these
+  # might be possible to not have to use the "automatic yes" options
+
   if os == "fedora" || os == "centos" || os == "rhel"
 
     if HasDNF
-      askRunSudo "sudo", "dnf", "install", *deps
+      askRunSudo "sudo", "dnf", "install", "-y", *deps
     else
-      askRunSudo "sudo", "yum", "install", *deps
+      askRunSudo "sudo", "yum", "install", "-y", *deps
     end
 
     return
@@ -51,21 +54,21 @@ def installDepsList(deps)
 
   if os == "ubuntu"
 
-    askRunSudo "sudo", "apt-get", "install", *deps
+    askRunSudo "sudo", "apt-get", "install", "-y", *deps
 
     return
   end
 
   if os == "arch"
 
-    askRunSudo "sudo", "pacman", "-S", *deps
+    askRunSudo "sudo", "pacman", "-S", "--noconfirm", *deps
     
     return
   end
 
   if os == "opensuse"
 
-    askRunSudo "sudo", "zypper", "in", *deps
+    askRunSudo "sudo", "zypper", "in", "-y", *deps
     
     return 
   end

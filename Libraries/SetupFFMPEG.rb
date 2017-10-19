@@ -10,8 +10,7 @@ class FFMPEG < BaseDep
 
     if @InstallPath
 
-      @Options.push(if OS.windows? then "--prefix=#{@InstallPath}" else 
-                     "--prefix='#{@InstallPath}'" end)
+      @Options.push("--prefix=#{@InstallPath}")
       
     end
 
@@ -146,7 +145,7 @@ class FFMPEG < BaseDep
       
     else
 
-      return runOpen3("./configure", @Options) == 0
+      return runOpen3("./configure", *@Options) == 0
     end
   end
   
@@ -156,7 +155,7 @@ class FFMPEG < BaseDep
       requireCMD "make", "Please make sure you have installed 'make' with cygwin"
       runWithModifiedPath([getVSLinkerFolder, @YasmFolder], true){
         Open3.popen2e(*[runVSVarsAll, "&&", "make", "-j", 
-                        CompileThreads.to_s].flatten) {|stdin, out, wait_thr|
+                        $compileThreads.to_s].flatten) {|stdin, out, wait_thr|
           
           out.each {|line|
             puts " " + line
@@ -168,7 +167,7 @@ class FFMPEG < BaseDep
       }
     else
 
-      runCompiler CompileThreads
+      runCompiler $compileThreads
       return $?.exitstatus == 0
     end
   end

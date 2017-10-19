@@ -22,6 +22,28 @@ class CEGUI < BaseDep
     end
   end
 
+  def depsList
+    os = getLinuxOS
+
+    if os == "fedora" || os == "centos" || os == "rhel"
+      return [
+        "glm-devel"
+      ]
+    end
+
+    if os == "ubuntu"
+      return [
+        "libglm-dev"
+      ]
+    end
+    
+    onError "#{@name} unknown packages for os: #{os}"
+  end
+
+  def installPrerequisites
+    installDepsList depsList
+  end  
+
   def getDefaultOptions
     [
       # Use UTF-8 strings with CEGUI (string class 1)
@@ -55,7 +77,7 @@ class CEGUI < BaseDep
   
   def DoCompile
     Dir.chdir("build") do
-      return runCompiler CompileThreads 
+      return runCompiler $compileThreads 
     end
   end
   
@@ -107,12 +129,12 @@ class CEGUIDependencies < BaseDep
 
     Dir.chdir("build") do
 
-      if not runVSCompiler CompileThreads, configuration: "Debug"
+      if not runVSCompiler $compileThreads, configuration: "Debug"
 
         return false
       end
       
-      if not runVSCompiler CompileThreads, configuration: "RelWithDebInfo"
+      if not runVSCompiler $compileThreads, configuration: "RelWithDebInfo"
         return false
       end
     end

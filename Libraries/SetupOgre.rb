@@ -31,7 +31,7 @@ class Ogre < BaseDep
       
       return [
         "gcc-c++", "libXaw-devel", "freetype-devel", "freeimage-devel", "zziplib-devel",
-        "cmake", "ois-devel"
+        "cmake", "ois-devel", "libatomic"
       ]
       
     end
@@ -41,7 +41,7 @@ class Ogre < BaseDep
       return [
         "build-essential", "automake", "libtool", "libfreetype6-dev", "libfreeimage-dev",
         "libzzip-dev", "libxrandr-dev", "libxaw7-dev", "freeglut3-dev", "libgl1-mesa-dev",
-        "libglu1-mesa-dev", "libois-dev"
+        "libglu1-mesa-dev", "libois-dev", "libatomic1"
       ]
     end
 
@@ -116,7 +116,7 @@ class Ogre < BaseDep
         # there was a no build sdl2 here...
         runOpen3Checked "cmake", "."
 
-        if !runVSCompiler CompileThreads
+        if !runVSCompiler $compileThreads
 
           onError "Failed to compile Ogre dependencies "
         end
@@ -147,7 +147,7 @@ class Ogre < BaseDep
   def DoCompile
     Dir.chdir("build") do
 
-      return runCompiler CompileThreads
+      return runCompiler $compileThreads
     end
   end
   

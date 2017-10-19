@@ -13,12 +13,17 @@ class SFML < BaseDep
     os = getLinuxOS
 
     if os == "fedora" || os == "centos" || os == "rhel"
-      
       return [
         "xcb-util-image-devel", "systemd-devel", "libjpeg-devel", "libvorbis-devel",
-        "flac-devel"
+        "flac-devel", "openal-soft-devel"
       ]
-      
+    end
+
+    if os == "ubuntu"
+      return [
+        "libxcb-image0-dev", "libsystemd-dev", " libjpeg9-dev", "libvorbis-dev",
+        "libflac-devel", "libopenal-dev"
+      ]
     end
     
     onError "#{@name} unknown packages for os: #{os}"
@@ -51,7 +56,7 @@ class SFML < BaseDep
 
     Dir.chdir("build") do
             
-      return runCompiler CompileThreads
+      return runCompiler $compileThreads
       
     end
   end

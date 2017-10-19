@@ -11,6 +11,29 @@ class Leviathan < BaseDep
     end
   end
 
+  def depsList
+    os = getLinuxOS
+
+    if os == "fedora" || os == "centos" || os == "rhel"
+      return [
+        "cscope", "boost-devel", "SDL2-devel", "ImageMagick"
+      ]
+    end
+
+    if os == "ubuntu"
+      return [
+        "cscope", "libboost-dev", "libsdl2-dev", "imagemagick"
+      ]
+    end
+    
+    onError "#{@name} unknown packages for os: #{os}"
+  end
+
+  def installPrerequisites
+
+    installDepsList depsList
+  end  
+
   def DoClone
     runOpen3("git", "clone", "https://hhyyrylainen@bitbucket.org/hhyyrylainen/leviathan.git",
             "leviathan") == 0

@@ -54,7 +54,7 @@ class AngelScript < BaseDep
       
       success "AngelScript solution is correctly configured. Compiling"
 
-      return runVSCompiler(CompileThreads,
+      return runVSCompiler($compileThreads,
                            project: "sdk/angelscript/projects/msvc2015/angelscript.sln",
                            configuration: "Release",
                            platform: "x64")
@@ -63,7 +63,7 @@ class AngelScript < BaseDep
       
       Dir.chdir("sdk/angelscript/projects/gnuc") do
 
-        return runCompiler CompileThreads
+        return runCompiler $compileThreads
       end
     end
   end

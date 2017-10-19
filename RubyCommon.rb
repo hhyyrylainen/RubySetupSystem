@@ -59,8 +59,74 @@ def runOpen3(*cmdAndArgs, errorPrefix: "", redError: false)
         puts errorPrefix + line
       end
     }
-    
+
     exit_status = wait_thr.value
+    return exit_status
+  }
+
+  onError "Execution shouldn't reach here"
+  
+end
+
+# Runs Open3 for the commad, returns exit status. Restarts command a few times if fails to run
+def runOpen3StuckPrevention(*cmdAndArgs, errorPrefix: "", redError: false, retryCount: 5,
+                            stuckTimeout: 120)
+
+  if cmdAndArgs.length < 1
+    onError "Empty runOpen3 command"
+  end
+
+  if !File.exists? cmdAndArgs[0] or !Pathname.new(cmdAndArgs[0]).absolute?
+    # check that the command exists if it is not a full path to a file
+    requireCMD cmdAndArgs[0]
+  end
+
+  Open3.popen3(*cmdAndArgs) {|stdin, stdout, stderr, wait_thr|
+
+    lastOutputTime = Time.now
+
+    outThread = Thread.new{
+      stdout.each {|line|
+        puts line
+        lastOutputTime = Time.now
+      }
+    }
+
+    errThread = Thread.new{
+      stderr.each {|line|
+        if redError
+          puts (errorPrefix + line).red
+      else
+        puts errorPrefix + line
+        end
+        lastOutputTime = Time.now
+      }
+    }
+
+    # Handle timeouts
+    while wait_thr.join(10) == nil
+
+      if Time.now - lastOutputTime >= stuckTimeout
+        warning "RubySetupSystem stuck prevention: #{Time.now - lastOutputTime} elapsed " +
+                "since last output from command"
+
+        if retryCount > 0
+          info "Restarting it "
+          Process.kill("TERM", wait_thr.pid)
+
+          sleep(5)
+          return runOpen3StuckPrevention(*cmdAndArgs, errorPrefix: errorPrefix,
+                                         redError: redError, retryCount: retryCount - 1,
+                                         stuckTimeout: stuckTimeout)
+        else
+          warning "Restarts exhausted, going to wait until user interrupts us"
+          lastOutputTime = Time.now
+        end
+      end
+    end
+    exit_status = wait_thr.value
+    outThread.kill
+    errThread.kill
     return exit_status
   }
 
@@ -199,6 +265,11 @@ end
 
 # Requires that command is found in path. Otherwise shows an error
 def requireCMD(cmdName, extraHelp = nil)
+
+  if(cmdName.start_with? "./" or File.exists? cmdName)
+    # Skip relative paths
+    return
+  end
 
   if which(cmdName) != nil
     # Command found

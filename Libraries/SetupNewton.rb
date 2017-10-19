@@ -11,6 +11,31 @@ class Newton < BaseDep
 
   end
 
+  def depsList
+    os = getLinuxOS
+
+    if os == "fedora" || os == "centos" || os == "rhel"
+      return [
+        "tinyxml-devel"
+      ]
+    end
+
+    if os == "ubuntu"
+      return [
+        "libtinyxml-dev"
+      ]
+    end
+    
+    onError "#{@name} unknown packages for os: #{os}"
+
+  end
+
+  def installPrerequisites
+
+    installDepsList depsList
+    
+  end  
+
   def DoClone
     runOpen3("git", "clone",
              "https://github.com/MADEAPPS/newton-dynamics.git") == 0
@@ -38,7 +63,7 @@ class Newton < BaseDep
   def DoCompile
     if OS.windows?
       
-      return runVSCompiler(CompileThreads,
+      return runVSCompiler($compileThreads,
                            project: "packages/projects/visualStudio_2015_dll/build.sln",
                            configuration: "release",
                            platform: "x64")
@@ -47,7 +72,7 @@ class Newton < BaseDep
     else
       Dir.chdir("build") do
         
-        return runCompiler CompileThreads
+        return runCompiler $compileThreads
         
       end
     end

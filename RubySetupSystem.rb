@@ -23,31 +23,51 @@ require 'zip'
 # Parse options
 #
 
-options = {}
+$options = {}
 OptionParser.new do |opts|
-  opts.banner = "Usage: Setup.rb [OPTIONS]"
+  # Default banner is fine, scripts calling this can add their options and their banners
+  # will be correct. See DockerImageCreator.rb for an example
+  #opts.banner = "Usage: Setup.rb [OPTIONS]"
 
   opts.on("--[no-]sudo", "Run commands that need sudo. " +
                          "This may be needed to run successfuly") do |b|
-    options[:sudo] = b
+    $options[:sudo] = b
   end 
   opts.on("--only-project", "Skip all dependencies setup") do |b|
-    options[:onlyProject] = true
+    $options[:onlyProject] = true
   end
 
   opts.on("--only-deps", "Skip the main project setup") do |b|
-    options[:onlyDeps] = true
+    $options[:onlyDeps] = true
   end
 
   opts.on("--no-packagemanager", "Skip using the system package manager " +
                                  "to download libraries") do |b|
-    options[:noPackager] = true
+    $options[:noPackager] = true
   end
 
   opts.on("--no-updates", "Skips downloading dependencies / making sure they "+
                           "are up to date") do |b|
-    options[:noUpdates] = true
+    $options[:noUpdates] = true
+  end
+
+  opts.on("-j threads", "--parallel-compiles threads",
+          "Number of simultaneous compiler instances to run") do |j|
+    $options[:parallel] = j.to_i
+  end
+
+  opts.on("--fully-parallel-project-compile",
+          "Even if not all cores are used for compiling dependencies (-j flag) the main " +
+          "project is compiled with all cores") do |b|
+    $options[:projectFullParallel] = true
+  end
+
+  opts.on("--project-parallel threads",
+          "Restricts fully parallel project compile to specific number of threads") do |t|
+    $options[:projectFullParallelLimit] = t.to_i
   end  
+
+  
 
   opts.on("-h", "--help", "Show this message") do
     puts opts
@@ -55,6 +75,11 @@ OptionParser.new do |opts|
       puts extraHelp
     end
     exit
+  end
+
+  # If you want to add flags they need to be in this method instead of parseExtraArgs
+  if defined? getExtraOptions
+    getExtraOptions opts
   end
   
 end.parse!
@@ -74,22 +99,23 @@ end
 
 ### Setup variables
 CMakeBuildType = "RelWithDebInfo"
-CompileThreads = Etc.nprocessors
+$compileThreads = if $options.include?(:parallel) then $options[:parallel] else
+                    Etc.nprocessors end
 
 # If set to false won't install libs that need sudo
-DoSudoInstalls = if options.include?(:sudo) then options[:sudo] else true end
+DoSudoInstalls = if $options.include?(:sudo) then $options[:sudo] else true end
 
 # If true dependencies won't be updated from remote repositories
-SkipPullUpdates = if options[:noUpdates] then true else false end
+SkipPullUpdates = if $options[:noUpdates] then true else false end
 
 # If true skips all dependencies
-OnlyMainProject = if options[:onlyProject] then true else false end
+OnlyMainProject = if $options[:onlyProject] then true else false end
 
 # If true skips the main project
-OnlyDependencies = if options[:onlyDeps] then true else false end
+OnlyDependencies = if $options[:onlyDeps] then true else false end
 
 # If true skips running package installs
-SkipPackageManager = if options[:noPackager] then true else false end
+SkipPackageManager = if $options[:noPackager] then true else false end
 
 # If true new version of depot tools and breakpad won't be fetched on install
 NoBreakpadUpdateOnWindows = false
@@ -112,6 +138,12 @@ else
   HasDNF = false
 end
 
+# Fail if lsb_release is missing
+if which("lsb_release") == nil
+
+  onError "lsb_release is missing, please install it."
+end
+
 # This verifies that CurrentDir is good and assigns it to CurrentDir
 CurrentDir = checkRunFolder Dir.pwd
 
@@ -128,7 +160,16 @@ if HasDNF
   info "Using dnf package manager"
 end
 
-puts "Using #{CompileThreads} threads to compile, configuration: #{CMakeBuildType}"
+puts "Using #{$compileThreads} threads to compile, configuration: #{CMakeBuildType}"
+
+if $options.include?(:projectFullParallel)
+  puts "Main project uses all cores (#{Etc.nprocessors})"
+  if $options.include?(:projectFullParallelLimit)
+    puts "With extra limit set to #{$options[:projectFullParallelLimit]}"
+  end
+end
+
+puts ""
 
 require_relative "Installer.rb"
 require_relative "RubyCommon.rb"
