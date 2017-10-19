@@ -20,6 +20,9 @@ Dir.chdir(runFolder){
     # Special case, installed third party header
     if path =~ /\/build\/ThirdParty\/include/i
 
+    # Another special case, leviathan folder
+    elsif path =~ /\/ThirdParty\/leviathan\//i
+      
     else
 
       if path =~ /\/Build\//i or
