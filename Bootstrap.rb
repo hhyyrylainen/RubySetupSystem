@@ -4,7 +4,7 @@
 # RubySetupSystem Bootstrap
 if not File.exists? "RubySetupSystem/RubySetupSystem.rb"
   puts "Initializing RubySetupSystem"
-  system "git submodule init && git submodule update"
+  system "git submodule init && git submodule update --recursive"
 
   if $?.exitstatus != 0
     abort("Failed to initialize or update git submodules. " +
