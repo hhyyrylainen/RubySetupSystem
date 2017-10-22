@@ -134,15 +134,17 @@ VSToolsEnv = "VS140COMNTOOLS"
 
 if OS.linux?
   HasDNF = which("dnf") != nil
+  
+  # Fail if lsb_release is missing
+  if which("lsb_release") == nil
+
+    onError "lsb_release is missing, please install it."
+  end
+  
 else
   HasDNF = false
 end
 
-# Fail if lsb_release is missing
-if which("lsb_release") == nil
-
-  onError "lsb_release is missing, please install it."
-end
 
 # This verifies that CurrentDir is good and assigns it to CurrentDir
 CurrentDir = checkRunFolder Dir.pwd
