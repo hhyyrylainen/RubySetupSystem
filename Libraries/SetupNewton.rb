@@ -67,13 +67,10 @@ class Newton < BaseDep
                            project: "packages/projects/visualStudio_2015_dll/build.sln",
                            configuration: "release",
                            platform: "x64")
-      
-      return $?.exitstatus == 0
     else
       Dir.chdir("build") do
         
         return runCompiler $compileThreads
-        
       end
     end
   end
