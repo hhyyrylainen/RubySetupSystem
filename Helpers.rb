@@ -10,22 +10,26 @@ def runCMakeConfigure(additionalArgs)
   
   if OS.windows?
 
-    return runOpen3("cmake", "..", "-G", VSVersion, *additionalArgs,
-                    errorPrefix: "cmake configure: ") == 0
+    return runOpen3("cmake", "..", "-G", VSVersion, *additionalArgs) == 0
   else
     
-    return runOpen3("cmake", "..", "-DCMAKE_BUILD_TYPE=#{CMakeBuildType}", *additionalArgs,
-                    errorPrefix: "cmake configure: ") == 0
+    return runOpen3("cmake", "..", "-DCMAKE_BUILD_TYPE=#{CMakeBuildType}",
+                    *additionalArgs) == 0
   end
 end
 
 # Running make or msbuild
-def runCompiler(threads)
+# \param winBothConfigurations If true Debug and RelWithdebInfo both are built on windows
+def runCompiler(threads, winBothConfigurations: false)
   
   if OS.windows?
 
-    runVSCompiler threads
-    
+    if winBothConfigurations
+      runVSCompiler threads, configuration: "Debug"
+      runVSCompiler threads, configuration: "RelWithDebInfo"
+    else
+      runVSCompiler threads
+    end
   else
     
     runOpen3StuckPrevention("make", "-j", threads.to_s) == 0

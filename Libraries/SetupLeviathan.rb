@@ -6,9 +6,7 @@ class Leviathan < BaseDep
   def initialize(args)
     super("Leviathan", "leviathan", args)
 
-    if @InstallPath
-      @Options.push "-DCMAKE_INSTALL_PREFIX=#{@InstallPath}"
-    end
+    self.HandleStandardCMakeOptions
   end
 
   def depsList

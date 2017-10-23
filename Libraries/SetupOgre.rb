@@ -1,13 +1,14 @@
 # Will set OGRE_HOME when Enable is called
 # Supported extra options:
 # TODO: all the render system and component flags
+#
+# Windows: these other libraries need to be installed before:
+# FreeType
 class Ogre < BaseDep
   def initialize(args)
     super("Ogre", "ogre", args)
 
-    if @InstallPath
-      @Options.push "-DCMAKE_INSTALL_PREFIX=#{@InstallPath}"
-    end
+    self.HandleStandardCMakeOptions
   end
 
   def getDefaultOptions
@@ -64,11 +65,11 @@ class Ogre < BaseDep
   
 
   def RequiresClone
-    if OS.windows?
-      return (not File.exist?(@Folder) or not File.exist?(File.join(@Folder, "Dependencies")))
-    else
+    # if OS.windows?
+    #   return (not File.exist?(@Folder) or not File.exist?(File.join(@Folder, "Dependencies")))
+    # else
       return (not File.exist? @Folder)
-    end
+    # end
   end
   
   def DoClone
@@ -77,29 +78,28 @@ class Ogre < BaseDep
       return false
     end
     
-    if OS.windows?
+    # if OS.windows?
             
-      Dir.chdir(@Folder) do
+    #   Dir.chdir(@Folder) do
 
-        return runOpen3("hg", "clone", "https://bitbucket.org/cabalistic/ogredeps",
-                        "Dependencies") == 0
-      end
-    else
-      return true
-    end
+    #     return runOpen3("hg", "clone", "https://bitbucket.org/cabalistic/ogredeps",
+    #                     "Dependencies") == 0
+    #   end
+    # end
+    true
   end
 
   def DoUpdate
     
-    if OS.windows?
-      Dir.chdir("Dependencies") do
-        runOpen3 "hg", "pull"
+    # if OS.windows?
+    #   Dir.chdir("Dependencies") do
+    #     runOpen3 "hg", "pull"
 
-        if runOpen3("hg", "update") != 0
-          return false
-        end
-      end
-    end
+    #     if runOpen3("hg", "update") != 0
+    #       return false
+    #     end
+    #   end
+    # end
 
     runOpen3 "hg", "pull"
     runOpen3("hg", "update", @Version) == 0
@@ -107,44 +107,45 @@ class Ogre < BaseDep
 
   def DoSetup
     
-    # Dependencies compile
-    additionalCMake = []
+    # # Dependencies compile
+    # additionalCMake = []
     
-    if OS.windows?
-      Dir.chdir("Dependencies") do
+    # if OS.windows?
+    #   Dir.chdir("Dependencies") do
 
-        # there was a no build sdl2 here...
-        runOpen3Checked "cmake", "."
+    #     # there was a no build sdl2 here...
+    #     runOpen3Checked "cmake", "."
 
-        if !runVSCompiler $compileThreads
+    #     if !runVSCompiler $compileThreads
 
-          onError "Failed to compile Ogre dependencies "
-        end
+    #       onError "Failed to compile Ogre dependencies "
+    #     end
 
-        onError "check can this actually be ran automatically"
-        info "Please open the solution SDL2 in Release and x64: "+
-             "#{@Folder}/Dependencies/src/SDL2/VisualC/SDL_VS2013.sln"
+    #     onError "check can this actually be ran automatically"
+    #     info "Please open the solution SDL2 in Release and x64: "+
+    #          "#{@Folder}/Dependencies/src/SDL2/VisualC/SDL_VS2013.sln"
 
-        openVSSolutionIfAutoOpen "#{@Folder}/Dependencies/src/SDL2/VisualC/SDL_VS2013.sln"
+    #     openVSSolutionIfAutoOpen "#{@Folder}/Dependencies/src/SDL2/VisualC/SDL_VS2013.sln"
 
-        onError "TODO: verify that this works"
-        additionalCMake.push("-DSDL2MAIN_LIBRARY=..\SDL2\VisualC\Win32\Debug\SDL2main.lib ",
-                             "-DSD2_INCLUDE_DIR=..\SDL2\include",
-                             "-DSDL2_LIBRARY_TEMP=..\SDL2\VisualC\Win32\Debug\SDL2.lib")
+    #     onError "TODO: verify that this works"
+    #     additionalCMake.push("-DSDL2MAIN_LIBRARY=..\SDL2\VisualC\Win32\Debug\SDL2main.lib ",
+    #                          "-DSD2_INCLUDE_DIR=..\SDL2\include",
+    #                          "-DSDL2_LIBRARY_TEMP=..\SDL2\VisualC\Win32\Debug\SDL2.lib")
         
-      end
-    end
+    #   end
+    # end
     
     FileUtils.mkdir_p "build"
     
     Dir.chdir("build") do
 
-      return runCMakeConfigure @Options + additionalCMake 
+      return runCMakeConfigure @Options #+ additionalCMake 
     end
     
   end
   
   def DoCompile
+    onError "todo: ogre compile"
     Dir.chdir("build") do
 
       return runCompiler $compileThreads
@@ -168,3 +169,62 @@ class Ogre < BaseDep
     ENV["OGRE_HOME"] = File.join @InstallPath
   end
 end
+
+
+#
+# Sub-dependency for Windows builds
+#
+class OgreDependencies < BaseDep
+  # parent needs to be Ogre object
+  def initialize(parent, args)
+    super("Ogre Dependencies", "Dependencies", args)
+
+    if not OS.windows?
+      onError "OgreDependencies are Windows-only, they aren't " +
+              "required on other platforms"
+    end
+
+    @Folder = File.join(parent.Folder, "Dependencies")
+  end
+
+  def DoClone
+    runOpen3("hg", "clone", "https://bitbucket.org/cabalistic/ogredeps", "Dependencies") == 0
+  end
+
+  def DoUpdate
+    runOpen3("hg", "pull")
+    runOpen3("hg", "update", "default") == 0
+  end
+
+  def DoSetup
+
+    return runCMakeConfigure(@Options, useCurrentDir: true)
+  end
+  
+  def DoCompile
+
+    Dir.chdir("build") do
+
+      if not runVSCompiler $compileThreads, configuration: "Debug"
+        return false
+      end
+      
+      if not runVSCompiler $compileThreads, configuration: "RelWithDebInfo"
+        return false
+      end
+    end
+    true
+  end
+  
+  def DoInstall
+
+    FileUtils.copy_entry File.join(@Folder, "build", "dependencies"),
+                         @InstallPath
+    
+    true
+  end
+
+
+end
+
+

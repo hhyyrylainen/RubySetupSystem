@@ -4,9 +4,7 @@ class SFML < BaseDep
   def initialize(args)
     super("SFML", "SFML", args)
 
-    if @InstallPath
-      @Options.push "-DCMAKE_INSTALL_PREFIX=#{@InstallPath}"
-    end
+    self.HandleStandardCMakeOptions
   end
 
   def depsList

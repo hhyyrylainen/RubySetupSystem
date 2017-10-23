@@ -78,6 +78,12 @@ class BaseDep
     end
   end
 
+  def HandleStandardCMakeOptions
+    if @InstallPath
+      @Options.push "-DCMAKE_INSTALL_PREFIX=#{@InstallPath}"
+    end
+  end
+
   def RequiresClone
     not File.exist?(@Folder)
   end
@@ -170,7 +176,7 @@ class BaseDep
   end
   
   # Windows VS cmake INSTALL target
-  def vsInstallHelper
+  def vsInstallHelper(winBothConfigurations: false)
     
     if shouldUseSudo(@InstallSudo)
       
@@ -184,15 +190,25 @@ class BaseDep
       if @InstallSudo
         warning "Dependency '#{@name}' should have been installed as administrator"
       end
-      
-      return runVSCompiler 1, project: "INSTALL.vcxproj"
+
+      if winBothConfigurations
+        if !runVSCompiler(1, project: "INSTALL.vcxproj", configuration: "Debug")
+          return false
+        end
+        if !runVSCompiler(1, project: "INSTALL.vcxproj", configuration: "RelWithDebInfo")
+          return false
+        end
+        true
+      else
+        return runVSCompiler 1, project: "INSTALL.vcxproj"
+      end
     end
   end
 
-  def cmakeUniversalInstallHelper
+  def cmakeUniversalInstallHelper(winBothConfigurations: false)
 
     if OS.windows?
-      self.vsInstallHelper
+      self.vsInstallHelper winBothConfigurations: winBothConfigurations
     else
       self.linuxMakeInstallHelper
     end

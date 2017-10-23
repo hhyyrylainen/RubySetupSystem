@@ -6,9 +6,7 @@ class CEGUI < BaseDep
   def initialize(args)
     super("CEGUI", "cegui", args)
 
-    if @InstallPath
-      @Options.push "-DCMAKE_INSTALL_PREFIX=#{@InstallPath}"
-    end
+    self.HandleStandardCMakeOptions
 
     if @PythonBindings
       @Options.push "-DCEGUI_BUILD_PYTHON_MODULES=ON"
