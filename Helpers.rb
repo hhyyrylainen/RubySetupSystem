@@ -25,8 +25,13 @@ def runCompiler(threads, winBothConfigurations: false)
   if OS.windows?
 
     if winBothConfigurations
-      runVSCompiler threads, configuration: "Debug"
-      runVSCompiler threads, configuration: "RelWithDebInfo"
+      if !runVSCompiler(threads, configuration: "Debug")
+        return false
+      end
+      if !runVSCompiler(threads, configuration: "RelWithDebInfo")
+        return false
+      end
+      true
     else
       runVSCompiler threads
     end

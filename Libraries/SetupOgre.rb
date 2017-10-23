@@ -2,6 +2,7 @@
 # Supported extra options:
 # TODO: all the render system and component flags
 #
+# noSamples: disables the v2 samples
 # Windows: these other libraries need to be installed before:
 # FreeType
 class Ogre < BaseDep
@@ -9,6 +10,12 @@ class Ogre < BaseDep
     super("Ogre", "ogre", args)
 
     self.HandleStandardCMakeOptions
+
+    if args[:noSamples]
+
+      @Options.push "-DOGRE_BUILD_SAMPLES2=OFF"
+    end
+    
   end
 
   def getDefaultOptions

@@ -233,3 +233,64 @@ class BaseDep
     @Options.reject!(&:empty?)
   end
 end
+
+# Dependency that needs to be downloaded as a zip
+# Derived classes will need to set these in the constructor:
+# @UnZippedName = "a"
+# @LocalFileName = "a.tar.gz"
+# @LocalPath = File.join(CurrentDir, @LocalFileName)
+# @DownloadURL = "http://something"
+# @DLHash = ""
+class ZipDLDep < BaseDep
+  
+  def initialize(name, foldername, args)
+    super(name, foldername, args)
+    
+  end
+
+  def RequiresClone
+    if !File.exists?(@Folder)
+      return true
+    end
+
+    if !File.exists?(@LocalPath)
+      return true
+    end
+
+    false
+  end
+
+  def DoClone
+
+    info "Downloading dependency #{@Name} as a file: #{@DownloadURL}"
+    
+    downloadURLIfTargetIsMissing(
+      @DownloadURL,
+      @LocalPath, @DLHash)
+
+    # Unzip it
+    Dir.chdir(CurrentDir) do
+      runOpen3Checked("tar", "-xvf", @LocalFileName)
+
+      if !File.exists?(@UnZippedName)
+        onError "Unzipping file didn't create expected folder '#{@UnZippedName}'"
+      end
+
+      FileUtils.rm_rf @Folder, secure: true
+      FileUtils.mv @UnZippedName, @Folder
+    end
+
+    if !File.exists?(@Folder)
+      onError "Failed to create wanted directory from downloaded zip (#{@DownloadURL})"
+    end
+    true
+  end
+
+  def DoUpdate
+
+    # RequiresClone and DoClone already handle updating the link in the constructor
+    true
+  end
+  
+  
+end
