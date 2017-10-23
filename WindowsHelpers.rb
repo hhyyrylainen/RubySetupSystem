@@ -74,13 +74,19 @@ def verifyVSProjectRuntimeLibrary(projFile, matchRegex, wantedRuntimeLib)
     
     if libType.content != wantedRuntimeLib
       puts ""
-      warning "Error in this project file: " + File.absolute_path(projFile)
-      onError "In file '#{projFile}' target '#{group['Condition']}' " +
-              "Has RuntimeLibrary of type #{libType.content} which is " +
-              "not " + wantedRuntimeLib + " Please open the visual studio solution in the " +
-              "folder and modify the Runtime Library to be #{wantedRuntimeLib}." +
+      onError "In file '" + File.absolute_path(projFile) +"' target '#{group['Condition']}' " +
+              "Has RuntimeLibrary of type '#{libType.content}' which is " +
+              "not '" + wantedRuntimeLib + "' Please open the visual studio solution in the " +
+              "folder and modify the Runtime Library to be #{wantedRuntimeLib}. " +
               "If you don't know how search online: 'visual studio set " +
-              "project runtime library'"
+              "project runtime library'. \n" +
+              "The option should be in properties (of project) > C/C++ > Code Generation > " +
+              "Runtime Library\n" +
+              "Also make sure to change both the 'Debug' and 'Release' targets to use the " +
+              "wanted type. \n" +
+              "Important: make sure that 'Debug' configuration uses a runtime library that " +
+              "has 'debug' in its name and 'release' uses one that doesn't have " +
+              "'debug' in its name." 
     end
   end
   
