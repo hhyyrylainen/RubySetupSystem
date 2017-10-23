@@ -35,7 +35,7 @@ class Leviathan < BaseDep
   end  
 
   def DoClone
-    runOpen3("git", "clone", "https://hhyyrylainen@bitbucket.org/hhyyrylainen/leviathan.git",
+    runOpen3("git", "clone", "https://bitbucket.org/hhyyrylainen/leviathan.git",
             "leviathan") == 0
   end
 
