@@ -7,9 +7,10 @@ require_relative "Helpers.rb"
 # Run visual studio environment configure .bat file
 def bringVSToPath()
   if not File.exist? "#{ENV[VSToolsEnv]}VsMSBuildCmd.bat"
+    warning "Visual Studio 2015 (community edition) may not be installed!"
     onError "VsMSBuildCMD.bat is missing check is VSToolsEnv variable correct in Setup.rb" 
   end
-  "call \"#{ENV[VSToolsEnv]}VsMSBuildCmd.bat\""
+  ["call", "#{ENV[VSToolsEnv]}VsMSBuildCmd.bat"]
 end
 
 # Run vsvarsall.bat 
@@ -111,7 +112,7 @@ def runVSCompiler(threads, project = "ALL_BUILD.vcxproj", configuration = CMakeB
 
   onError "runVSCompiler called on non-windows os" if !OS.windows?
   
-  runOpen3(bringVSToPath, "&&", "MSBuild.exe", project, "/maxcpucount:#{threads}",
+  runOpen3(*bringVSToPath, "&&", "MSBuild.exe", project, "/maxcpucount:#{threads}",
            "/p:Configuration=#{configuration}", "/p:Platform=\"#{platform}\"")
 end
 

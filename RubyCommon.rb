@@ -280,6 +280,15 @@ def requireCMD(cmdName, extraHelp = nil)
     # Command found
     return
   end
+
+  # Windows specific checks
+  if OS.windows?
+    # There are a bunch of inbuilt stuff that aren't files so ignore them here
+    case cmdName
+    when "call"
+      return
+    end
+  end
   
   onError "Required program / tool '#{cmdName}' is not installed or missing from path.\n" +
     "Please install it and make sure it is in path, then try again." + (
