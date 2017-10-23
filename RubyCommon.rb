@@ -5,6 +5,7 @@ require 'fileutils'
 require 'pathname'
 require 'open-uri'
 require "open3"
+require 'digest'
 
 # To get all possible colour values print String.colors
 #puts String.colors
@@ -230,9 +231,13 @@ end
 
 
 # Downloads an URL to a file if it doesn't exist
-def downloadURLIfTargetIsMissing(url, targetFile)
-    
+# \param hash The hash of the file. Generate by running this in irb:
+# `require 'digest'; Digest::SHA2.new(256).hexdigest(File.read("filename"))`
+def downloadURLIfTargetIsMissing(url, targetFile, hash)
+  
   return true if File.exists? targetFile
+
+  onError "no hash for file dl" if !hash
   
   info "Downloading url: '#{url}' to file: '#{targetFile}'"
   
@@ -244,6 +249,14 @@ def downloadURLIfTargetIsMissing(url, targetFile)
   end
   
   onError "failed to write download to file" if !File.exists? targetFile
+
+  # Check hash
+  dlHash = Digest::SHA2.new(256).hexdigest(File.read(targetFile))
+
+  if dlHash != hash
+    FileUtils.rm_f targetFile
+    onError "Downloaded file hash doesn't match expected hash, #{dlHash} != #{hash}"
+  end
   
   success "Done downloading"
     

@@ -124,7 +124,7 @@ class FFMPEG < BaseDep
         
         downloadURLIfTargetIsMissing(
           "http://www.tortall.net/projects/yasm/releases/yasm-1.3.0-win64.exe",
-          yasmExecutable)
+          yasmExecutable, "f61a039125f3650b03e523796b9ed7094c1c89d3a45d160eac01eba2ffe8f2f6")
         
         onError "yasm tool dl failed" if !File.exists? yasmExecutable
         
