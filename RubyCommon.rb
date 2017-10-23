@@ -48,17 +48,22 @@ def runOpen3(*cmdAndArgs, errorPrefix: "", redError: false)
 
   Open3.popen3(*cmdAndArgs) {|stdin, stdout, stderr, wait_thr|
 
-    stdout.each {|line|
-      puts line
+    # These need to be threads to work nicely on windows
+    outThread = Thread.new{
+      stdout.each {|line|
+        puts line
+      }
     }
 
-    stderr.each {|line|
-      if redError
-        puts (errorPrefix + line).red
-      else
-        puts errorPrefix + line
-      end
-    }
+    errThread = Thread.new{
+      stderr.each {|line|
+        if redError
+          puts (errorPrefix + line).red
+        else
+          puts errorPrefix + line
+        end
+      }
+    }    
 
     exit_status = wait_thr.value
     return exit_status
