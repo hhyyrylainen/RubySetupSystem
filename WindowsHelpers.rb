@@ -62,7 +62,8 @@ def verifyVSProjectRuntimeLibrary(projFile, matchRegex, wantedRuntimeLib)
       next
     end
     
-    info "Checking that project target '#{group['Condition']}' Has RuntimeLibrary of type #{wantedRuntimeLib}"
+    info "Checking that project target '#{group['Condition']}' " +
+         "Has RuntimeLibrary of type #{wantedRuntimeLib}"
     
     libType = group.at_css("ClCompile RuntimeLibrary")
     
@@ -72,11 +73,14 @@ def verifyVSProjectRuntimeLibrary(projFile, matchRegex, wantedRuntimeLib)
     end
     
     if libType.content != wantedRuntimeLib
-      
-      onError "In file '#{projFile}' target '#{group['Condition']}' "+
-              "Has RuntimeLibrary of type #{libType.content} which is not #{wantedRuntimeLib}. "+
-              "Please open the visual studio solution in the folder and modify the Runtime Library to be #{wantedRuntimeLib}." +
-              "If you don't know how google: 'visual studio set project runtime library'"
+      puts ""
+      warning "Error in this project file: " + File.absolute_path(projFile)
+      onError "In file '#{projFile}' target '#{group['Condition']}' " +
+              "Has RuntimeLibrary of type #{libType.content} which is " +
+              "not " + wantedRuntimeLib + " Please open the visual studio solution in the " +
+              "folder and modify the Runtime Library to be #{wantedRuntimeLib}." +
+              "If you don't know how search online: 'visual studio set " +
+              "project runtime library'"
     end
   end
   
