@@ -1,6 +1,7 @@
 #
 # Dependency base class
 #
+require 'zip'
 
 require_relative "Helpers.rb"
 
@@ -242,10 +243,13 @@ end
 # @DownloadURL = "http://something"
 # @DLHash = ""
 class ZipDLDep < BaseDep
+
+  attr_reader :ZipType
   
-  def initialize(name, foldername, args)
+  def initialize(name, foldername, args, zipType: :tar)
     super(name, foldername, args)
-    
+
+    @ZipType = zipType
   end
 
   def RequiresClone
@@ -270,7 +274,22 @@ class ZipDLDep < BaseDep
 
     # Unzip it
     Dir.chdir(CurrentDir) do
-      runOpen3Checked("tar", "-xvf", @LocalFileName)
+
+      case @ZipType
+      when :tar
+        runOpen3Checked("tar", "-xvf", @LocalFileName)
+
+      when :zip
+        Zip::File.open(@LocalFileName) do |zip_file|
+          zip_file.each do |entry|
+            # Extract
+            puts "Extracting #{entry.name}"
+            entry.extract()
+          end
+        end
+      else
+        onError "Invalid zip type used in ZipDLDep: #{@ZipType}"
+      end
 
       if !File.exists?(@UnZippedName)
         onError "Unzipping file didn't create expected folder '#{@UnZippedName}'"

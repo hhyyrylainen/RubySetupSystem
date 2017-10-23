@@ -93,6 +93,44 @@ def verifyVSProjectRuntimeLibrary(projFile, matchRegex, wantedRuntimeLib)
   success "All targets had correct runtime library types"
 end
 
+# Makes sure that the wanted value is specified for all targets that match the regex
+def verifyVSProjectPlatformToolset(projFile, matchRegex, wantedVersion)
+
+  # Very parameters
+  onError "Call verifyVSProjectPlatformToolset only on windows!" if not OS.windows?
+  onError "Project file: #{projFile} doesn't exist" if not File.exist? projFile
+
+
+  # Load xml with nokogiri
+  doc = File.open(projFile) { |f| Nokogiri::XML(f) }
+  
+  doc.css("Project PropertyGroup").each do |group|
+    if not matchRegex =~ group['Condition'] 
+      next
+    end
+
+    info "Checking that project target '#{group['Condition']}' " +
+         "Has PlatformToolset of type #{wantedVersion}"
+
+    platType = group.at_css("PlatformToolset")
+    
+    if not platType
+      warning "Couldn't verify platform toolset. Didn't find PlatformToolset node"
+      next
+    end
+    
+    if platType.content != wantedVersion
+      puts ""
+      onError "In file '" + File.absolute_path(projFile) +"' target '#{group['Condition']}' " +
+              "Has PlatformToolset of '#{platType.content}' which is " +
+              "not '" + wantedVersion + "' Please open the visual studio solution in the " +
+              "folder and right-click the solution and select 'Retarget solution'." 
+    end
+  end
+
+  success "All targets had correct platform toolset types"
+end
+
 def runWindowsAdmin(cmd)
   shell = WIN32OLE.new('Shell.Application')
   

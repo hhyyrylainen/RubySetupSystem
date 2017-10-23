@@ -75,7 +75,7 @@ class CustomInstaller
     }
     
     success "Done running install. Copied #{count} files/folders"
-    
+    true
   end
 
 end

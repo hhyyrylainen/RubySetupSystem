@@ -240,12 +240,18 @@ def downloadURLIfTargetIsMissing(url, targetFile, hash)
   onError "no hash for file dl" if !hash
   
   info "Downloading url: '#{url}' to file: '#{targetFile}'"
-  
-  File.open(targetFile, "wb") do |output|
-    # open method from open-uri
-    open(url, "rb") do |webDataStream|
-      output.write(webDataStream.read)
+
+  begin 
+    File.open(targetFile, "wb") do |output|
+      # open method from open-uri
+      open(url, "rb") do |webDataStream|
+        output.write(webDataStream.read)
+      end
     end
+  rescue
+    error "Download failed"
+    FileUtils.rm_f targetFile
+    raise
   end
   
   onError "failed to write download to file" if !File.exists? targetFile
