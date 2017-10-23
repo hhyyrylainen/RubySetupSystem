@@ -52,6 +52,7 @@ class CEGUI < BaseDep
       "-DCEGUI_BUILD_RENDERER_OGRE=ON",
       "-DCEGUI_BUILD_RENDERER_OPENGL=OFF",
       "-DCEGUI_BUILD_RENDERER_OPENGL3=OFF",
+      "-DCEGUI_BUILD_RENDERER_DIRECT3D11=OFF",
     ]
   end
   
@@ -109,7 +110,6 @@ class CEGUI < BaseDep
       end
       
       info "CEGUI subdependency successfully built"
-      onError "todo 117"
     end
 
     FileUtils.mkdir_p "build"
@@ -158,7 +158,8 @@ class CEGUIDependencies < BaseDep
 
   def getDefaultOptions
     [
-      # "-DCEGUI_BUILD_LIBPNG=ON",
+      # Use UTF-8 strings with CEGUI (string class 1)
+      "-DCEGUI_BUILD_FREEIMAGE=ON",
     ]
   end
 
