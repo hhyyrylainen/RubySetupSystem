@@ -111,13 +111,15 @@ end
 
 
 # Run msbuild with specific target and configuration
-def runVSCompiler(threads, project = "ALL_BUILD.vcxproj", configuration = CMakeBuildType,
-                  platform = "x64")
+def runVSCompiler(threads, project: "ALL_BUILD.vcxproj", configuration: CMakeBuildType,
+                  platform: "x64")
+
+  # "Any CPU" might need to be quoted if used for platform
 
   onError "runVSCompiler called on non-windows os" if !OS.windows?
   
   runOpen3(*bringVSToPath, "&&", "MSBuild.exe", project, "/maxcpucount:#{threads}",
-           "/p:Configuration=#{configuration}", "/p:Platform=\"#{platform}\"")
+           "/p:Configuration=#{configuration}", "/p:Platform=#{platform}") == 0
 end
 
 

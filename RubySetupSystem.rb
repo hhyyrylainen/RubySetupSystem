@@ -13,8 +13,8 @@ require 'open3'
 require 'pathname'
 require 'zip'
 
-## Used by: verifyVSProjectRuntimeLibrary
-#require 'nokogiri' if OS.windows?
+# Used by: verifyVSProjectRuntimeLibrary
+require 'nokogiri' if OS.windows?
 ## Required for installs on windows
 ##require 'win32ole' if OS.windows?
 

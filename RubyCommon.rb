@@ -49,6 +49,8 @@ end
 # Runs Open3 for the commad, returns exit status
 def runOpen3(*cmdAndArgs, errorPrefix: "", redError: false)
 
+  # puts "Open3 debug:", cmdAndArgs
+
   if cmdAndArgs.length < 1
     onError "Empty runOpen3 command"
   end
