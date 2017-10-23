@@ -22,13 +22,25 @@ end
 
 # Coloured output
 def info(message)
-  puts message.to_s.colorize(:light_blue)
+  if OS.windows?
+    puts message.to_s.colorize(:light_white)
+  else
+    puts message.to_s.colorize(:light_blue)
+  end
 end
 def success(message)
-  puts message.to_s.colorize(:light_green)
+  if OS.windows?
+    puts message.to_s.colorize(:green)
+  else
+    puts message.to_s.colorize(:light_green)
+  end
 end
 def warning(message)
-  puts message.to_s.colorize(:light_yellow)
+  if OS.windows?
+    puts message.to_s.colorize(:red)
+  else
+    puts message.to_s.colorize(:light_yellow)
+  end
 end
 def error(message)
   puts message.to_s.colorize(:red)
