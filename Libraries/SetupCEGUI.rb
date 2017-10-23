@@ -103,16 +103,11 @@ class CEGUI < BaseDep
     # Dependency build and setup so it can be found (on windows)
     if OS.windows?
       Dir.chdir(@CEGUIWinDeps.Folder) do
-        if !@CEGUIWinDeps.Setup
-          onError "CEGUI sub dependency setup failed"
-        end
-        if !@CEGUIWinDeps.Compile
-          onError "CEGUI sub dependency setup failed"
-        end
-        if !@CEGUIWinDeps.Install
-          onError "CEGUI sub dependency setup failed"
-        end
+        @CEGUIWinDeps.Setup
+        @CEGUIWinDeps.Compile
+        @CEGUIWinDeps.Install
       end
+      
       info "CEGUI subdependency successfully built"
       onError "todo 117"
     end
@@ -158,6 +153,13 @@ class CEGUIDependencies < BaseDep
     end
 
     @Folder = File.join(parent.Folder, "cegui-dependencies")
+
+  end
+
+  def getDefaultOptions
+    [
+      # "-DCEGUI_BUILD_LIBPNG=ON",
+    ]
   end
 
   def DoClone
@@ -182,11 +184,16 @@ class CEGUIDependencies < BaseDep
 
     Dir.chdir("build") do
 
+      # RelWithDebInfo configuration fails because libpng.lib isn't
+      # generated to the "lib/dynamic" folder in that case for some
+      # reason. There's a bug report here:
+      # https://bitbucket.org/cegui/cegui-dependencies/issues/7/building-silly-fails
+      
       if not runVSCompiler $compileThreads, configuration: "Debug"
         return false
       end
       
-      if not runVSCompiler $compileThreads, configuration: "RelWithDebInfo"
+      if not runVSCompiler $compileThreads, configuration: "Release"
         return false
       end
     end

@@ -69,45 +69,17 @@ class Ogre < BaseDep
     installDepsList depsList
     
   end
-  
 
   def RequiresClone
-    # if OS.windows?
-    #   return (not File.exist?(@Folder) or not File.exist?(File.join(@Folder, "Dependencies")))
-    # else
-      return (not File.exist? @Folder)
-    # end
+    return (not File.exist? @Folder)
   end
   
   def DoClone
-
-    if runOpen3("hg", "clone", "https://bitbucket.org/sinbad/ogre") != 0
-      return false
-    end
-    
-    # if OS.windows?
-            
-    #   Dir.chdir(@Folder) do
-
-    #     return runOpen3("hg", "clone", "https://bitbucket.org/cabalistic/ogredeps",
-    #                     "Dependencies") == 0
-    #   end
-    # end
-    true
+    runOpen3("hg", "clone", "https://bitbucket.org/sinbad/ogre") == 0
   end
 
   def DoUpdate
     
-    # if OS.windows?
-    #   Dir.chdir("Dependencies") do
-    #     runOpen3 "hg", "pull"
-
-    #     if runOpen3("hg", "update") != 0
-    #       return false
-    #     end
-    #   end
-    # end
-
     runOpen3 "hg", "pull"
     runOpen3("hg", "update", @Version) == 0
   end
@@ -152,7 +124,6 @@ class Ogre < BaseDep
   end
   
   def DoCompile
-    onError "todo: ogre compile"
     Dir.chdir("build") do
 
       return runCompiler $compileThreads
@@ -176,62 +147,4 @@ class Ogre < BaseDep
     ENV["OGRE_HOME"] = File.join @InstallPath
   end
 end
-
-
-#
-# Sub-dependency for Windows builds
-#
-class OgreDependencies < BaseDep
-  # parent needs to be Ogre object
-  def initialize(parent, args)
-    super("Ogre Dependencies", "Dependencies", args)
-
-    if not OS.windows?
-      onError "OgreDependencies are Windows-only, they aren't " +
-              "required on other platforms"
-    end
-
-    @Folder = File.join(parent.Folder, "Dependencies")
-  end
-
-  def DoClone
-    runOpen3("hg", "clone", "https://bitbucket.org/cabalistic/ogredeps", "Dependencies") == 0
-  end
-
-  def DoUpdate
-    runOpen3("hg", "pull")
-    runOpen3("hg", "update", "default") == 0
-  end
-
-  def DoSetup
-
-    return runCMakeConfigure(@Options, useCurrentDir: true)
-  end
-  
-  def DoCompile
-
-    Dir.chdir("build") do
-
-      if not runVSCompiler $compileThreads, configuration: "Debug"
-        return false
-      end
-      
-      if not runVSCompiler $compileThreads, configuration: "RelWithDebInfo"
-        return false
-      end
-    end
-    true
-  end
-  
-  def DoInstall
-
-    FileUtils.copy_entry File.join(@Folder, "build", "dependencies"),
-                         @InstallPath
-    
-    true
-  end
-
-
-end
-
 
