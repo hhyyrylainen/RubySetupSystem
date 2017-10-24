@@ -4,7 +4,7 @@
 #
 # noSamples: disables the v2 samples
 # Windows: these other libraries need to be installed before:
-# FreeType
+# FreeType ZLib FreeImage
 class Ogre < BaseDep
   def initialize(args)
     super("Ogre", "ogre", args)
