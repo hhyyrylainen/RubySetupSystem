@@ -60,6 +60,8 @@ class CEGUI < BaseDep
         # (we need to build at least one so let's try silly
         # "-DCEGUI_BUILD_IMAGECODEC_FREEIMAGE=OFF",
         "-DCEGUI_BUILD_IMAGECODEC_SILLY=ON"
+      else
+        ""
       end,
     ]
   end
