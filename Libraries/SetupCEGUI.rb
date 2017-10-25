@@ -45,7 +45,7 @@ class CEGUI < BaseDep
   end  
 
   def getDefaultOptions
-    [
+    opts = [
       # Use UTF-8 strings with CEGUI (string class 1)
       "-DCEGUI_STRING_CLASS=1",
       "-DCEGUI_BUILD_APPLICATION_TEMPLATES=OFF",
@@ -55,15 +55,16 @@ class CEGUI < BaseDep
       "-DCEGUI_BUILD_RENDERER_OPENGL3=OFF",
       "-DCEGUI_BUILD_RENDERER_DIRECT3D11=OFF",
       "-DCEGUI_BUILD_RENDERER_DIRECT3D11=OFF",
-      if OS.windows?
-        # Use Ogre image codec
-        # (we need to build at least one so let's try silly
-        # "-DCEGUI_BUILD_IMAGECODEC_FREEIMAGE=OFF",
-        "-DCEGUI_BUILD_IMAGECODEC_SILLY=ON"
-      else
-        ""
-      end,
     ]
+
+    if OS.windows?
+      # Use Ogre image codec
+      # (we need to build at least one so let's try silly
+      # "-DCEGUI_BUILD_IMAGECODEC_FREEIMAGE=OFF",
+      opts.push "-DCEGUI_BUILD_IMAGECODEC_SILLY=ON"
+    end
+
+    opts
   end
   
   def RequiresClone
