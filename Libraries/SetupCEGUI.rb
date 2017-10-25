@@ -164,11 +164,6 @@ class CEGUIDependencies < BaseDep
 
   end
 
-  def getDefaultOptions
-    [
-    ]
-  end
-
   def DoClone
     runOpen3("hg", "clone", "https://bitbucket.org/cegui/cegui-dependencies") == 0
   end
