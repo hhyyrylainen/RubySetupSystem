@@ -35,14 +35,14 @@ class ZLib < ZipDLDep
 
     Dir.chdir("build") do
       
-      return runCompiler $compileThreads, winBothConfigurations: true
+      return runCompiler $compileThreads, winBothConfigurations: false
     end
   end
   
   def DoInstall
 
     Dir.chdir("build") do
-      return self.cmakeUniversalInstallHelper winBothConfigurations: true
+      return self.cmakeUniversalInstallHelper winBothConfigurations: false
     end
   end
 end

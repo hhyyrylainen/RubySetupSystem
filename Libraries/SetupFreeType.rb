@@ -14,6 +14,13 @@ class FreeType < ZipDLDep
     
   end
 
+  def getDefaultOptions
+    [
+      # Shared prints this error with msvc: Building shared libraries on Windows needs MinGW
+      # "-DBUILD_SHARED_LIBS=ON",
+    ]
+  end
+
   def DoSetup
     FileUtils.mkdir_p "build"
 
@@ -26,14 +33,14 @@ class FreeType < ZipDLDep
 
     Dir.chdir("build") do
       
-      return runCompiler $compileThreads, winBothConfigurations: true
+      return runCompiler $compileThreads, winBothConfigurations: false
     end
   end
   
   def DoInstall
 
     Dir.chdir("build") do
-      return self.cmakeUniversalInstallHelper winBothConfigurations: true
+      return self.cmakeUniversalInstallHelper winBothConfigurations: false
     end
   end
 end

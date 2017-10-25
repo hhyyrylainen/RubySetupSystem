@@ -2,6 +2,7 @@
 # through extra options
 # Supported extra options:
 # TODO: component configuration
+# On windows requires the FreeType dependency to be built before
 class CEGUI < BaseDep
   def initialize(args)
     super("CEGUI", "cegui", args)
@@ -53,6 +54,13 @@ class CEGUI < BaseDep
       "-DCEGUI_BUILD_RENDERER_OPENGL=OFF",
       "-DCEGUI_BUILD_RENDERER_OPENGL3=OFF",
       "-DCEGUI_BUILD_RENDERER_DIRECT3D11=OFF",
+      "-DCEGUI_BUILD_RENDERER_DIRECT3D11=OFF",
+      if OS.windows?
+        # Use Ogre image codec
+        # (we need to build at least one so let's try silly
+        # "-DCEGUI_BUILD_IMAGECODEC_FREEIMAGE=OFF",
+        "-DCEGUI_BUILD_IMAGECODEC_SILLY=ON"
+      end,
     ]
   end
   
@@ -158,8 +166,6 @@ class CEGUIDependencies < BaseDep
 
   def getDefaultOptions
     [
-      # Use UTF-8 strings with CEGUI (string class 1)
-      "-DCEGUI_BUILD_FREEIMAGE=ON",
     ]
   end
 
