@@ -329,6 +329,8 @@ def requireCMD(cmdName, extraHelp = nil)
     case cmdName
     when "call"
       return
+    when "start"
+      return
     end
   end
   

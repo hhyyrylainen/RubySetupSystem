@@ -104,6 +104,7 @@ def verifyVSProjectRuntimeLibrary(projFile, solutionFile, matchRegex, wantedRunt
       while !verifyVSProjectRuntimeLibrary(projFile, solutionFile, matchRegex,
                                            wantedRuntimeLib, justReturnValue: true)
 
+        puts ""
         error "The runtime library is still incorrect. Please fix the error to continue."
         waitForKeyPress
 
@@ -167,6 +168,7 @@ def verifyVSProjectPlatformToolset(projFile, solutionFile, matchRegex, wantedVer
       while !verifyVSProjectPlatformToolset(projFile, solutionFile, matchRegex, wantedVersion,
                                             justReturnValue: true)
 
+        puts ""
         error "The platform toolset is still incorrect. Please fix the error to continue."
         waitForKeyPress
 
@@ -231,6 +233,7 @@ def openVSSolutionIfAutoOpen(solutionFile)
     return
   end
 
+  puts "Automatically opening Visual Studio solution: " + solutionFile
   runOpen3 "start", solutionFile
 
   waitForKeyPress
