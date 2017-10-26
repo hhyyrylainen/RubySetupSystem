@@ -49,7 +49,8 @@ class AngelScript < BaseDep
     if OS.windows?
       
       info "Verifying that angelscript solution has Runtime Library = MultiThreadedDLL"
-      verifyVSProjectRuntimeLibrary "sdk/angelscript/projects/msvc2015/angelscript.vcxproj", 
+      verifyVSProjectRuntimeLibrary "sdk/angelscript/projects/msvc2015/angelscript.vcxproj",
+                                    "sdk/angelscript/projects/msvc2015/angelscript.sln", 
                                     %r{Release\|x64}, "MultiThreadedDLL"  
       
       success "AngelScript solution is correctly configured. Compiling"

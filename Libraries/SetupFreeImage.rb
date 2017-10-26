@@ -21,10 +21,7 @@ class FreeImage < BaseDep
         return false
       end
 
-      # Not needed with our own version of the library
-      # Error about old toolset
-      # verifyVSProjectPlatformToolset(File.join(@Folder, "FreeImage.2013.vcxproj"),
-      #                               /.*/, "v140")
+      # Not needed with our own version of the library to check for toolset
       return true
     else
       File.exists?(File.join(@Folder, "Makefile"))

@@ -6,6 +6,7 @@ require 'pathname'
 require 'open-uri'
 require "open3"
 require 'digest'
+require 'io/console'
 
 # To get all possible colour values print String.colors
 #puts String.colors
@@ -45,6 +46,14 @@ def warning(message)
 end
 def error(message)
   puts message.to_s.colorize(:red)
+end
+
+# Waits for a keypress
+def waitForKeyPress
+  print "Press any key to continue"
+  STDIN.getch
+  # Extra space to overwrite in case next output is short
+  print "                         \r" 
 end
 
 # Runs Open3 for the commad, returns exit status

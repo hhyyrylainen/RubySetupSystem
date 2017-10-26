@@ -59,7 +59,9 @@ class Leviathan < BaseDep
     # This step takes care of everything
 
     # TODO: pass script options like no sudo etc. to child projects using RubySetupSystem
-    runOpen3("ruby", "Setup.rb") == 0
+    # Leviathan needs sometimes to get input from the user so we need to run with system here
+    system("ruby Setup.rb")
+    $?.exitstatus == 0
   end
   
   def DoInstall
