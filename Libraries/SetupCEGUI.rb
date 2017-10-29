@@ -60,7 +60,7 @@ class CEGUI < BaseDep
     if OS.windows?
       # Use Ogre image codec
       # (we need to build at least one so let's try silly
-      # "-DCEGUI_BUILD_IMAGECODEC_FREEIMAGE=OFF",
+      opts.push "-DCEGUI_BUILD_IMAGECODEC_FREEIMAGE=OFF"
       opts.push "-DCEGUI_BUILD_IMAGECODEC_SILLY=ON"
     end
 
