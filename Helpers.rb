@@ -200,7 +200,7 @@ def verifySVNUrl(wantedurl)
 
     info "SVN url is not the target url with username, #{currenturl} != #{WantedURL}"
 
-    systemChecked "svn relocate #{WantedURL}"
+    runOpen3Checked "svn", "relocate", WantedURL
 
     success "svn URL updated"
     
