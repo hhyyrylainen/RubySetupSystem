@@ -167,6 +167,12 @@ class CEGUIDependencies < BaseDep
 
   end
 
+  def getDefaultOptions
+    [
+      "-DCEGUI_BUILD_FREEIMAGE=ON"
+    ]
+  end
+
   def DoClone
     runOpen3("hg", "clone", "https://bitbucket.org/cegui/cegui-dependencies") == 0
   end
