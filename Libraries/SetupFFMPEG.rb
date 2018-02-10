@@ -237,8 +237,7 @@ class FFMPEG < BaseDep
       }
     else
 
-      runCompiler $compileThreads
-      return $?.exitstatus == 0
+      return TC.runCompiler
     end
   end
 

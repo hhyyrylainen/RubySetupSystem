@@ -77,7 +77,7 @@ class AngelScript < StandardCMakeDep
     # The library
     if OS.linux?
 
-      installer.addLibrary File.join(@Folder, "build/Release", "libangelscript.a")
+      installer.addLibrary File.join(@Folder, "build/", "libangelscript.a")
       
     elsif OS.windows?
       # todo bitness
