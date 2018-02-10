@@ -4,42 +4,27 @@ require_relative "RubyCommon.rb"
 require_relative "WindowsHelpers.rb"
 
 # Runs cmake with options and returns true on success
-def runCMakeConfigure(additionalArgs)
+def runCMakeConfigure(additionalArgs, directory = "..")
 
   onError "additionalArgs must be an array" if not additionalArgs.is_a? Array
-  
-  if OS.windows?
 
-    return runOpen3("cmake", "..", "-G", VSVersion, *additionalArgs) == 0
-  else
-    
-    return runOpen3("cmake", "..", "-DCMAKE_BUILD_TYPE=#{CMakeBuildType}",
-                    *additionalArgs) == 0
+  command = ["cmake", directory]
+
+  if TC.supportsPresetBuildType
+    command.push "-DCMAKE_BUILD_TYPE=#{CMakeBuildType}"
   end
-end
 
-# Running make or msbuild
-# \param winBothConfigurations If true Debug and RelWithdebInfo both are built on windows
-def runCompiler(threads, winBothConfigurations: false)
-  
-  if OS.windows?
-
-    if winBothConfigurations
-      if !runVSCompiler(threads, configuration: "Debug")
-        return false
-      end
-      if !runVSCompiler(threads, configuration: "RelWithDebInfo")
-        return false
-      end
-      true
-    else
-      runVSCompiler threads
-    end
-  else
-    
-    runOpen3StuckPrevention("make", "-j", threads.to_s) == 0
-    
+  if TC.cmakeGenerator
+    command.push "-G", TC.cmakeGenerator
   end
+
+  if TC.cmakeToolSet
+    command.push "-T", TC.cmakeToolSet
+  end
+
+  command.push *additionalArgs
+
+  return runOpen3StuckPrevention(*command) == 0
 end
 
 # Installs a list of dependencies

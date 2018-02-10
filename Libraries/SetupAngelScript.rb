@@ -1,6 +1,6 @@
 # Supported extra options:
 #
-class AngelScript < BaseDep
+class AngelScript < StandardCMakeDep
   def initialize(args)
     super("AngelScript", "angelscript", args)
     @WantedURL = "http://svn.code.sf.net/p/angelscript/code/tags/#{@Version}"
@@ -8,6 +8,8 @@ class AngelScript < BaseDep
     if @WantedURL[-1, 1] == '/'
       onError "Invalid configuraion in Setup.rb AngelScript tag has an ending '/'. Remove it!"
     end
+
+    @CMakeListFolder = "../sdk/angelscript/projects/cmake/"
   end
 
   def DoClone
@@ -34,37 +36,29 @@ class AngelScript < BaseDep
     
     runOpen3("svn", "update") == 0
   end
-
-  def DoSetup
-    if OS.windows?
-      # TODO: msvc version
-      return File.exist? "sdk/angelscript/projects/msvc2015/angelscript.sln"
-    else
-      return true
-    end
-  end
   
   def DoCompile
 
-    if OS.windows?
+    if TC.is_a? WindowsMSVC
       
-      info "Verifying that angelscript solution has Runtime Library = MultiThreadedDLL"
-      verifyVSProjectRuntimeLibrary "sdk/angelscript/projects/msvc2015/angelscript.vcxproj",
-                                    "sdk/angelscript/projects/msvc2015/angelscript.sln", 
-                                    %r{Release\|x64}, "MultiThreadedDLL"  
+      # info "Verifying that angelscript solution has Runtime Library = MultiThreadedDLL"
+      # verifyVSProjectRuntimeLibrary "sdk/angelscript/projects/msvc2015/angelscript.vcxproj",
+      #                               "sdk/angelscript/projects/msvc2015/angelscript.sln", 
+      #                               %r{Release\|x64}, "MultiThreadedDLL"  
       
-      success "AngelScript solution is correctly configured. Compiling"
+      # success "AngelScript solution is correctly configured. Compiling"
 
       return runVSCompiler($compileThreads,
-                           project: "sdk/angelscript/projects/msvc2015/angelscript.sln",
+                           project: "build/angelscript.sln",
                            configuration: "Release",
-                           platform: "x64")
+                           platform: "x64",
+                           runtimelibrary: "MD")
       
     else
       
-      Dir.chdir("sdk/angelscript/projects/gnuc") do
+      Dir.chdir("build") do
 
-        return runCompiler $compileThreads
+        return TC.runCompiler
       end
     end
   end
@@ -83,11 +77,11 @@ class AngelScript < BaseDep
     # The library
     if OS.linux?
 
-      installer.addLibrary File.join(@Folder, "sdk/angelscript/lib", "libangelscript.a")
+      installer.addLibrary File.join(@Folder, "build/Release", "libangelscript.a")
       
     elsif OS.windows?
       # todo bitness
-      installer.addLibrary File.join(@Folder, "sdk/angelscript/lib", "angelscript64.lib")
+      installer.addLibrary File.join(@Folder, "build/Release", "angelscript.lib")
     else
       onError "Unkown OS"
     end

@@ -20,6 +20,11 @@ class CEGUI < BaseDep
       @CEGUIWinDeps = CEGUIDependencies.new(self, {installPath:
                                                      File.join(@Folder, "dependencies")})
     end
+
+    if !@RepoURL
+      @RepoURL = "https://bitbucket.org/cegui/cegui"
+    end
+    
   end
 
   def depsList
@@ -77,7 +82,7 @@ class CEGUI < BaseDep
 
   def DoClone
     if !File.exist?(@Folder)
-      if runOpen3("hg", "clone", "https://bitbucket.org/cegui/cegui") != 0
+      if runOpen3("hg", "clone", @RepoURL) != 0
         return false
       end
     end
@@ -127,13 +132,13 @@ class CEGUI < BaseDep
 
     Dir.chdir("build") do
       
-      return runCMakeConfigure(@Options)
+      return runCMakeConfigure @Options
     end
   end
   
   def DoCompile
     Dir.chdir("build") do
-      return runCompiler $compileThreads 
+      return TC.runCompiler
     end
   end
   

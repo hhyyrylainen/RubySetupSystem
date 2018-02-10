@@ -1,6 +1,6 @@
 # Supported extra options:
 #
-class FreeType < ZipDLDep
+class FreeType < ZipAndCmakeDLDep
   def initialize(args)
     super("FreeType", "freetype", args)
 
@@ -19,28 +19,5 @@ class FreeType < ZipDLDep
       # Shared prints this error with msvc: Building shared libraries on Windows needs MinGW
       # "-DBUILD_SHARED_LIBS=ON",
     ]
-  end
-
-  def DoSetup
-    FileUtils.mkdir_p "build"
-
-    Dir.chdir("build") do
-      return runCMakeConfigure @Options
-    end
-  end
-  
-  def DoCompile
-
-    Dir.chdir("build") do
-      
-      return runCompiler $compileThreads, winBothConfigurations: false
-    end
-  end
-  
-  def DoInstall
-
-    Dir.chdir("build") do
-      return self.cmakeUniversalInstallHelper winBothConfigurations: false
-    end
   end
 end

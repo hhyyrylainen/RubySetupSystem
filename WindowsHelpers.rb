@@ -4,53 +4,11 @@
 require_relative "RubyCommon.rb"
 require_relative "Helpers.rb"
 
-# Run visual studio environment configure .bat file
-def bringVSToPath()
-  if not File.exist? "#{ENV[VSToolsEnv]}VsMSBuildCmd.bat"
-    warning "Visual Studio 2015 (community edition) may not be installed!"
-    onError "VsMSBuildCMD.bat is missing check is VSToolsEnv variable correct in Setup.rb" 
-  end
-  ["call", "#{ENV[VSToolsEnv]}VsMSBuildCmd.bat"]
-end
-
-# Run vsvarsall.bat 
-def runVSVarsAll(type = "amd64")
-
-  folder = File.expand_path(File.join ENV[VSToolsEnv], "../../", "VC")
-
-  if not File.exist? "#{folder}/vcvarsall.bat"
-    onError "'#{folder}/vcvarsall.bat' is missing check is VSToolsEnv variable correct in Setup.rb" 
-  end
-  ["call", %{#{folder}/vcvarsall.bat}, type]
-end
-
-# Gets paths to the visual studio link.exe and cl.exe for use in prepending to paths to
-# make sure mingw or cygwin link.exe isn't used
-# param amd64 if not empty selects 64 bit compiler
-def getVSLinkerFolder(amd64 = "amd64")
-
-  onError "visual studio environment variable '#{VSToolsEnv}' is missing" if !ENV[VSToolsEnv]
-  
-  folder = File.expand_path(File.join ENV[VSToolsEnv], "../../", "VC", if amd64 then "bin/#{amd64}" else "bin" end)
-  
-  onError "vs linker bin folder doesn't exist" if !File.exists? folder
-  
-  folder
-end
-
-def getVSBaseFolder()
-  onError "visual studio environment variable '#{VSToolsEnv}' is missing" if !ENV[VSToolsEnv]
-  
-  folder = File.expand_path(File.join ENV[VSToolsEnv], "../../")
-  
-  onError "vs folder doesn't exist" if !File.exists? folder
-  
-  folder
-end
-
 # Makes sure that the wanted value is specified for all targets that match the regex
 def verifyVSProjectRuntimeLibrary(projFile, solutionFile, matchRegex, wantedRuntimeLib,
                                   justReturnValue: false)
+  require 'nokogiri'
+  
   # Very parameters
   onError "Call verifyVSProjectRuntimeLibrary only on windows!" if not OS.windows?
   onError "Project file: #{projFile} doesn't exist" if not File.exist? projFile
@@ -122,6 +80,8 @@ end
 def verifyVSProjectPlatformToolset(projFile, solutionFile, matchRegex, wantedVersion,
                                    justReturnValue: false)
 
+  require 'nokogiri'
+  
   # Very parameters
   onError "Call verifyVSProjectPlatformToolset only on windows!" if not OS.windows?
   onError "Project file: #{projFile} doesn't exist" if not File.exist? projFile
@@ -183,6 +143,9 @@ def verifyVSProjectPlatformToolset(projFile, solutionFile, matchRegex, wantedVer
 end
 
 def runWindowsAdmin(cmd)
+
+  require 'win32ole'
+  
   shell = WIN32OLE.new('Shell.Application')
   
   shell.ShellExecute("ruby.exe", 
@@ -206,12 +169,19 @@ end
 
 
 # Run msbuild with specific target and configuration
+# Runtimelibrary sets the used library: possible values
+# https://docs.microsoft.com/fi-fi/cpp/build/reference/md-mt-ld-use-run-time-library
 def runVSCompiler(threads, project: "ALL_BUILD.vcxproj", configuration: CMakeBuildType,
-                  platform: "x64", solution: nil)
+                  platform: "x64", solution: nil, runtimelibrary: nil)
 
   # "Any CPU" might need to be quoted if used for platform
+  onError "runVSCompiler called with non msvc toolchain (#{TC})" if !TC.is_a?(WindowsMSVC)
 
-  onError "runVSCompiler called on non-windows os" if !OS.windows?
+  if !File.exists?(project)
+    onError "runVsCompiler: target project file doesn't exist: #{project}"
+  end
+
+  project = File.absolute_path project
 
   targetSelect = []
   
@@ -222,8 +192,18 @@ def runVSCompiler(threads, project: "ALL_BUILD.vcxproj", configuration: CMakeBui
     targetSelect = [project]
   end
 
-  runOpen3(*bringVSToPath, "&&", "MSBuild.exe", *targetSelect, "/maxcpucount:#{threads}",
-           "/p:Configuration=#{configuration}", "/p:Platform=#{platform}") == 0      
+  # TC should have brought vs to path
+  args = [*TC.VS.bringVSToPath, "&&", "MSBuild.exe", *targetSelect, "/maxcpucount:#{threads}",
+          "/p:CL_MPCount=#{threads}",
+          "/p:Configuration=#{configuration}", "/p:Platform=#{platform}"]
+
+  if runtimelibrary 
+    args.push "/p:RuntimeLibrary=#{runtimelibrary}"
+  end
+
+  info "Running MSBuild.exe with max cpu count = #{threads} on project #{targetSelect}"
+  
+  runOpen3(*args) == 0      
 end
 
 
@@ -233,7 +213,8 @@ def openVSSolutionIfAutoOpen(solutionFile)
     return
   end
 
-  puts "Automatically opening Visual Studio solution: " + solutionFile
+  puts "Automatically opening Visual Studio solution (NOTE: verify right version of " +
+       "vs opened): " + solutionFile
   runOpen3 "start", solutionFile
 
   waitForKeyPress

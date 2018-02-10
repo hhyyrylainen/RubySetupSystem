@@ -1,41 +1,22 @@
 # Supported extra options:
 #
-class SDL < BaseDep
+class SDL < StandardCMakeDep
   def initialize(args)
     super("SDL2", "SDL", args)
 
     self.HandleStandardCMakeOptions
+
+    if !@RepoURL
+      @RepoURL = "http://hg.libsdl.org/SDL"
+    end
   end
 
   def DoClone
-    runOpen3("hg", "clone", "http://hg.libsdl.org/SDL") == 0
+    runOpen3("hg", "clone", @RepoURL) == 0
   end
 
   def DoUpdate
     runOpen3("hg", "pull")
     runOpen3("hg", "update", @Version) == 0
-  end  
-
-  def DoSetup
-    FileUtils.mkdir_p "build"
-
-    Dir.chdir("build") do
-      return runCMakeConfigure @Options
-    end
-  end
-  
-  def DoCompile
-
-    Dir.chdir("build") do
-      
-      return runCompiler $compileThreads
-      
-    end
-  end
-  
-  def DoInstall
-    Dir.chdir("build") do
-      return self.cmakeUniversalInstallHelper
-    end
   end
 end

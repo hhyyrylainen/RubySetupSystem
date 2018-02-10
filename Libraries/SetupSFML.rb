@@ -1,10 +1,14 @@
 # Supported extra options:
 #
-class SFML < BaseDep
+class SFML < StandardCMakeDep
   def initialize(args)
     super("SFML", "SFML", args)
 
     self.HandleStandardCMakeOptions
+
+    if !@RepoURL
+      @RepoURL = "https://github.com/SFML/SFML.git"
+    end
   end
 
   def depsList
@@ -35,33 +39,10 @@ class SFML < BaseDep
   end
 
   def DoClone
-    runOpen3("git", "clone", "https://github.com/SFML/SFML.git") == 0
+    runOpen3("git", "clone", @RepoURL) == 0
   end
 
   def DoUpdate
     self.standardGitUpdate
   end  
-
-  def DoSetup
-    FileUtils.mkdir_p "build"
-
-    Dir.chdir("build") do
-      return runCMakeConfigure @Options
-    end
-  end
-  
-  def DoCompile
-
-    Dir.chdir("build") do
-            
-      return runCompiler $compileThreads
-      
-    end
-  end
-  
-  def DoInstall
-    Dir.chdir("build") do
-      return self.cmakeUniversalInstallHelper
-    end
-  end
 end

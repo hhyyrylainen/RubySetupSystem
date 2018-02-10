@@ -77,6 +77,11 @@ class BaseDep
       puts "#{@Name}: precreating install folder: #{@InstallPath}"
       FileUtils.mkdir_p @InstallPath
     end
+
+    # URL overwriting
+    if args[:fork]
+      @RepoURL = args[:fork]
+    end
   end
 
   def HandleStandardCMakeOptions
@@ -235,6 +240,40 @@ class BaseDep
   end
 end
 
+# Dependency for making cmake based dependencies shorter
+class StandardCMakeDep < BaseDep
+
+  def initialize(name, foldername, args)
+    super(name, foldername, args)
+
+    # Sensible default, overwrite if not correct
+    @CMakeListFolder = "../"
+  end
+
+  def DoSetup
+    onError "StandardCMakeDep derived class has no @CMakeListFolder" if !@CMakeListFolder
+    
+    FileUtils.mkdir_p "build"
+
+    Dir.chdir("build") do
+      return runCMakeConfigure @Options, @CMakeListFolder
+    end
+  end
+
+  def DoCompile
+    Dir.chdir("build") do
+      return TC.runCompiler
+    end
+  end
+  
+  def DoInstall
+    Dir.chdir("build") do
+      return self.cmakeUniversalInstallHelper
+    end
+  end
+end
+  
+
 # Dependency that needs to be downloaded as a zip
 # Derived classes will need to set these in the constructor:
 # @UnZippedName = "a"
@@ -313,3 +352,37 @@ class ZipDLDep < BaseDep
   
   
 end
+
+# Combination of zip and cmake
+class ZipAndCmakeDLDep < ZipDLDep
+
+  def initialize(name, foldername, args, zipType: :tar)
+    super(name, foldername, args)
+
+    @CMakeListFolder = "../"
+  end
+
+  def DoSetup
+    onError "StandardCMakeDep derived class has no @CMakeListFolder" if !@CMakeListFolder
+    
+    FileUtils.mkdir_p "build"
+
+    Dir.chdir("build") do
+      return runCMakeConfigure @Options, @CMakeListFolder
+    end
+  end
+
+  def DoCompile
+    Dir.chdir("build") do
+      return TC.runCompiler
+    end
+  end
+  
+  def DoInstall
+    Dir.chdir("build") do
+      return self.cmakeUniversalInstallHelper
+    end
+  end
+  
+end
+

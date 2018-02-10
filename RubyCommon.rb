@@ -201,7 +201,18 @@ end
 #
 #   which('ruby') #=> /usr/bin/ruby
 # from: http://stackoverflow.com/questions/2108727/which-in-ruby-checking-if-program-exists-in-path-from-ruby
+# Modified to work better for windows
 def which(cmd)
+  # Could actually rather check that this command with the .exe suffix
+  # is somewhere, instead of allowing the suffix to change, but that
+  # is probably fine
+  if OS.windows?
+    if cmd.end_with? ".exe"
+      # 5 is length of ".exe"
+      cmd = cmd[0..-5]
+    end
+  end
+  
   exts = ENV['PATHEXT'] ? ENV['PATHEXT'].split(';') : ['']
   ENV['PATH'].split(File::PATH_SEPARATOR).each do |path|
     exts.each { |ext|

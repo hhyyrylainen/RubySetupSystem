@@ -33,15 +33,39 @@ class FFMPEG < BaseDep
     if args[:noStrip]
       @Options.push "--disable-stripping"
     end
-    
+
     if OS.windows?
-      @Options.push "--toolchain=msvc"
-      @YasmFolder = File.expand_path(File.join @Folder, "../", "ffmpeg-win-tools")
-      puts "#{@Name} using msvc toolchain"
-      # This may or may not be required as the used compiler is chosen manually by
-      # the user by running 'vcvarsall.bat amd64'
-      @Options.push "--arch=x86_64"
-      puts "#{@Name} using 64-bit build"
+
+      # Can't make configure use anything else except gcc, so I guess
+      # we have to compile with msvc and hope binaries are compatible
+      @UseClangIfSet = false
+      
+      if TC.is_a? WindowsMSVC
+
+        # If VS is using clang toolset don't actually use msvc as a toolchain here
+        if self.getIsClang
+          puts "#{@Name} using clang (in msvc) toolchain"
+
+          @Clang = WindowsClang.new
+
+          # We rely on CXX and CC environment variables to tell configure to use clang
+        else
+
+          puts "#{@Name} using msvc toolchain"
+          @Options.push "--toolchain=msvc"
+
+          # This doesn't understand cygwin paths
+          # so if we don't use --toolchain=msvc we can't use this
+          @YasmFolder = File.expand_path(File.join @Folder, "../", "ffmpeg-win-tools")
+        end
+
+        # Set build type
+        @Options.push "--arch=x86_64"
+        puts "#{@Name} using 64-bit build"
+      else
+        onError "this needs verification if this works at all"
+        @Options.push "--toolchain=gcc"        
+      end
     end
     
     self.clearEmptyOptions
@@ -98,6 +122,29 @@ class FFMPEG < BaseDep
     self.standardGitUpdate
   end
 
+  # Helper for windows clang compiling
+  def setCXXEnv
+    # Could store and restore these...
+    @Clang.setupEnv    
+  end
+
+  # Helper for windows clang compiling
+  def unsetCXXEnv
+    @Clang.unsetEnv
+  end
+
+  def getIsClang
+    TC.isToolSetClang && @UseClangIfSet
+  end
+
+  def getModifiedPaths
+    if !self.getIsClang
+      [TC.VS.getVSLinkerFolder, @YasmFolder]
+    else
+      [TC.VS.getVSLinkerFolder]
+    end
+  end
+
   def DoSetup
 
     if OS.windows?
@@ -116,29 +163,46 @@ class FFMPEG < BaseDep
       end
       
       # YASM assembler is required, so download that
-      yasmExecutable = File.join @YasmFolder, "yasm.exe"
-      
-      if !File.exists? yasmExecutable
-        # We need to download it
-        FileUtils.mkdir_p @YasmFolder
+      if self.getIsClang
+        yasmExecutable = File.join @YasmFolder, "yasm.exe"
         
-        downloadURLIfTargetIsMissing(
-          "http://www.tortall.net/projects/yasm/releases/yasm-1.3.0-win64.exe",
-          yasmExecutable, "f61a039125f3650b03e523796b9ed7094c1c89d3a45d160eac01eba2ffe8f2f6")
-        
-        onError "yasm tool dl failed" if !File.exists? yasmExecutable
-        
+        if !File.exists? yasmExecutable
+          # We need to download it
+          FileUtils.mkdir_p @YasmFolder
+          
+          downloadURLIfTargetIsMissing(
+            "http://www.tortall.net/projects/yasm/releases/yasm-1.3.0-win64.exe",
+            yasmExecutable, "f61a039125f3650b03e523796b9ed7094c1c89d3a45d160eac01eba2ffe8f2f6")
+          
+          onError "yasm tool dl failed" if !File.exists? yasmExecutable
+          
+        end
+      else
+        # When using clang we need to have it from cygwin
+        yasmExecutable = which "yasm"
+
+        if !yasmExecutable || yasmExecutable !~ /cygwin64/i
+          onError "yasm needs to be installed in cygwin. But it isn't. Found path: " +
+                  "'#{yasmExecutable}'"
+        end
+      end
+
+      path = Dir.pwd
+
+      if self.getIsClang
+        setCXXEnv
       end
       
-      runWithModifiedPath([getVSLinkerFolder, @YasmFolder], true){
-        Open3.popen2e(*[runVSVarsAll, "&&", "sh", "./configure", @Options].flatten){
+      runWithModifiedPath(self.getModifiedPaths, true){
+        Open3.popen2e(*[TC.VS.runVSVarsAll, "&&", "cd", path, "&&", 
+                        "sh", "./configure", @Options].flatten){
           |stdin, out, wait_thr|
           
           out.each {|line|
             puts line
           }
           
-          exit_status = wait_thr.value
+          exit_status = wait_thr.value          
           return exit_status == 0
         }
       }
@@ -152,13 +216,19 @@ class FFMPEG < BaseDep
   def DoCompile
     if OS.windows?
 
+      path = Dir.pwd
+
+      if self.getIsClang
+        setCXXEnv
+      end
+
       requireCMD "make", "Please make sure you have installed 'make' with cygwin"
-      runWithModifiedPath([getVSLinkerFolder, @YasmFolder], true){
-        Open3.popen2e(*[runVSVarsAll, "&&", "make", "-j", 
+      runWithModifiedPath(self.getModifiedPaths, true){
+        Open3.popen2e(*[TC.VS.runVSVarsAll, "&&", "cd", path, "&&", "make", "-j", 
                         $compileThreads.to_s].flatten) {|stdin, out, wait_thr|
           
           out.each {|line|
-            puts " " + line
+            puts line
           }
           
           exit_status = wait_thr.value
@@ -177,18 +247,41 @@ class FFMPEG < BaseDep
     if OS.windows?
       
       if shouldUseSudo(@InstallSudo)
-        warning "#{Name} sudo install doesn nothing extra on windows"      
+        warning "#{Name} sudo install does nothing extra on windows"      
+      end
+
+      path = Dir.pwd
+
+      if self.getIsClang
+        setCXXEnv
       end
       
-      runWithModifiedPath([getVSLinkerFolder, @YasmFolder], true){
-        Open3.popen2e(*[runVSVarsAll, "&&", "make", "install"].flatten){
+      runWithModifiedPath(self.getModifiedPaths, true){
+        Open3.popen2e(*[TC.VS.runVSVarsAll, "&&", "cd", path, "&&", "make",
+                        "install"].flatten){
           |stdin, out, wait_thr|
           
           out.each {|line|
-            puts " " + line
+            puts line
           }
           
           exit_status = wait_thr.value
+
+          # We unset just once at the end
+          if self.getIsClang
+            unsetCXXEnv
+          end
+
+          if exit_status == 0
+            # Check that some file exists
+            someFile = File.join(@InstallPath, "bin/avformat.lib")
+
+            if !File.exists? someFile
+              onError "#{@Name} building / installing failed (#{someFile} doesn't exist). " +
+                      "Make sure there are no errors above from #{@Name} configure or build"
+            end
+          end
+          
           return exit_status == 0
         }
       }

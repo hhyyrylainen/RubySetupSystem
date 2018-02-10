@@ -17,7 +17,7 @@ class FreeImage < BaseDep
 
   def DoSetup
     if OS.windows?
-      if !File.exists?(File.join(@Folder, "FreeImage.2015.sln"))
+      if !File.exists?(File.join(@Folder, "FreeImage.2017.sln"))
         return false
       end
 
@@ -32,11 +32,13 @@ class FreeImage < BaseDep
 
     if OS.windows?
 
+      # Doesn't use TC.isToolSetClang always uses the default msvc
+      # toolset, hopefully works
       runVSCompiler($compileThreads, configuration: "Release", platform: "x64",
-                    project: "FreeImage.2015.vcxproj")
+                    project: "FreeImage.2017.sln")
     else
 
-      onError "TODO: make file compile"
+      onError "TODO: makefile compile"
     end
   end
   

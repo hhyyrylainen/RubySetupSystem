@@ -5,7 +5,7 @@
 # noSamples: disables the v2 samples
 # Windows: these other libraries need to be installed before:
 # FreeType ZLib FreeImage
-class Ogre < BaseDep
+class Ogre < StandardCMakeDep
   def initialize(args)
     super("Ogre", "ogre", args)
 
@@ -15,7 +15,10 @@ class Ogre < BaseDep
 
       @Options.push "-DOGRE_BUILD_SAMPLES2=OFF"
     end
-    
+
+    if !@RepoURL
+      @RepoURL = "https://bitbucket.org/sinbad/ogre"
+    end
   end
 
   def getDefaultOptions
@@ -75,7 +78,7 @@ class Ogre < BaseDep
   end
   
   def DoClone
-    runOpen3("hg", "clone", "https://bitbucket.org/sinbad/ogre") == 0
+    runOpen3("hg", "clone", @RepoURL) == 0
   end
 
   def DoUpdate
@@ -84,65 +87,7 @@ class Ogre < BaseDep
     runOpen3("hg", "update", @Version) == 0
   end
 
-  def DoSetup
-    
-    # # Dependencies compile
-    # additionalCMake = []
-    
-    # if OS.windows?
-    #   Dir.chdir("Dependencies") do
-
-    #     # there was a no build sdl2 here...
-    #     runOpen3Checked "cmake", "."
-
-    #     if !runVSCompiler $compileThreads
-
-    #       onError "Failed to compile Ogre dependencies "
-    #     end
-
-    #     onError "check can this actually be ran automatically"
-    #     info "Please open the solution SDL2 in Release and x64: "+
-    #          "#{@Folder}/Dependencies/src/SDL2/VisualC/SDL_VS2013.sln"
-
-    #     openVSSolutionIfAutoOpen "#{@Folder}/Dependencies/src/SDL2/VisualC/SDL_VS2013.sln"
-
-    #     onError "TODO: verify that this works"
-    #     additionalCMake.push("-DSDL2MAIN_LIBRARY=..\SDL2\VisualC\Win32\Debug\SDL2main.lib ",
-    #                          "-DSD2_INCLUDE_DIR=..\SDL2\include",
-    #                          "-DSDL2_LIBRARY_TEMP=..\SDL2\VisualC\Win32\Debug\SDL2.lib")
-        
-    #   end
-    # end
-    
-    FileUtils.mkdir_p "build"
-    
-    Dir.chdir("build") do
-
-      return runCMakeConfigure @Options #+ additionalCMake 
-    end
-    
-  end
-  
-  def DoCompile
-    Dir.chdir("build") do
-
-      return runCompiler $compileThreads
-    end
-  end
-  
-  def DoInstall
-
-    Dir.chdir("build") do
-
-      if not self.cmakeUniversalInstallHelper
-        return false
-      end
-      
-    end
-
-    true
-  end
-
+  # not sure if this is used
   def Enable
     ENV["OGRE_HOME"] = File.join @InstallPath
   end

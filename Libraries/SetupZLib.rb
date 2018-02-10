@@ -3,7 +3,7 @@
 #     contrib\masmx64\inffas8664.c in to the build see:
 #     https://stackoverflow.com/questions/29505121/cmake-zlib-build-on-windows just set to
 #     false and hope it is fast enough)
-class ZLib < ZipDLDep
+class ZLib < ZipAndCmakeDLDep
   def initialize(args)
     super("zlib", "zlib", args)
 
@@ -21,29 +21,6 @@ class ZLib < ZipDLDep
       @Options.push "-DAMD64=ON"
     end
     
-  end
-
-  def DoSetup
-    FileUtils.mkdir_p "build"
-
-    Dir.chdir("build") do
-      return runCMakeConfigure @Options
-    end
-  end
-  
-  def DoCompile
-
-    Dir.chdir("build") do
-      
-      return runCompiler $compileThreads, winBothConfigurations: false
-    end
-  end
-  
-  def DoInstall
-
-    Dir.chdir("build") do
-      return self.cmakeUniversalInstallHelper winBothConfigurations: false
-    end
   end
 end
 

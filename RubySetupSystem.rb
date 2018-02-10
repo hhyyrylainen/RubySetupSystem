@@ -5,6 +5,9 @@
 require_relative 'RubyCommon.rb'
 require_relative 'DepGlobber.rb'
 
+require_relative 'ToolChain.rb'
+require_relative 'VSVersion.rb'
+
 require 'optparse'
 require 'fileutils'
 require 'etc'
@@ -12,12 +15,6 @@ require 'os'
 require 'open3'
 require 'pathname'
 require 'zip'
-
-# Used by: verifyVSProjectRuntimeLibrary
-require 'nokogiri' if OS.windows?
-## Required for installs on windows
-##require 'win32ole' if OS.windows?
-
 
 #
 # Parse options
@@ -123,9 +120,13 @@ NoBreakpadUpdateOnWindows = false
 # On windows visual studio will be automatically opened if required
 AutoOpenVS = true
 
-# Visual studio version on windows, required for forced 64 bit builds
-VSVersion = "Visual Studio 14 2015 Win64"
-VSToolsEnv = "VS140COMNTOOLS"
+# Set tool chain
+TC = if OS.windows?
+       # Leviathan needs by default vs 2017
+       WindowsMSVC.new(VisualStudio2017.new)
+     else
+       LinuxNative.new()
+     end
 
 # TODO create a variable for running the package manager on linux if possible
 
@@ -171,6 +172,11 @@ if $options.include?(:projectFullParallel)
   end
 end
 
+# Set required environment variables with the tool chain
+# Most toolchains don't need this
+TC.setupEnv
+
+puts ""
 puts ""
 
 require_relative "Installer.rb"
