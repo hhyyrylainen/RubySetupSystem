@@ -90,7 +90,7 @@ class Installer
       end
     end
 
-    onError "exit 1"
+    info "Using #{precompiled.length} precompiled libraries"
 
     if not SkipPullUpdates and not OnlyMainProject
       puts ""
@@ -99,6 +99,11 @@ class Installer
       
       @Libraries.each do |x|
 
+        # Precompiled is handled later
+        if precompiled.include? x.Name
+          next
+        end
+        
         x.Retrieve
         
       end
@@ -115,6 +120,11 @@ class Installer
       # Make sure the folders exist, at least
       @Libraries.each do |x|
 
+        # Precompiled is handled later
+        if precompiled.include? x.Name
+          next
+        end
+
         if x.RequiresClone
           info "Dependency is missing, downloading it despite update pulling is disabled"
           x.Retrieve
@@ -122,15 +132,37 @@ class Installer
       end      
     end
 
+    if !precompiled.empty?
+
+      puts ""
+      info "Retrieving precompiled dependencies"
+      puts ""
+
+      precompiled.each{|key, p|
+        p.retrieve
+      }
+      
+      puts ""
+      success "Successfully retrieved precompiled"
+      puts ""
+    end
+    
     if not OnlyMainProject
 
-      info "Configuring dependencies"
+      info "Configuring and building dependencies"
 
       @Libraries.each do |x|
 
-        x.Setup
-        x.Compile
-        x.Install
+        if precompiled.include? x.Name
+
+          puts "Extracting precompiled dependency #{x.Name}"
+          precompiled[x.Name].install
+          
+        else
+          x.Setup
+          x.Compile
+          x.Install          
+        end
 
         if x.respond_to?(:Enable)
           x.Enable

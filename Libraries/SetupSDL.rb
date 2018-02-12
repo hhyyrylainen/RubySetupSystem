@@ -26,6 +26,8 @@ class SDL < StandardCMakeDep
         "bin/SDL2.dll",
         
         "lib/SDL2.lib",
+        "lib/SDL2main.lib",
+        "lib/SDL2-static.lib",
 
         "include/SDL2",
       ]

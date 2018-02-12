@@ -126,7 +126,7 @@ BigListOfPrecompiledStuff = [
   PrecompiledDependency.new(
     "SDL2_release-2_0_6_opts_0fe2c1a5b1a1_windows_Visual_Studio_15_2017_Win64",
     "https://boostslair.com/rubysetupsystem/precompiled/",
-    "3f5b1968d881989b420f94a16cc423f7528426521b9e1875d0fc0429218c067f"
+    "86e7836af80be60dbffc2d534f320dc34ce9a2be0e8a6195c27ce566cf95c13a"
   ),
 
   PrecompiledDependency.new(

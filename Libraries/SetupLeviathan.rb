@@ -60,8 +60,17 @@ class Leviathan < BaseDep
 
     # TODO: pass script options like no sudo etc. to child projects using RubySetupSystem
     # Leviathan needs sometimes to get input from the user so we need to run with system here
-    onError "TODO: pass through options"
-    system("ruby Setup.rb")
+    cmd = "ruby Setup.rb"
+    
+    if !$preCompiled.nil?
+      if $preCompiled == false
+        cmd += " --no-precompiled"
+      elsif $preCompiled == true
+        cmd += " --precompiled"
+      end
+    end
+    
+    system(cmd)
     $?.exitstatus == 0
   end
   

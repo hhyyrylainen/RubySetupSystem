@@ -253,31 +253,48 @@ end
 # Downloads an URL to a file if it doesn't exist
 # \param hash The hash of the file. Generate by running this in irb:
 # `require 'digest'; Digest::SHA2.new(256).hexdigest(File.read("filename"))`
-def downloadURLIfTargetIsMissing(url, targetFile, hash)
-  
-  return true if File.exists? targetFile
+# hashmethod == 1 default hash
+# hashmethod == 2 is hash from require 'sha3' 
+def downloadURLIfTargetIsMissing(url, targetFile, hash, hashmethod = 1, skipcheckifdl = false)
 
   onError "no hash for file dl" if !hash
   
-  info "Downloading url: '#{url}' to file: '#{targetFile}'"
+  if File.exists? targetFile
 
-  begin 
-    File.open(targetFile, "wb") do |output|
-      # open method from open-uri
-      open(url, "rb") do |webDataStream|
-        output.write(webDataStream.read)
-      end
+    info "Making sure already downloaded file is intact: '#{targetFile}'"
+
+    if skipcheckifdl
+      return true
     end
-  rescue
-    error "Download failed"
-    FileUtils.rm_f targetFile
-    raise
+
+  else
+    info "Downloading url: '#{url}' to file: '#{targetFile}'"
+
+    begin 
+      File.open(targetFile, "wb") do |output|
+        # open method from open-uri
+        open(url, "rb") do |webDataStream|
+          output.write(webDataStream.read)
+        end
+      end
+    rescue
+      error "Download failed"
+      FileUtils.rm_f targetFile
+      raise
+    end
+    
+    onError "failed to write download to file" if !File.exists? targetFile    
   end
-  
-  onError "failed to write download to file" if !File.exists? targetFile
 
   # Check hash
-  dlHash = Digest::SHA2.new(256).hexdigest(File.read(targetFile))
+  if hashmethod == 1
+    dlHash = Digest::SHA2.new(256).hexdigest(File.read(targetFile))
+  elsif hashmethod == 2
+    require 'sha3'
+    dlHash = SHA3::Digest::SHA256.file(targetFile).hexdigest
+  else
+    raise AssertionError
+  end
 
   if dlHash != hash
     FileUtils.rm_f targetFile
