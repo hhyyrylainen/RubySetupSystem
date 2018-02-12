@@ -196,7 +196,7 @@ def verifySVNUrl(wantedurl)
 end
 
 
-
+# TODO: make this preserve symlinks, if wanted with the method copyPreserveSymlinks
 def runGlobberAndCopy(glob, targetFolder)
   onError "globbing for library failed #{glob.LibName}" if not glob.run
   

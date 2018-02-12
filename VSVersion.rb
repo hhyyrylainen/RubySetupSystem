@@ -69,6 +69,7 @@ class VisualStudio2015 < VisualStudioVersion
   
   def version
     # Need to also force 64 bits here
+    # This is also used by dependency packager
     "Visual Studio 14 2015 Win64"
   end
 
@@ -110,6 +111,7 @@ class VisualStudio2017 < VisualStudioVersion
 
   def version
     # Need to also force 64 bits here
+    # This is also used by dependency packager
     "Visual Studio 15 2017 Win64"
   end
 

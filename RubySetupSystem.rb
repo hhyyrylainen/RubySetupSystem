@@ -8,6 +8,8 @@ require_relative 'DepGlobber.rb'
 require_relative 'ToolChain.rb'
 require_relative 'VSVersion.rb'
 
+require_relative 'PrecompiledDB.rb'
+
 require 'optparse'
 require 'fileutils'
 require 'etc'
@@ -64,7 +66,9 @@ OptionParser.new do |opts|
     $options[:projectFullParallelLimit] = t.to_i
   end  
 
-  
+  opts.on("--[no-]precompiled", "Run with or without precompiled dependencies") do |b|
+    $options[:precompiled] = b
+  end 
 
   opts.on("-h", "--help", "Show this message") do
     puts opts
@@ -117,6 +121,23 @@ SkipPackageManager = if $options[:noPackager] then true else false end
 # If true new version of depot tools and breakpad won't be fetched on install
 NoBreakpadUpdateOnWindows = false
 
+# This is either true, false, or "ask" (if not interactive ask turns to false)
+UsePrecompiled = if $options.include?(:precompiled)
+                   if $options[:precompiled]
+                     true
+                   else
+                     false
+                   end
+                 else
+                   if !$stdout.isatty
+                     warning "--[no-]precompiled parameter give and not running in" +
+                             "interactive terminal, disabling precompiled"
+                     false
+                   else
+                     "ask"
+                   end
+                 end
+
 # On windows visual studio will be automatically opened if required
 AutoOpenVS = true
 
@@ -124,8 +145,10 @@ AutoOpenVS = true
 TC = if OS.windows?
        # Leviathan needs by default vs 2017
        WindowsMSVC.new(VisualStudio2017.new)
-     else
+     elsif OS.linux?
        LinuxNative.new()
+     else
+       onError "No toolchain configured for this platform!"
      end
 
 # TODO create a variable for running the package manager on linux if possible
@@ -171,6 +194,8 @@ if $options.include?(:projectFullParallel)
     puts "With extra limit set to #{$options[:projectFullParallelLimit]}"
   end
 end
+
+puts "With use precompiled set to: #{UsePrecompiled}"
 
 # Set required environment variables with the tool chain
 # Most toolchains don't need this

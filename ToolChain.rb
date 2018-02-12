@@ -6,6 +6,10 @@ require_relative 'VSVersion.rb'
 
 class ToolChain
 
+  def name
+    onError "unnamed toolchain"
+  end
+
   def setupEnv
   end
 
@@ -32,6 +36,12 @@ end
 
 class LinuxNative < ToolChain
 
+  def name
+    "linux"
+    onError "Detect GCC or clang"
+  end
+
+
   # Default is fine
   def cmakeGenerator
     nil
@@ -45,7 +55,7 @@ end
 
 # Doesn't work that well
 class WindowsGCC < ToolChain
-
+  
   def initialize
     # Find where gcc is
     @GCCPath = "C:/cygwin64/usr/local/bin"
@@ -56,6 +66,11 @@ class WindowsGCC < ToolChain
     if !File.exists?(@GCCPath) || !File.exists?(@CCPath) || !File.exists?(@CXXPath)
       onError "Didn't find installed GCC (did you unzip the gcc zip) at: #{@GCCPath}"
     end
+  end
+
+  def name
+    "windows_gcc"
+    onError "Detect GCC version"
   end
 
   def setupEnv
@@ -90,6 +105,11 @@ class WindowsClang < ToolChain
       onError "clang is not installed " +
               "(or in path). clang++.exe not found"
     end
+  end
+
+  def name
+    "windows_clang"
+    onError "Detect clang version"
   end
 
   def setupEnv
@@ -138,6 +158,10 @@ class WindowsMSVC < ToolChain
     # Append host x64
     @VSToolSet += ",host=x64"
     info "Added host=x64 to msvc toolset: #{@VSToolSet}"
+  end
+
+  def name
+    "windows_" + @VS.version
   end
 
   # Doesn't do anything for now, if toolset is changed code will need

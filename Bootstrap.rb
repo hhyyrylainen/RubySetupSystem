@@ -10,4 +10,8 @@ if not File.exists? "RubySetupSystem/RubySetupSystem.rb"
     abort("Failed to initialize or update git submodules. " +
           "Please make sure git is in path and running 'git submodule init' works.")
   end
+else
+  # Make sure RubySetupSystem is up to date
+  # This may make debugging RubySetupSystem harder so feel free to comment out
+  system "git submodule update"
 end
