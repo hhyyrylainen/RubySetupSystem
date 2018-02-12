@@ -61,15 +61,15 @@ class Leviathan < BaseDep
     # TODO: pass script options like no sudo etc. to child projects using RubySetupSystem
     # Leviathan needs sometimes to get input from the user so we need to run with system here
     cmd = "ruby Setup.rb"
-    
-    if !$preCompiled.nil?
-      if $preCompiled == false
+
+    if !$usePrecompiled.nil?
+      if $usePrecompiled == false
         cmd += " --no-precompiled"
-      elsif $preCompiled == true
+      elsif $usePrecompiled == true
         cmd += " --precompiled"
       end
     end
-    
+
     system(cmd)
     $?.exitstatus == 0
   end
