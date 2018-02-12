@@ -88,6 +88,11 @@ class BaseDep
     if @InstallPath
       @Options.push "-DCMAKE_INSTALL_PREFIX=#{@InstallPath}"
     end
+
+    # Linux compiler settings
+    if OS.linux?
+      @Options.push "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+    end
   end
 
   def RequiresClone
@@ -103,10 +108,30 @@ class BaseDep
         
         info "Cloning #{@Name} into #{@Folder}"
 
-        if not self.DoClone
-          onError "Failed to clone repository"
-        end
+        # Attempt up to 5 times
+        for i in 1..5
 
+          if not self.DoClone
+
+            if i >= 5
+              onError "Failed to clone repository even after 5 attempts."
+            end
+
+            puts ""
+            error "Failed to clone #{@Name}. Deleting previous attempt and trying" +
+                  "again in 5 seconds."
+            puts "Press CTRL+C to cancel"
+
+            sleep(5)
+            
+            # Delete attempt
+            FileUtils.rm_rf @Folder, secure: true
+
+            info "Attempting again"
+          else
+            break
+          end
+        end
       end
 
       if not File.exist?(@Folder)
