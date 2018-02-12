@@ -269,8 +269,9 @@ class BaseDep
 
   # Overwrite to support precompiled distribution
   def getInstalledFiles
-    onError "This dependency (#{@Name}) doesn't support getting file list for " +
+    warning "This dependency (#{@Name}) doesn't support getting file list for " +
             "precompiled binary"
+    false
   end
 
   # creates a 12 character hash of options

@@ -10,28 +10,19 @@ end
 # Class that handles the definition of a precompiled dependency and applying it if wanted
 class PrecompiledDependency
 
-  attr_reader :Name, :Version, :Platform, :URL, :RelativeUnPack
+  attr_reader :FullName, :URL, :RelativeUnPack, :Hash
   
-  def initialize(name, version, platform, url, relativeunpack = "")
+  def initialize(name, url, hash, relativeunpack = "")
 
-    @Name = name
-    @Version = version
-    @Platform = platform
-    @URL = url
+    @FullName = name
+    @ZipName = name + ".7z"
+    @URL = url + @ZipName
+    @Hash = hash
     @RelativeUnPack = relativeunpack
-  end
 
-  def matches(platform, error = true)
-    if platform != @Platform
-      
-      if error
-        error "Precompiled dependency #{@Name} doesn't match platform (package)#{@Platform} " +
-              "!= #{platform}(current system)"
-      end
-      return false
+    if !@Hash || @Hash.length <= 10
+      onError "PrecompiledDependency has no valid hash: " + @Hash
     end
-
-    true
   end
 
 end

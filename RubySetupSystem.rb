@@ -122,21 +122,22 @@ SkipPackageManager = if $options[:noPackager] then true else false end
 NoBreakpadUpdateOnWindows = false
 
 # This is either true, false, or "ask" (if not interactive ask turns to false)
-UsePrecompiled = if $options.include?(:precompiled)
-                   if $options[:precompiled]
-                     true
-                   else
-                     false
-                   end
-                 else
-                   if !$stdout.isatty
-                     warning "--[no-]precompiled parameter give and not running in" +
-                             "interactive terminal, disabling precompiled"
-                     false
+# Not constant as this is changed by getSupportedPrecompiledPackage after asking the user
+$usePrecompiled = if $options.include?(:precompiled)
+                    if $options[:precompiled]
+                      true
+                    else
+                      false
+                    end
+                  else
+                    if !$stdout.isatty
+                      warning "--[no-]precompiled parameter give and not running in" +
+                              "interactive terminal, disabling precompiled"
+                      false
                    else
                      "ask"
-                   end
-                 end
+                    end
+                  end
 
 # On windows visual studio will be automatically opened if required
 AutoOpenVS = true
@@ -195,7 +196,7 @@ if $options.include?(:projectFullParallel)
   end
 end
 
-puts "With use precompiled set to: #{UsePrecompiled}"
+puts "With use precompiled set to: #{$usePrecompiled}"
 
 # Set required environment variables with the tool chain
 # Most toolchains don't need this

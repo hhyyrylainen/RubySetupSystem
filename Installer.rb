@@ -78,6 +78,20 @@ class Installer
       end
     end
 
+    # Determine what can be precompiled
+    precompiled = {}
+
+    @Libraries.each do |x|
+
+      pre = getSupportedPrecompiledPackage x
+
+      if pre
+        precompiled[x.Name] = pre
+      end
+    end
+
+    onError "exit 1"
+
     if not SkipPullUpdates and not OnlyMainProject
       puts ""
       info "Retrieving dependencies"
