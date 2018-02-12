@@ -19,4 +19,18 @@ class SDL < StandardCMakeDep
     runOpen3("hg", "pull")
     runOpen3("hg", "update", @Version) == 0
   end
+
+  def getInstalledFiles
+    if OS.windows?
+      [
+        "bin/SDL2.dll",
+        
+        "lib/SDL2.lib",
+
+        "include/SDL2",
+      ]
+    else
+      onError "TODO: linux file list"
+    end
+  end
 end

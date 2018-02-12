@@ -67,6 +67,10 @@ class FFMPEG < BaseDep
         @Options.push "--toolchain=gcc"        
       end
     end
+
+    if !@RepoURL
+      @RepoURL = "https://github.com/FFmpeg/FFmpeg.git"
+    end
     
     self.clearEmptyOptions
     
@@ -115,7 +119,7 @@ class FFMPEG < BaseDep
   end
 
   def DoClone
-    runOpen3("git", "clone", "https://github.com/FFmpeg/FFmpeg.git", "ffmpeg") == 0
+    runOpen3("git", "clone", @RepoURL, "ffmpeg") == 0
   end
 
   def DoUpdate
@@ -287,6 +291,39 @@ class FFMPEG < BaseDep
     else
 
       return self.linuxMakeInstallHelper
+    end
+  end
+
+  def getInstalledFiles
+    if OS.windows?
+      [
+        "lib/avcodec-57.def",
+        "lib/avformat-57.def",
+        "lib/avutil-55.def",
+        "lib/swresample-2.def",
+        "lib/swscale-4.def",
+
+        "bin/avcodec.lib",
+        "bin/avformat.lib",
+        "bin/avutil.lib",
+        "bin/swresample.lib",
+        "bin/swscale.lib",
+
+        "bin/avcodec-57.dll",
+        "bin/avformat-57.dll",
+        "bin/avutil-55.dll",
+        "bin/swresample-2.dll",
+        "bin/swscale-4.dll",
+
+        "include/libavcodec",
+        "include/libavformat",
+        "include/libavutil",
+        "include/libswresample",
+        "include/libswscale",
+
+      ]
+    else
+      onError "TODO: linux file list"
     end
   end
 end

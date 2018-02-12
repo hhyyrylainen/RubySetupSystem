@@ -431,3 +431,24 @@ def createLinkIfDoesntExist(source, linkfile)
   
 end
 
+# Sanitizes path (used by precompiled packager at least)
+def sanitizeForPath(str)
+  # Code from (modified) http://gavinmiller.io/2016/creating-a-secure-sanitization-function/
+  # Bad as defined by wikipedia:
+  # https://en.wikipedia.org/wiki/Filename#Reserved_characters_and_words
+  badChars = [ '/', '\\', '?', '%', '*', ':', '|', '"', '<', '>', '.', ' ' ]
+  badChars.each do |c|
+    str.gsub!(c, '_')
+  end
+  str
+end
+
+# Returns name of 7zip on platform (7za on linux and 7z on windows)
+def p7zip
+  if OS.windows?
+    "7z"
+  else
+    "7za"
+  end
+end
+

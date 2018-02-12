@@ -11,7 +11,10 @@ class FreeType < ZipAndCmakeDLDep
     @LocalPath = File.join(CurrentDir, @LocalFileName)
     @DownloadURL = "http://download.savannah.gnu.org/releases/freetype/freetype-2.8.tar.gz"
     @DLHash = "c02da3ab5c94c696b5800e16181c734597d55bbea9f88b04d0d99a1c075ea504"
-    
+
+    # For packaging
+    @RepoURL = @DownloadURL
+    @Version = "2.8"
   end
 
   def getDefaultOptions
@@ -19,5 +22,17 @@ class FreeType < ZipAndCmakeDLDep
       # Shared prints this error with msvc: Building shared libraries on Windows needs MinGW
       # "-DBUILD_SHARED_LIBS=ON",
     ]
+  end
+
+  def getInstalledFiles
+    if OS.windows?
+      [
+        "lib/freetype.lib",
+
+        "include/freetype2",
+      ]
+    else
+      onError "TODO: linux file list"
+    end
   end
 end

@@ -18,7 +18,7 @@ require_relative "Helpers.rb"
 # :preCreateInstallFolder => If installPath is specified will create
 #     the folder if it doesn't exist
 class BaseDep
-  attr_reader :Name, :Folder
+  attr_reader :Name, :Folder, :RepoURL, :Version
   
   def initialize(name, foldername, args)
 
@@ -82,6 +82,9 @@ class BaseDep
     if args[:fork]
       @RepoURL = args[:fork]
     end
+
+    # For naming precompiled releases from a branch differently
+    @BranchEpoch = nil
   end
 
   def HandleStandardCMakeOptions
@@ -262,6 +265,30 @@ class BaseDep
   
   def clearEmptyOptions
     @Options.reject!(&:empty?)
+  end
+
+  # Overwrite to support precompiled distribution
+  def getInstalledFiles
+    onError "This dependency (#{@Name}) doesn't support getting file list for " +
+            "precompiled binary"
+  end
+
+  # creates a 12 character hash of options
+  def optionsHash(length = 12)
+    # Don't want to always need this as this may be difficult to compile
+    require 'sha3'
+
+    SHA3::Digest::SHA256.hexdigest(@Options.to_s)[0 .. length - 1]
+  end
+
+  # Creates a name for precompiled binary (if this doesn't use a
+  # commit, please add a new suffix for each created release and mark
+  # the newest as the newest in PrecompiledDB to make people using
+  # precompiled versions get a newer build, Or set @BranchEpoch in child class)
+  def getNameForPrecompiled
+    sanitizeForPath("#{@Name}_#{@Version}_opts_#{optionsHash}" +
+                    if @BranchEpoch then "_n_" +
+                                         @BranchEpoch else "" end)
   end
 end
 

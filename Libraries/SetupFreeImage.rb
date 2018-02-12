@@ -4,11 +4,15 @@ class FreeImage < BaseDep
   def initialize(args)
     super("FreeImage", "FreeImage", args)
 
-    self.HandleStandardCMakeOptions    
+    self.HandleStandardCMakeOptions
+
+    if !@RepoURL
+      @RepoURL = "https://github.com/hhyyrylainen/FreeImage.git"
+    end
   end
 
   def DoClone
-    runOpen3("git", "clone", "https://github.com/hhyyrylainen/FreeImage.git") == 0
+    runOpen3("git", "clone", @RepoURL) == 0
   end
 
   def DoUpdate
@@ -65,5 +69,20 @@ class FreeImage < BaseDep
     end
     
     installer.run
+  end
+
+  def getInstalledFiles
+    if OS.windows?
+      [
+        "lib/FreeImage.lib",
+        "lib/FreeImage.dll",
+
+        "bin/zlib.dll",
+
+        "include/FreeImage.h",
+      ]
+    else
+      onError "TODO: linux file list"
+    end
   end
 end

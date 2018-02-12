@@ -87,6 +87,40 @@ class Ogre < StandardCMakeDep
     runOpen3("hg", "update", @Version) == 0
   end
 
+  def getInstalledFiles
+    if OS.windows?
+      [
+        "lib/RelWithDebInfo/opt/Plugin_ParticleFX.lib",
+        "lib/RelWithDebInfo/opt/RenderSystem_Direct3D11.lib",
+        "lib/RelWithDebInfo/opt/RenderSystem_GL3Plus.lib",
+        "lib/RelWithDebInfo/OgreHlmsPbs.lib",
+        "lib/RelWithDebInfo/OgreHlmsPbsMobile.lib",
+        "lib/RelWithDebInfo/OgreHlmsUnlit.lib",
+        "lib/RelWithDebInfo/OgreHlmsUnlitMobile.lib",
+        "lib/RelWithDebInfo/OgreMain.lib",
+        "lib/RelWithDebInfo/OgreMeshLodGenerator.lib",
+
+        "bin/relwithdebinfo/OgreHlmsPbs.dll",
+        "bin/relwithdebinfo/OgreHlmsPbsMobile.dll",
+        "bin/relwithdebinfo/OgreHlmsUnlit.dll",
+        "bin/relwithdebinfo/OgreHlmsUnlitMobile.dll",
+        "bin/relwithdebinfo/OgreMain.dll",
+        "bin/relwithdebinfo/OgreMeshLodGenerator.dll",
+        "bin/relwithdebinfo/Plugin_ParticleFX.dll",
+        "bin/relwithdebinfo/RenderSystem_Direct3D11.dll",
+        "bin/relwithdebinfo/RenderSystem_GL3Plus.dll",
+
+        "include/OGRE",
+        "Docs/License.html",
+
+        # Might as well include the tool
+        "bin/relwithdebinfo/OgreMeshTool.exe",
+      ]
+    else
+      onError "TODO: linux file list"
+    end
+  end
+
   # not sure if this is used
   def Enable
     ENV["OGRE_HOME"] = File.join @InstallPath

@@ -20,7 +20,26 @@ class ZLib < ZipAndCmakeDLDep
       # TODO: architecture
       @Options.push "-DAMD64=ON"
     end
-    
+
+    # For packaging
+    @RepoURL = @DownloadURL
+    @Version = "1.2.11"
+  end
+
+  def getInstalledFiles
+    if OS.windows?
+      [
+        "lib/zlib.lib",
+        "lib/zlibstatic.lib",
+
+        "bin/zlib.dll",
+
+        "include/zlib.h",
+        "include/zconf.h",
+      ]
+    else
+      onError "TODO: linux file list"
+    end
   end
 end
 

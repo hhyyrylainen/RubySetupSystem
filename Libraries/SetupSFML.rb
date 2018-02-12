@@ -44,5 +44,31 @@ class SFML < StandardCMakeDep
 
   def DoUpdate
     self.standardGitUpdate
-  end  
+  end
+
+  def getInstalledFiles
+    if OS.windows?
+      [
+        "lib/sfml-audio.lib",
+        "lib/sfml-graphics.lib",
+        "lib/sfml-network.lib",
+        "lib/sfml-system.lib",
+        "lib/sfml-window.lib",
+        "lib/openal32.lib",
+
+        "bin/sfml-audio-2.dll",
+        "bin/sfml-graphics-2.dll",
+        "bin/sfml-network-2.dll",
+        "bin/sfml-system-2.dll",
+        "bin/sfml-window-2.dll",
+        "bin/openal32.dll",
+
+        "include/SFML",
+        # This seems to be sfml license
+        "license.txt",
+      ]
+    else
+      onError "TODO: linux file list"
+    end
+  end
 end

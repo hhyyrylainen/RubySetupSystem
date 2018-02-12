@@ -10,6 +10,8 @@ class AngelScript < StandardCMakeDep
     end
 
     @CMakeListFolder = "../sdk/angelscript/projects/cmake/"
+    # Mainly for precompiled binaries
+    @RepoURL = @WantedURL
   end
 
   def DoClone
@@ -110,5 +112,17 @@ class AngelScript < StandardCMakeDep
     installer.run
 
     true
+  end
+  
+  def getInstalledFiles
+    if OS.windows?
+      [
+        "lib/angelscript.lib",
+        "include/angelscript.h",
+        "include/add_on",
+      ]
+    else
+      onError "TODO: linux file list"
+    end
   end
 end

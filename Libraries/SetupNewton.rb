@@ -49,4 +49,16 @@ class Newton < StandardCMakeDep
   def DoUpdate
     self.standardGitUpdate
   end
+
+  def getInstalledFiles
+    if OS.windows?
+      [
+        "lib/Newton.dll",
+        "lib/Newton.lib",
+        "include/Newton.h",
+      ]
+    else
+      onError "TODO: linux file list"
+    end
+  end
 end

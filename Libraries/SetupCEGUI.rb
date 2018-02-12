@@ -147,6 +147,30 @@ class CEGUI < BaseDep
       return self.cmakeUniversalInstallHelper
     end
   end
+
+  def getInstalledFiles
+    if OS.windows?
+      [
+        "lib/CEGUIBase-9999.lib",
+        "lib/CEGUICOmmonDialogs-9999.lib",
+        "lib/CEGUICoreWindowRendererSet.lib",
+        "lib/CEGUIExpatParser.lib",
+        "lib/CEGUIOgreRenderer-9999.lib",
+        "lib/CEGUISILLYImageCodec.lib",
+
+        "bin/CEGUIBase-9999.dll",
+        "bin/CEGUICOmmonDialogs-9999.dll",
+        "bin/CEGUICoreWindowRendererSet.dll",
+        "bin/CEGUIExpatParser.dll",
+        "bin/CEGUIOgreRenderer-9999.dll",
+        "bin/CEGUISILLYImageCodec.dll",
+
+        "include/cegui-9999",
+      ]
+    else
+      onError "TODO: linux file list"
+    end
+  end
   
   # TODO: is this still used?
   def Enable

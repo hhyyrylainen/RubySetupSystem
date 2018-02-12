@@ -1,4 +1,12 @@
-# Tool for creating pre-compiled dependencies to be put into PrecompiledDB
+# Helper file for creating tools for creating pre-compiled
+# dependencies to be put into PrecompiledDB
+# Any file using this must set PrecompiledInstallFolder and create a method:
+# getDependencyObjectByName(name) that returns the dependency by name
+
+# If you get errors on windows do `ridk install` and try all the 3 options
+# then install this gem
+require 'sha3'
+
 require 'optparse'
 require 'fileutils'
 
@@ -8,28 +16,11 @@ require_relative 'PrecompiledDependency.rb'
 require_relative 'PrecompiledDB.rb'
 
 def checkRunFolder(suggested)
-
-  doxyFile = File.join(suggested, "CreatePrecompiled.rb")
-
-  onError("Not ran from RubySetupSystem folder!") if not File.exist?(doxyFile)
-
-  return File.expand_path File.join(suggested, "../")
+  suggested
 end
 
 def projectFolder(baseDir)
-
   baseDir
-  
-end
-
-
-def getExtraOptions(opts)
-
-  opts.on("--install-folder path", "The folder to look for the compiled binaries in " +
-                                   "for CreatePrecompiled. Default: 'build/ThirdParty'") do |p|
-    $options[:precompiledInstallFolder] = true
-  end 
-  
 end
 
 def extraHelp
@@ -44,35 +35,101 @@ end
 
 require_relative 'RubySetupSystem.rb'
 
+# Programming error
+raise AssertionError unless PrecompiledInstallFolder
+
 # Read extraOptions
-DependencyInstallFolder = File.join(CurrentDir, if $options[:precompiledInstallFolder]
-                                    $options[:precompiledInstallFolder] else
-                                     "build/ThirdParty"
-                                    end
-                                   )
+DependencyInstallFolder = File.join(CurrentDir, PrecompiledInstallFolder)
 
 if !$toPackageDeps
   onError("CreatePrecompiled: expected a list of dependencies to package, " +
           "instead got nothing")
 end
 
-info "This is RubySetupSystem precompiled dependency packager"
-info "Current platform is #{describePlatform}"
-
-puts ""
-
 if !File.exist? DependencyInstallFolder
   onError "Didn't find dependency install folder '#{DependencyInstallFolder}'"
 end
 
-puts "Finding precompiled binaries in: #{DependencyInstallFolder}"
+
+info "This is RubySetupSystem precompiled dependency packager"
+info "Current platform is #{describePlatform}"
 
 puts ""
-puts "Packaging dependencies: #{$toPackageDeps}"
+puts "Finding precompiled binaries in: #{DependencyInstallFolder}"
+puts ""
 
-exit 1
-success "Done creating. Make sure everything was up to date before distributing"
-exit 0
+CurrentPlatform = describePlatform
+
+# Main function
+def runPackager
+  puts ""
+  puts "Packaging dependencies: #{$toPackageDeps}"
+
+  $toPackageDeps.each{|dep|
+
+    info "Starting packaging #{dep}"
+
+    instance = getDependencyObjectByName dep
+
+    if !instance
+      onError "Invalid dependency name: #{dep}"
+    end
+
+    files = instance.getInstalledFiles
+
+    if !files || files.length == 0
+      onError "Dependency '#{dep}' has no files to package"
+    end
+
+    zipName = instance.getNameForPrecompiled + "_" + CurrentPlatform + ".7z"
+    infoFile = instance.getNameForPrecompiled + "_" + CurrentPlatform + "_info.txt"
+    hashFile = instance.getNameForPrecompiled + "_" + CurrentPlatform + "_hash.txt"
+    
+    # Check that all exist
+    Dir.chdir(DependencyInstallFolder){
+
+      files.each{|f|
+
+        if !File.exists? f
+          onError "Dependency file that should be packaged doesn't exist: #{f}"
+        end
+      }
+
+      File.open(infoFile, 'w') {|f|
+        f.puts "RubySetupSystem precompiled library for #{CurrentPlatform}"
+        f.puts instance.Name + " retrieved from " + instance.RepoURL
+        f.puts instance.Version + " Packaged at " + Time.now.to_s
+        f.puts ""
+        f.puts "You can probably find license from the repo url if it isn't included here"
+        f.puts "This info file is included in " + zipName
+      }
+      
+      runOpen3Checked(*[p7zip, "a", zipName, infoFile, files].flatten)
+
+      if !File.exists? zipName
+        onError "Failed to create zip file"
+      end
+
+      hash = SHA3::Digest::SHA256.file(zipName).hexdigest
+
+      # Write hash to file
+      File.open(hashFile, 'w') {|f|
+        f.puts hash
+      }
+
+      success "Done with #{dep}, created: #{zipName}"
+      info "#{zipName} SHA3: " + hash
+      # info "#{zipName} PLATFORM: " + CurrentPlatform
+    }
+  }
+
+  puts ""
+  success "Done creating."
+  puts "Make sure everything was up to date before distributing."
+  true
+end
+
+
 
 
 
