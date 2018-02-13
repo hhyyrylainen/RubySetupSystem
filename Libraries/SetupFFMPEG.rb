@@ -167,7 +167,7 @@ class FFMPEG < BaseDep
       end
       
       # YASM assembler is required, so download that
-      if self.getIsClang
+      if !self.getIsClang
         yasmExecutable = File.join @YasmFolder, "yasm.exe"
         
         if !File.exists? yasmExecutable
