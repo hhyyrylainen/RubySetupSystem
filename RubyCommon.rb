@@ -255,18 +255,19 @@ end
 # `require 'digest'; Digest::SHA2.new(256).hexdigest(File.read("filename"))`
 # hashmethod == 1 default hash
 # hashmethod == 2 is hash from require 'sha3' 
-def downloadURLIfTargetIsMissing(url, targetFile, hash, hashmethod = 1, skipcheckifdl = false)
+def downloadURLIfTargetIsMissing(url, targetFile, hash, hashmethod = 1, skipcheckifdl = false,
+                                 attempts = 5)
 
   onError "no hash for file dl" if !hash
   
   if File.exists? targetFile
 
-    info "Making sure already downloaded file is intact: '#{targetFile}'"
-
     if skipcheckifdl
       return true
     end
-
+    
+    info "Making sure already downloaded file is intact: '#{targetFile}'"
+    
   else
     info "Downloading url: '#{url}' to file: '#{targetFile}'"
 
@@ -280,7 +281,15 @@ def downloadURLIfTargetIsMissing(url, targetFile, hash, hashmethod = 1, skipchec
     rescue
       error "Download failed"
       FileUtils.rm_f targetFile
-      raise
+
+      if attempts < 1
+        raise
+      else
+        attempts -= 1
+        info "Attempting download again, attempts left: #{attempts}"
+        return downloadURLIfTargetIsMissing(url, targetFile, hash, hashmethod, skipcheckifdl,
+                                            attempts)
+      end
     end
     
     onError "failed to write download to file" if !File.exists? targetFile    
@@ -298,11 +307,19 @@ def downloadURLIfTargetIsMissing(url, targetFile, hash, hashmethod = 1, skipchec
 
   if dlHash != hash
     FileUtils.rm_f targetFile
-    onError "Downloaded file hash doesn't match expected hash, #{dlHash} != #{hash}"
+
+    if attempts < 1
+      onError "Downloaded file hash doesn't match expected hash, #{dlHash} != #{hash}"
+    else
+      attempts -= 1
+      error "Downloaded file hash doesn't match expected hash, #{dlHash} != #{hash}"
+      info "Attempting download again, attempts left: #{attempts}"
+      return downloadURLIfTargetIsMissing(url, targetFile, hash, hashmethod, skipcheckifdl,
+                                          attempts)
+    end
   end
   
   success "Done downloading"
-    
 end
 
 # Makes a windows path mingw friendly path
