@@ -144,6 +144,11 @@ class CEGUI < BaseDep
   
   def DoInstall
     Dir.chdir("build") do
+
+      # Copy folder
+      FileUtils.cp_r File.join(@Folder, "dependencies/include/glm"),
+                File.join(@InstallPath, "include")
+      
       return self.cmakeUniversalInstallHelper
     end
   end
@@ -166,6 +171,7 @@ class CEGUI < BaseDep
         "bin/CEGUISILLYImageCodec.dll",
 
         "include/cegui-9999",
+        "include/glm",
       ]
     else
       onError "TODO: linux file list"
