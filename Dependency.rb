@@ -280,7 +280,10 @@ class BaseDep
     # Don't want to always need this as this may be difficult to compile
     require 'sha3'
 
-    SHA3::Digest::SHA256.hexdigest(JSON.generate @Options)[0 .. length - 1]
+    # Get only hash relevant options
+    # Filter out paths
+    toHash = @Options.select{|i| i !~ /.*\/.*(\/|$)/i}
+    SHA3::Digest::SHA256.hexdigest(JSON.generate(toHash).to_s)[0 .. length - 1]
   end
 
   # Creates a name for precompiled binary (if this doesn't use a
