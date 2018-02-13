@@ -116,7 +116,7 @@ class CEGUI < BaseDep
   end
 
   def DoSetup
-
+    return true
     # Dependency build and setup so it can be found (on windows)
     if OS.windows?
       Dir.chdir(@CEGUIWinDeps.Folder) do
@@ -137,6 +137,7 @@ class CEGUI < BaseDep
   end
   
   def DoCompile
+    return true
     Dir.chdir("build") do
       return TC.runCompiler
     end
@@ -145,9 +146,27 @@ class CEGUI < BaseDep
   def DoInstall
     Dir.chdir("build") do
 
-      # Copy folder
-      FileUtils.cp_r File.join(@Folder, "dependencies/include/glm"),
-                File.join(@InstallPath, "include")
+      if OS.windows?
+        FileUtils.mkdir_p File.join(@InstallPath, "include")
+
+        # Copy folder
+        FileUtils.cp_r File.join(@Folder, "dependencies/include/glm"),
+                       File.join(@InstallPath, "include")
+
+        # Copy dependency dlls
+        extraDLLs = Globber.new([
+                                  "pcre.dll",
+                                  "SILLY.dll",
+                                  "freetype.dll",
+                                  "raqm.dll",
+                                  "harfbuzz.dll",
+                                  "fribidi.dll",
+                                  "libexpat.dll",
+                                ],
+                                File.join(@Folder, "cegui-dependencies/build/dependencies/"))
+
+        FileUtils.cp extraDLLs.getResult, File.join(@InstallPath, "bin")
+      end
       
       return self.cmakeUniversalInstallHelper
     end
@@ -169,6 +188,14 @@ class CEGUI < BaseDep
         "bin/CEGUIExpatParser.dll",
         "bin/CEGUIOgreRenderer-9999.dll",
         "bin/CEGUISILLYImageCodec.dll",
+
+        "bin/pcre.dll",
+        "bin/SILLY.dll",
+        "bin/freetype.dll",
+        "bin/raqm.dll",
+        "bin/harfbuzz.dll",
+        "bin/fribidi.dll",
+        "bin/libexpat.dll",
 
         "include/cegui-9999",
         "include/glm",
