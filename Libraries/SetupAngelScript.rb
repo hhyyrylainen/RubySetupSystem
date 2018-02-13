@@ -122,7 +122,8 @@ class AngelScript < StandardCMakeDep
         "include/add_on",
       ]
     else
-      onError "TODO: linux file list"
+      #onError "TODO: linux file list"
+      nil
     end
   end
 end

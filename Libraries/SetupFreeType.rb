@@ -32,7 +32,8 @@ class FreeType < ZipAndCmakeDLDep
         "include/freetype2",
       ]
     else
-      onError "TODO: linux file list"
+      #onError "TODO: linux file list"
+      nil
     end
   end
 end

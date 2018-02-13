@@ -62,9 +62,13 @@ def doDockerBuild(folder)
 end
 
 def writeCommonDockerFile(file, packageNames)
-  file.puts("FROM fedora:latest")
-  file.puts("RUN dnf install -y --setopt=deltarpm=false ruby ruby-devel")
-  file.puts("RUN gem install os colorize rubyzip")    
+  file.puts("FROM fedora:27")
+  file.puts("RUN dnf install -y --setopt=deltarpm=false ruby ruby-devel " +
+            # Needed to compile native extensions
+            "gcc make redhat-rpm-config")
+  file.puts("RUN gem install os colorize rubyzip json sha3")
+  # Enable rawhide if we need some new stuff
+  file.puts("RUN dnf install -y --setopt=deltarpm=false fedora-repos-rawhide")
   file.puts("RUN dnf install -y --setopt=deltarpm=false #{packageNames.join ' '}; exit 0")
   file.puts("RUN dnf install -y --setopt=deltarpm=false #{packageNames.join ' '}")
 
@@ -72,7 +76,12 @@ def writeCommonDockerFile(file, packageNames)
   # This doesn't seem to actually help with a missing x server
   # file.puts("RUN dnf install -y x11vnc")
   # file.puts("RUN mkdir /root/.vnc")
-  # file.puts(%q(RUN x11vnc -storepasswd "vncdocker" ~/.vnc/passwd))  
+  # file.puts(%q(RUN x11vnc -storepasswd "vncdocker" ~/.vnc/passwd))
+
+  # Rawhide overrides
+  # Probably not needed a few months from 13.02.2018
+  file.puts("RUN dnf install -y --disablerepo=* --enablerepo=rawhide " +
+            "--setopt=deltarpm=false glm-devel")
 end
 
 # Main run method

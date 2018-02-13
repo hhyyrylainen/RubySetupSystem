@@ -201,7 +201,8 @@ class CEGUI < BaseDep
         "include/glm",
       ]
     else
-      onError "TODO: linux file list"
+      #onError "TODO: linux file list"
+      nil
     end
   end
   

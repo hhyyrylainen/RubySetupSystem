@@ -117,7 +117,8 @@ class Ogre < StandardCMakeDep
         "bin/relwithdebinfo/OgreMeshTool.exe",
       ]
     else
-      onError "TODO: linux file list"
+      #onError "TODO: linux file list"
+      nil
     end
   end
 
