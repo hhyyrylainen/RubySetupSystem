@@ -197,6 +197,14 @@ def runOpen3Checked(*cmdAndArgs, errorPrefix: "", redError: false)
   
 end
 
+def pathAsArray
+  ENV['PATH'].split(File::PATH_SEPARATOR)
+end
+
+def pathExtsAsArray
+  ENV['PATHEXT'] ? ENV['PATHEXT'].split(';') : ['']
+end
+
 # Cross-platform way of finding an executable in the $PATH.
 #
 #   which('ruby') #=> /usr/bin/ruby
@@ -213,8 +221,8 @@ def which(cmd)
     end
   end
   
-  exts = ENV['PATHEXT'] ? ENV['PATHEXT'].split(';') : ['']
-  ENV['PATH'].split(File::PATH_SEPARATOR).each do |path|
+  exts = pathExtsAsArray
+  pathAsArray.each do |path|
     exts.each { |ext|
       exe = File.join(path, "#{cmd}#{ext}")
       return exe if File.executable?(exe) && !File.directory?(exe)
@@ -378,11 +386,21 @@ def requireCMD(cmdName, extraHelp = nil)
       return
     end
   end
+
+  # Print current search path
+  puts ""
+  info "The following paths were searched for " +
+       pathExtsAsArray.map{|i| "'#{cmdName}#{i}'"}.join(' or ') + " but it wasn't found:"
+
+  pathAsArray.each{|p|
+    puts p
+  }
   
   onError "Required program / tool '#{cmdName}' is not installed or missing from path.\n" +
-    "Please install it and make sure it is in path, then try again." + (
-      if extraHelp then " " + extraHelp else "" end)  
-
+          "Please install it and make sure it is in path, then try again. " +
+          "(path is printed above for reference)" + (
+            if extraHelp then " " + extraHelp else "" end)  
+  
 end
 
 
