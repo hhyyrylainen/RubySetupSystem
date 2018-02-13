@@ -116,7 +116,6 @@ class CEGUI < BaseDep
   end
 
   def DoSetup
-    return true
     # Dependency build and setup so it can be found (on windows)
     if OS.windows?
       Dir.chdir(@CEGUIWinDeps.Folder) do
@@ -137,7 +136,6 @@ class CEGUI < BaseDep
   end
   
   def DoCompile
-    return true
     Dir.chdir("build") do
       return TC.runCompiler
     end
