@@ -21,31 +21,6 @@ class FreeImage < StandardCMakeDep
     self.standardGitUpdate
   end
   
-  def DoInstall
-
-    # Copy files to the install target folder
-    # TODO: architecture
-    installer = CustomInstaller.new(@InstallPath,
-                                    File.join(@Folder, "Dist/x64"))
-    
-    # First header files and libs
-    installer.addInclude(File.join(@Folder, "Dist/x64", "FreeImage.h"))
-    
-    # The library
-    if OS.linux?
-
-      installer.addLibrary File.join(@Folder, "Dist/x64", "FreeImage.so")
-      
-    elsif OS.windows?
-      installer.addLibrary File.join(@Folder, "Dist/x64", "FreeImage.lib")
-      installer.addLibrary File.join(@Folder, "Dist/x64", "FreeImage.dll")
-    else
-      onError "Unkown OS"
-    end
-    
-    installer.run
-  end
-
   def getInstalledFiles
     if OS.windows?
       [
