@@ -1,6 +1,6 @@
 # Supported extra options:
 #
-class FreeImage < BaseDep
+class FreeImage < StandardCMakeDep
   def initialize(args)
     super("FreeImage", "FreeImage", args)
 
@@ -9,6 +9,8 @@ class FreeImage < BaseDep
     if !@RepoURL
       @RepoURL = "https://github.com/hhyyrylainen/FreeImage.git"
     end
+
+    @BranchEpoch = 2
   end
 
   def DoClone
@@ -17,33 +19,6 @@ class FreeImage < BaseDep
 
   def DoUpdate
     self.standardGitUpdate
-  end
-
-  def DoSetup
-    if OS.windows?
-      if !File.exists?(File.join(@Folder, "FreeImage.2017.sln"))
-        return false
-      end
-
-      # Not needed with our own version of the library to check for toolset
-      return true
-    else
-      File.exists?(File.join(@Folder, "Makefile"))
-    end
-  end
-  
-  def DoCompile
-
-    if OS.windows?
-
-      # Doesn't use TC.isToolSetClang always uses the default msvc
-      # toolset, hopefully works
-      runVSCompiler($compileThreads, configuration: "Release", platform: "x64",
-                    project: "FreeImage.2017.sln")
-    else
-
-      onError "TODO: makefile compile"
-    end
   end
   
   def DoInstall
@@ -76,8 +51,6 @@ class FreeImage < BaseDep
       [
         "lib/FreeImage.lib",
         "lib/FreeImage.dll",
-
-        "bin/zlib.dll",
 
         "include/FreeImage.h",
       ]

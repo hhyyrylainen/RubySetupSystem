@@ -291,9 +291,10 @@ class BaseDep
   # the newest as the newest in PrecompiledDB to make people using
   # precompiled versions get a newer build, Or set @BranchEpoch in child class)
   def getNameForPrecompiled
-    sanitizeForPath("#{@Name}_#{@Version}_opts_#{optionsHash}" +
-                    if @BranchEpoch then "_n_" +
-                                         @BranchEpoch else "" end)
+    sanitizeForPath("#{@Name}_#{@Version}_" +
+                    if @BranchEpoch then "sv_#{@BranchEpoch}_" else "" end +
+                    "opts_#{optionsHash}"
+                    )
   end
 end
 
