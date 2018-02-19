@@ -10,7 +10,7 @@ class FreeImage < StandardCMakeDep
       @RepoURL = "https://github.com/hhyyrylainen/FreeImage.git"
     end
 
-    @BranchEpoch = 2
+    @BranchEpoch = 3
   end
 
   def DoClone
@@ -25,7 +25,8 @@ class FreeImage < StandardCMakeDep
     if OS.windows?
       [
         "lib/FreeImage.lib",
-        "lib/FreeImage.dll",
+        
+        "bin/FreeImage.dll",
 
         "include/FreeImage.h",
       ]
