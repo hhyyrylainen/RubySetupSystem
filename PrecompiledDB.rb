@@ -121,6 +121,11 @@ BigListOfPrecompiledStuff = [
     "https://boostslair.com/rubysetupsystem/precompiled/",
     "6c32eb67cfd78491ad2e036a42fe2af2331900e6b6503ca1e7bcb51245b85b51"
   ),
+  PrecompiledDependency.new(
+    "FreeImage_master_sv_3_opts_ca4510738395_windows_Visual_Studio_15_2017_Win64",
+    "https://boostslair.com/rubysetupsystem/precompiled/",
+    "0d9b91b364064ec6925082d900d3d07bbd3e3bd18e5741b5f21d7e38e4adee8a"
+  ),
 
   ####################
   # FreeType
