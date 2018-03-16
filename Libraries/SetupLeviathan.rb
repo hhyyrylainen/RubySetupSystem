@@ -47,30 +47,12 @@ class Leviathan < BaseDep
 
   def DoSetup
     # TODO: find a way to run the leviathan dependencies here
-    # FileUtils.mkdir_p "build"
-
-    # Dir.chdir("build") do
-    #   return runCMakeConfigure @Options
-    # end
     true
   end
   
   def DoCompile
-    # This step takes care of everything
-
-    # TODO: pass script options like no sudo etc. to child projects using RubySetupSystem
-    # Leviathan needs sometimes to get input from the user so we need to run with system here
-    cmd = "ruby Setup.rb"
-
-    if !$usePrecompiled.nil?
-      if $usePrecompiled == false
-        cmd += " --no-precompiled"
-      elsif $usePrecompiled == true
-        cmd += " --precompiled"
-      end
-    end
-
-    system(cmd)
+    # This step takes care of everything setup and compiling
+    system("ruby Setup.rb #{passOptionsToSubRubySetupSystemProject}")
     $?.exitstatus == 0
   end
   

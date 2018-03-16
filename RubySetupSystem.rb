@@ -36,6 +36,11 @@ OptionParser.new do |opts|
     $options[:onlyProject] = true
   end
 
+  opts.on("--no-subproject-deps", "Don't setup dependencies in a subproject " +
+                                  "(that uses RubySetupSystem)") do |b|
+    $options[:noSubProjectDeps] = true
+  end
+
   opts.on("--only-deps", "Skip the main project setup") do |b|
     $options[:onlyDeps] = true
   end
@@ -175,6 +180,51 @@ end
 CurrentDir = checkRunFolder Dir.pwd
 
 ProjectDir = projectFolder CurrentDir
+
+
+# This function formats the current options like threads etc. to be
+# passed to a dependency that also uses RubySetupSystem
+# example of use: system("ruby Setup.rb #{passOptionsToSubRubySetupSystemProject}")
+# Note: the unsafe system call needs to be used as the child project might want user input as
+# for precompiled selection etc.
+def passOptionsToSubRubySetupSystemProject
+  opts
+  if !$usePrecompiled.nil?
+    if $usePrecompiled == false
+      opts.push "--no-precompiled"
+    elsif $usePrecompiled == true
+      opts.push "--precompiled"
+    end
+  end
+
+  if $options.include?(:parallel)
+    opts.push "-j #{$options[:parallel]}"
+  end
+
+  if $options.include?(:sudo)
+    if $options[:sudo]
+      opts.push "--sudo"
+    else
+      opts.push "--no-sudo"
+    end
+  end
+
+  if $options.include?(:noPackager)
+    opts.push "--no-packagemanager"
+  end
+
+  if $options.include?(:noUpdates)
+    opts.push "--no-updates"
+  end
+
+  # This option is handled here (translated to the right option)
+  if $options.include?(:noSubProjectDeps)
+    opts.push "--only-project"
+  end
+
+  opts.join ' '
+end
+
 
 #
 # Initial options / status print
