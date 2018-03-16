@@ -188,7 +188,7 @@ ProjectDir = projectFolder CurrentDir
 # Note: the unsafe system call needs to be used as the child project might want user input as
 # for precompiled selection etc.
 def passOptionsToSubRubySetupSystemProject
-  opts
+  opts = []
   if !$usePrecompiled.nil?
     if $usePrecompiled == false
       opts.push "--no-precompiled"
