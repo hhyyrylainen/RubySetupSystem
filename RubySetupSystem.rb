@@ -45,6 +45,11 @@ OptionParser.new do |opts|
     $options[:onlyDeps] = true
   end
 
+  # TODO: should this be passed to sub setups
+  opts.on("--only-dep a,b,c", Array, "Only setup the specified dependencies") do |list|
+    $options[:only] = list
+  end
+
   opts.on("--no-packagemanager", "Skip using the system package manager " +
                                  "to download libraries") do |b|
     $options[:noPackager] = true
@@ -119,6 +124,9 @@ OnlyMainProject = if $options[:onlyProject] then true else false end
 
 # If true skips the main project
 OnlyDependencies = if $options[:onlyDeps] then true else false end
+
+# If specified only deps on this list are ran (case insensitive)
+OnlySpecificDeps = if $options[:only] then $options[:only] else nil end
 
 # If true skips running package installs
 SkipPackageManager = if $options[:noPackager] then true else false end

@@ -62,14 +62,35 @@ class Installer
     end    
   end
 
+  # Returns true if lib is enabled (ie. not disabled)
+  def libEnabled(lib)
+
+    if !OnlySpecificDeps
+      true
+    else
+
+      OnlySpecificDeps.each{|selected|
+
+        if selected.casecmp(lib.Name).zero?
+          return true
+        end
+      }
+
+      info "Dependency #{lib.Name} is not selected to be setup"
+      false
+    end
+  end
+
   # Runs the whole thing
   # calls onError if fails
   def run
 
     success "Starting RubySetupSystem run."
 
+    enabledLibs = @Libraries.select{|i| libEnabled i}
+
     if not OnlyMainProject and
-      @Libraries.each do |x|
+      enabledLibs.each do |x|
 
         if x.respond_to?(:installPrerequisites)
           
@@ -81,7 +102,7 @@ class Installer
     # Determine what can be precompiled
     precompiled = {}
 
-    @Libraries.each do |x|
+    enabledLibs.each do |x|
 
       pre = getSupportedPrecompiledPackage x
 
@@ -97,7 +118,7 @@ class Installer
       info "Retrieving dependencies"
       puts ""
       
-      @Libraries.each do |x|
+      enabledLibs.each do |x|
 
         # Precompiled is handled later
         if precompiled.include? x.Name
@@ -118,7 +139,7 @@ class Installer
       end
 
       # Make sure the folders exist, at least
-      @Libraries.each do |x|
+      enabledLibs.each do |x|
 
         # Precompiled is handled later
         if precompiled.include? x.Name
@@ -151,7 +172,7 @@ class Installer
 
       info "Configuring and building dependencies"
 
-      @Libraries.each do |x|
+      enabledLibs.each do |x|
 
         if precompiled.include? x.Name
 

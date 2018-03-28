@@ -122,7 +122,7 @@ class Ogre < StandardCMakeDep
     end
   end
 
-  # not sure if this is used
+  # This may be needed for CEGUI on windows
   def Enable
     ENV["OGRE_HOME"] = File.join @InstallPath
   end

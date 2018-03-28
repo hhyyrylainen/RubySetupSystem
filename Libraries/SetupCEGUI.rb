@@ -203,11 +203,6 @@ class CEGUI < BaseDep
       nil
     end
   end
-  
-  # TODO: is this still used?
-  def Enable
-    ENV["CEGUI_HOME"] = File.join @InstallPath
-  end
 end
 
 
