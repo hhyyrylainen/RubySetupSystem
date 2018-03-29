@@ -51,7 +51,6 @@ class CAudio < StandardCMakeDep
 
   def getInstalledFiles
     if OS.windows?
-      onError "TODO: the cAudio file list"
       [
         "lib/cAudio.lib",
         "bin/cAudio.dll",
