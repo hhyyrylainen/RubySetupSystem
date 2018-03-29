@@ -6,6 +6,11 @@ class CAudio < StandardCMakeDep
 
     self.HandleStandardCMakeOptions
 
+    if args[:noTutorials]
+
+      @Options.push "-DCAUDIO_BUILD_SAMPLES=OFF"
+    end
+
     if !@RepoURL
       @RepoURL = "https://github.com/hhyyrylainen/cAudio.git"
     end
