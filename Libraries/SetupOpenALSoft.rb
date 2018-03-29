@@ -1,18 +1,13 @@
 # Supported extra options:
-# noTutorials: disables building the tutorial programs
-class CAudio < StandardCMakeDep
+#
+class OpenALSoft < StandardCMakeDep
   def initialize(args)
-    super("cAudio", "cAudio", args)
+    super("OpenAL Soft", "openal-soft", args)
 
     self.HandleStandardCMakeOptions
 
-    if args[:noTutorials]
-
-      @Options.push "-DCAUDIO_BUILD_SAMPLES=OFF"
-    end
-
     if !@RepoURL
-      @RepoURL = "https://github.com/hhyyrylainen/cAudio.git"
+      @RepoURL = "https://github.com/kcat/openal-soft.git"
     end
   end
 
@@ -21,13 +16,13 @@ class CAudio < StandardCMakeDep
 
     if os == "fedora" || os == "centos" || os == "rhel"
       return [
-        "openal-soft-devel"
+        "alsa-lib-devel", "pulseaudio-libs-devel"
       ]
     end
 
     if os == "ubuntu"
       return [
-        "openal-soft-dev"
+        "libasound2-dev", "lib-pulse-dev"
       ]
     end
     
@@ -51,11 +46,11 @@ class CAudio < StandardCMakeDep
 
   def getInstalledFiles
     if OS.windows?
-      onError "TODO: the cAudio file list"
+      onError "TODO: openal-soft file list"
       [
-        "lib/cAudio.lib",
-        "bin/cAudio.dll",
-        "include/cAudio",
+        "lib/OpenAL32.lib",
+        "bin/OpenAL32.dll",
+        "include/AL",
       ]
     else
       #onError "TODO: linux file list"
