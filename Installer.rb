@@ -65,6 +65,17 @@ class Installer
   # Returns true if lib is enabled (ie. not disabled)
   def libEnabled(lib)
 
+    # Disable check
+    if NoSpecificDeps
+      NoSpecificDeps.each{|selected|
+
+        if selected.casecmp(lib.Name).zero?
+          info "Dependency #{lib.Name} was specified to be skipped"
+          return false
+        end
+      }
+    end
+
     if !OnlySpecificDeps
       true
     else
