@@ -146,8 +146,7 @@ BigListOfPrecompiledStuff = [
   ####################
   # Newton
   PrecompiledDependency.new(
-    "Newton_Dynamics_e60733c5a6eafd952b7b981f3c6aa06ccc5b326e_opts_" +
-    "f056e6310903_windows_Visual_Studio_15_2017_Win64",
+    "Newton_Dynamics_6d9be8ccce94845d8738244f5fd9da19c53886ca_opts_f056e6310903_windows_Visual_Studio_15_2017_Win64",
     "https://boostslair.com/rubysetupsystem/precompiled/",
     "2565ba6e4177ea8ba28a6165ae4ed73f0e52ea15eaed2c50407dadade5385b36"
   ),
