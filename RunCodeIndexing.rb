@@ -13,8 +13,15 @@ Dir.chdir(runFolder){
   file_paths = []
   Find.find('.') do |path|
 
-    if path !~ /\.h(pp)?$/ and path !~ /\.cpp$/
-      next
+    begin
+      if path !~ /\.h(pp)?$/ and path !~ /\.cpp$/
+        next
+      end
+    rescue ArgumentError => e
+
+      puts "Failed to handle path: " + path
+      puts "Error: " + e.message
+      raise e
     end
 
     # Special case, installed third party header
