@@ -46,7 +46,6 @@ class OpenALSoft < StandardCMakeDep
 
   def getInstalledFiles
     if OS.windows?
-      onError "TODO: openal-soft file list"
       [
         "lib/OpenAL32.lib",
         "bin/OpenAL32.dll",
