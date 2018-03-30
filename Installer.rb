@@ -69,7 +69,7 @@ class Installer
     if NoSpecificDeps
       NoSpecificDeps.each{|selected|
 
-        if selected.casecmp(lib.Name).zero?
+        if selected.casecmp(lib.Name).zero? || selected.casecmp(lib.FolderName).zero?
           info "Dependency #{lib.Name} was specified to be skipped"
           return false
         end
@@ -82,7 +82,7 @@ class Installer
 
       OnlySpecificDeps.each{|selected|
 
-        if selected.casecmp(lib.Name).zero?
+        if selected.casecmp(lib.Name).zero? || selected.casecmp(lib.FolderName).zero?
           return true
         end
       }

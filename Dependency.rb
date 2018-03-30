@@ -19,7 +19,7 @@ require_relative "Helpers.rb"
 # :preCreateInstallFolder => If installPath is specified will create
 #     the folder if it doesn't exist
 class BaseDep
-  attr_reader :Name, :Folder, :RepoURL, :Version
+  attr_reader :Name, :Folder, :FolderName, :RepoURL, :Version
   
   def initialize(name, foldername, args)
 
