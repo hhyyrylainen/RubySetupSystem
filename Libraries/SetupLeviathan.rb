@@ -4,9 +4,13 @@
 # the install path is mostly ignored
 class Leviathan < BaseDep
   def initialize(args)
-    super("Leviathan", "leviathan", args)
+    super("Leviathan", "Leviathan", args)
 
     self.HandleStandardCMakeOptions
+
+    if !@RepoURL
+      @RepoURL = "https://github.com/hhyyrylainen/Leviathan.git"
+    end
   end
 
   def depsList
@@ -33,8 +37,7 @@ class Leviathan < BaseDep
   end  
 
   def DoClone
-    runOpen3("git", "clone", "https://bitbucket.org/hhyyrylainen/leviathan.git",
-            "leviathan") == 0
+    runOpen3("git", "clone", @RepoURL) == 0
   end
 
   def DoUpdate
