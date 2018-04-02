@@ -131,6 +131,7 @@ def runDockerCreate(libsList, mainProjectAsDep = nil)
   }
 
   jenkinsDocker = File.join CurrentDir, "jenkins", "Dockerfile"
+  jenkinsSetupSSHD = File.join CurrentDir, "jenkins", "setup-sshd"
   
   puts "Writing docker (jenkins) file at '#{jenkinsDocker}'"
 
@@ -141,8 +142,125 @@ def runDockerCreate(libsList, mainProjectAsDep = nil)
     # Needed things for jenkins.
     # From here: https://wiki.jenkins.io/display/JENKINS/Docker+Plugin
     file.puts("RUN dnf install -y --setopt=deltarpm=false openssh-server java-1.8.0-openjdk")
-    file.puts("RUN systemctl enable sshd")
-    file.puts("RUN adduser -m jenkins -p jenkinsbuilder")
+    # This probably messes up everything as this probably runs before the keys are fine
+    # file.puts("RUN systemctl enable sshd")
+    # And stuff from: https://hub.docker.com/r/jenkins/ssh-slave/~/dockerfile/
+    # The MIT License
+    #
+    #  Copyright (c) 2015, CloudBees, Inc.
+    #
+    #  Permission is hereby granted, free of charge, to any person obtaining a copy
+    #  of this software and associated documentation files (the "Software"), to deal
+    #  in the Software without restriction, including without limitation the rights
+    #  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    #  copies of the Software, and to permit persons to whom the Software is
+    #  furnished to do so, subject to the following conditions:
+    #
+    #  The above copyright notice and this permission notice shall be included in
+    #  all copies or substantial portions of the Software.
+    #
+    #  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    #  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    #  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    #  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+    #  THE SOFTWARE.
+    file.puts <<-END
+ARG user=jenkins
+ARG group=jenkins
+ARG uid=1000
+ARG gid=1000
+ARG JENKINS_AGENT_HOME=/home/${user}
+
+ENV JENKINS_AGENT_HOME ${JENKINS_AGENT_HOME}
+
+RUN groupadd -g ${gid} ${group} \
+    && useradd -d "${JENKINS_AGENT_HOME}" -u "${uid}" -g "${gid}" -m -s /bin/bash "${user}"
+
+# setup SSH server
+RUN sed -i 's/#PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config
+RUN sed -i 's/#RSAAuthentication.*/RSAAuthentication yes/' /etc/ssh/sshd_config
+RUN sed -i 's/#PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config
+RUN sed -i 's/#SyslogFacility.*/SyslogFacility AUTH/' /etc/ssh/sshd_config
+RUN sed -i 's/#LogLevel.*/LogLevel INFO/' /etc/ssh/sshd_config
+RUN mkdir /var/run/sshd
+
+VOLUME "${JENKINS_AGENT_HOME}" "/tmp" "/run" "/var/run"
+WORKDIR "${JENKINS_AGENT_HOME}"
+
+COPY setup-sshd /usr/bin/setup-sshd
+
+EXPOSE 22
+
+ENTRYPOINT ["setup-sshd"]
+
+END
+
+    File.write(jenkinsSetupSSHD, <<-END
+#!/bin/bash
+
+set -ex
+
+# The MIT License
+#
+#  Copyright (c) 2015, CloudBees, Inc.
+#
+#  Permission is hereby granted, free of charge, to any person obtaining a copy
+#  of this software and associated documentation files (the "Software"), to deal
+#  in the Software without restriction, including without limitation the rights
+#  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#  copies of the Software, and to permit persons to whom the Software is
+#  furnished to do so, subject to the following conditions:
+#
+#  The above copyright notice and this permission notice shall be included in
+#  all copies or substantial portions of the Software.
+#
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+#  THE SOFTWARE.
+
+# Usage:
+#  docker run jenkinsci/ssh-slave <public key>
+# or
+#  docker run -e "JENKINS_SLAVE_SSH_PUBKEY=<public key>" jenkinsci/ssh-slave
+
+# key first
+echo "Leviathan jenkins dep container ssh setup."
+ssh-keygen -A
+
+write_key() {
+	mkdir -p "${JENKINS_AGENT_HOME}/.ssh"
+	echo "$1" > "${JENKINS_AGENT_HOME}/.ssh/authorized_keys"
+	chown -Rf jenkins:jenkins "${JENKINS_AGENT_HOME}/.ssh"
+	chmod 0700 -R "${JENKINS_AGENT_HOME}/.ssh"
+}
+
+if [[ $JENKINS_SLAVE_SSH_PUBKEY == ssh-* ]]; then
+  write_key "${JENKINS_SLAVE_SSH_PUBKEY}"
+fi
+if [[ $# -gt 0 ]]; then
+  if [[ $1 == ssh-* ]]; then
+    write_key "$1"
+    shift 1
+  else
+    exec "$@"
+  fi
+fi
+
+
+# ensure variables passed to docker container are also exposed to ssh sessions
+env | grep _ >> /etc/environment
+
+exec /usr/sbin/sshd -D -e "${@}"    
+END
+              )
+
+    FileUtils.chmod "+x", jenkinsSetupSSHD
   }  
 
   if !$doBuild
