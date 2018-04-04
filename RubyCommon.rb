@@ -247,12 +247,24 @@ def copyPreserveSymlinks(sourceFile, targetFolder)
 
     linkData = File.readlink sourceFile
 
-    FileUtils.ln_sf linkData, File.join(targetFolder, File.basename(sourceFile))
+    targetFile = File.join(targetFolder, File.basename(sourceFile))
+
+    if File.symlink? target
+
+      existingLink = File.readlink targetFile
+
+      if linkData == existingLink
+        # Already up to date
+        return
+      end
+    end
+
+    FileUtils.ln_sf linkData, targetFile
     
   else
 
     # Recursive copy should work for normal files and directories
-    FileUtils.cp_r sourceFile, targetFolder
+    FileUtils.cp_r sourceFile, targetFolder, preserve: true
     
   end
 end
