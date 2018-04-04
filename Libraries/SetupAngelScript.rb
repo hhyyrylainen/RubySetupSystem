@@ -3,7 +3,13 @@
 class AngelScript < StandardCMakeDep
   def initialize(args)
     super("AngelScript", "angelscript", args)
-    @WantedURL = "http://svn.code.sf.net/p/angelscript/code/tags/#{@Version}"
+
+    # Revision
+    if @Version.is_a? Numeric
+      @WantedURL = "http://svn.code.sf.net/p/angelscript/code/trunk"
+    else
+      @WantedURL = "http://svn.code.sf.net/p/angelscript/code/tags/#{@Version}"
+    end
 
     if @WantedURL[-1, 1] == '/'
       onError "Invalid configuraion in Setup.rb AngelScript tag has an ending '/'. Remove it!"
@@ -29,14 +35,25 @@ class AngelScript < StandardCMakeDep
 
     if currenturl != @WantedURL
       
-      info "Switching AngelScript tag from #{currenturl} to #{@WantedURL}"
+      info "Switching AngelScript tag/url from #{currenturl} to #{@WantedURL}"
       
       if runOpen3("svn", "switch", @WantedURL) != 0
         onError "Failed to switch svn url"
       end
     end
     
-    runOpen3("svn", "update") == 0
+    if runOpen3("svn", "update") != 0
+      return false
+    end
+
+    # Revision checkout
+    if @Version.is_a? Numeric
+      if runOpen3("svn", "checkout", @Version.to_s) != 0
+        return false
+      end
+    end
+    
+    true
   end
   
   def DoCompile
