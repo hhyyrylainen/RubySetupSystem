@@ -41,14 +41,14 @@ class AngelScript < StandardCMakeDep
         onError "Failed to switch svn url"
       end
     end
-    
-    if runOpen3("svn", "update") != 0
-      return false
-    end
 
     # Revision checkout
     if @Version.is_a? Numeric
-      if runOpen3("svn", "checkout", @Version.to_s) != 0
+      if runOpen3("svn", "update", "-r", @Version.to_s) != 0
+        return false
+      end
+    else
+      if runOpen3("svn", "update") != 0
         return false
       end
     end
