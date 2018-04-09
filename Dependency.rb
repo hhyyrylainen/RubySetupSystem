@@ -339,6 +339,7 @@ end
 # @LocalPath = File.join(CurrentDir, @LocalFileName)
 # @DownloadURL = "http://something"
 # @DLHash = ""
+# @DLHashType = 1 (see downloadURLIfTargetIsMissing in RubyCommon.rb)
 class ZipDLDep < BaseDep
 
   attr_reader :ZipType
@@ -367,7 +368,7 @@ class ZipDLDep < BaseDep
     
     downloadURLIfTargetIsMissing(
       @DownloadURL,
-      @LocalPath, @DLHash)
+      @LocalPath, @DLHash, @DLHashType)
 
     # Unzip it
     Dir.chdir(CurrentDir) do

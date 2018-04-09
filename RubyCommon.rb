@@ -274,7 +274,8 @@ end
 # \param hash The hash of the file. Generate by running this in irb:
 # `require 'digest'; Digest::SHA2.new(256).hexdigest(File.read("filename"))`
 # hashmethod == 1 default hash
-# hashmethod == 2 is hash from require 'sha3' 
+# hashmethod == 2 is hash from require 'sha3'
+# hashmethod == 3 is sha1 for better compatibility with download sites that only give that
 def downloadURLIfTargetIsMissing(url, targetFile, hash, hashmethod = 1, skipcheckifdl = false,
                                  attempts = 5)
 
@@ -321,6 +322,8 @@ def downloadURLIfTargetIsMissing(url, targetFile, hash, hashmethod = 1, skipchec
   elsif hashmethod == 2
     require 'sha3'
     dlHash = SHA3::Digest::SHA256.file(targetFile).hexdigest
+  elsif hashmethod == 3
+    dlHash = Digest::SHA1.new.hexdigest(File.read(targetFile))
   else
     raise AssertionError
   end
