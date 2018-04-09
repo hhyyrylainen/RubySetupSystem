@@ -45,7 +45,7 @@ class CEF < ZipAndCmakeDLDep
     copyPreserveSymlinks File.join(@Folder, "include/."), File.join(@InstallPath, "include")
     # Resources
     
-    copyPreserveSymlinks File.join(@Folder, "Resources"), File.join(@InstallPath, "Resources")
+    copyPreserveSymlinks File.join(@Folder, "Resources"), File.join(@InstallPath)
 
     # Extra libs
     copyPreserveSymlinks File.join(@Folder, "Release/swiftshader"), @InstallPath
