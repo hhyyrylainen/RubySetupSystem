@@ -78,13 +78,13 @@ class Ogre < StandardCMakeDep
   end
   
   def DoClone
-    runOpen3("hg", "clone", @RepoURL) == 0
+    runSystemSafe("hg", "clone", @RepoURL) == 0
   end
 
   def DoUpdate
     
-    runOpen3 "hg", "pull"
-    runOpen3("hg", "update", @Version) == 0
+    runSystemSafe "hg", "pull"
+    runSystemSafe("hg", "update", @Version) == 0
   end
 
   def getInstalledFiles

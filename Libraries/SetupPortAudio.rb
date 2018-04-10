@@ -73,7 +73,7 @@ class PortAudio < BaseDep
   end
 
   def DoClone
-    runOpen3("git", "clone", "https://git.assembla.com/portaudio.git", "portaudio") == 0
+    runSystemSafe("git", "clone", "https://git.assembla.com/portaudio.git", "portaudio") == 0
   end
 
   def DoUpdate
@@ -92,7 +92,7 @@ class PortAudio < BaseDep
       end
     else
 
-      runOpen3("./configure", @Options.join) == 0
+      runSystemSafe("./configure", @Options.join) == 0
     end
   end
   

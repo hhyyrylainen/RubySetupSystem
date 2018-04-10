@@ -11,7 +11,7 @@ system "#{ARGV[0]}"
 if $?.exitstatus > 0
   # Failed
   error "Installation Failed!"
-  runOpen3 "pause"
+  runSystemSafe "pause"
   abort "error"
 end
 

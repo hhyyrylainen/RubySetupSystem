@@ -136,7 +136,7 @@ def gitPullIfOnBranch(version)
 
   case versionType
   when GitVersionType::UNSPECIFIED, GitVersionType::BRANCH
-    if runOpen3("git", "pull", "origin", version) != 0
+    if runSystemSafe("git", "pull", "origin", version) != 0
       onError "git pull update failed"
     end
   end

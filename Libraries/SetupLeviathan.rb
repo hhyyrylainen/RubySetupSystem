@@ -37,7 +37,7 @@ class Leviathan < BaseDep
   end  
 
   def DoClone
-    runOpen3("git", "clone", @RepoURL) == 0
+    runSystemSafe("git", "clone", @RepoURL) == 0
   end
 
   def DoUpdate
@@ -45,7 +45,7 @@ class Leviathan < BaseDep
       return false
     end
     runOpen3Checked("git", "submodule", "init")
-    runOpen3("git", "submodule", "update")
+    runSystemSafe("git", "submodule", "update")
   end  
 
   def DoSetup

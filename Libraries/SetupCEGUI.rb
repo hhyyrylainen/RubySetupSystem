@@ -82,7 +82,7 @@ class CEGUI < BaseDep
 
   def DoClone
     if !File.exist?(@Folder)
-      if runOpen3("hg", "clone", @RepoURL) != 0
+      if runSystemSafe("hg", "clone", @RepoURL) != 0
         return false
       end
     end
@@ -100,8 +100,8 @@ class CEGUI < BaseDep
   end
 
   def DoUpdate
-    runOpen3("hg", "pull")
-    if runOpen3("hg", "update", @Version) != 0
+    runSystemSafe("hg", "pull")
+    if runSystemSafe("hg", "update", @Version) != 0
       return false
     end
 
@@ -230,12 +230,12 @@ class CEGUIDependencies < BaseDep
   end
 
   def DoClone
-    runOpen3("hg", "clone", "https://bitbucket.org/cegui/cegui-dependencies") == 0
+    runSystemSafe("hg", "clone", "https://bitbucket.org/cegui/cegui-dependencies") == 0
   end
 
   def DoUpdate
-    runOpen3("hg", "pull")
-    runOpen3("hg", "update", "default") == 0
+    runSystemSafe("hg", "pull")
+    runSystemSafe("hg", "update", "default") == 0
   end
 
   def DoSetup

@@ -155,7 +155,7 @@ def runWindowsAdmin(cmd)
   
   # TODO: find a proper way to wait here
   info "Please wait while the install script runs and then press any key to continue"
-  runOpen3 "pause"
+  runSystemSafe "pause"
 end
 
 def askToRunAdmin(cmd)
@@ -164,7 +164,7 @@ def askToRunAdmin(cmd)
   info "You need to open a new cmd window as administrator and run the following command: "
   info cmd
   info "Sorry, windows is such a pain in the ass"
-  runOpen3 "pause"
+  runSystemSafe "pause"
 end
 
 
@@ -203,7 +203,7 @@ def runVSCompiler(threads, project: "ALL_BUILD.vcxproj", configuration: CMakeBui
 
   info "Running MSBuild.exe with max cpu count = #{threads} on project #{targetSelect}"
   
-  runOpen3(*args) == 0      
+  runSystemSafe(*args) == 0      
 end
 
 

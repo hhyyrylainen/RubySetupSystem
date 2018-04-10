@@ -21,7 +21,7 @@ class AngelScript < StandardCMakeDep
   end
 
   def DoClone
-    runOpen3("svn", "co", @WantedURL, "angelscript") == 0
+    runSystemSafe("svn", "co", @WantedURL, "angelscript") == 0
   end
 
   def DoUpdate
@@ -37,18 +37,18 @@ class AngelScript < StandardCMakeDep
       
       info "Switching AngelScript tag/url from #{currenturl} to #{@WantedURL}"
       
-      if runOpen3("svn", "switch", @WantedURL) != 0
+      if runSystemSafe("svn", "switch", @WantedURL) != 0
         onError "Failed to switch svn url"
       end
     end
 
     # Revision checkout
     if @Version.is_a? Numeric
-      if runOpen3("svn", "update", "-r", @Version.to_s) != 0
+      if runSystemSafe("svn", "update", "-r", @Version.to_s) != 0
         return false
       end
     else
-      if runOpen3("svn", "update") != 0
+      if runSystemSafe("svn", "update") != 0
         return false
       end
     end

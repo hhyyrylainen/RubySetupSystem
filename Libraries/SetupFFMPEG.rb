@@ -119,7 +119,7 @@ class FFMPEG < BaseDep
   end
 
   def DoClone
-    runOpen3("git", "clone", @RepoURL, "ffmpeg") == 0
+    runSystemSafe("git", "clone", @RepoURL, "ffmpeg") == 0
   end
 
   def DoUpdate
@@ -213,7 +213,7 @@ class FFMPEG < BaseDep
       
     else
 
-      return runOpen3("./configure", *@Options) == 0
+      return runSystemSafe("./configure", *@Options) == 0
     end
   end
   

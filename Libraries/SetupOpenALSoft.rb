@@ -37,7 +37,7 @@ class OpenALSoft < StandardCMakeDep
   end
 
   def DoClone
-    runOpen3("git", "clone", @RepoURL) == 0
+    runSystemSafe("git", "clone", @RepoURL) == 0
   end
 
   def DoUpdate

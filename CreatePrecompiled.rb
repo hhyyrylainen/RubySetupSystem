@@ -104,7 +104,7 @@ def runPackager
         f.puts "This info file is included in " + zipName
       }
       
-      runOpen3Checked(*[p7zip, "a", zipName, infoFile, files].flatten)
+      runSystemSafe(*[p7zip, "a", zipName, infoFile, files].flatten)
 
       if !File.exists? zipName
         onError "Failed to create zip file"

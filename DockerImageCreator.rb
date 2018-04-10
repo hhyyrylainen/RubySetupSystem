@@ -51,7 +51,7 @@ end
 
 def doDockerBuild(folder)
 
-  if runOpen3("docker", "build", folder) != 0
+  if runSystemSafe("docker", "build", folder) != 0
 
     warning "Failed to run docker as normal user, trying sudo"
     

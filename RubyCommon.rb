@@ -56,6 +56,21 @@ def waitForKeyPress
   print "                         \r" 
 end
 
+# Runs command with system (escaped like open3 but can't be stopped if running a long time)
+def runSystemSafe(*cmdAndArgs)
+  if cmdAndArgs.length < 1
+    onError "Empty runSystemSafe command"
+  end
+
+  if !File.exists? cmdAndArgs[0] or !Pathname.new(cmdAndArgs[0]).absolute?
+    # check that the command exists if it is not a full path to a file
+    requireCMD cmdAndArgs[0]
+  end
+
+  system(*cmdAndArgs)
+  $?.exitstatus
+end
+
 # Runs Open3 for the commad, returns exit status
 def runOpen3(*cmdAndArgs, errorPrefix: "", redError: false)
 

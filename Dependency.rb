@@ -204,7 +204,7 @@ class BaseDep
         warning "Dependency '#{@name}' should have been installed with sudo"
       end
       
-      runOpen3 "make", "install"
+      runSystemSafe "make", "install"
     end
 
     $?.exitstatus == 0
@@ -252,9 +252,9 @@ class BaseDep
 
   def standardGitUpdate
 
-    runOpen3 "git", "fetch"
+    runSystemSafe "git", "fetch"
     
-    if runOpen3("git", "checkout", @Version) != 0
+    if runSystemSafe("git", "checkout", @Version) != 0
       return false
     end
 
@@ -375,7 +375,7 @@ class ZipDLDep < BaseDep
 
       case @ZipType
       when :tar
-        runOpen3Checked("tar", "-xvf", @LocalFileName)
+        runSystemSafe("tar", "-xvf", @LocalFileName)
 
       when :zip
         Zip::File.open(@LocalFileName) do |zip_file|
