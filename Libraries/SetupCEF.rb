@@ -34,6 +34,34 @@ class CEF < ZipAndCmakeDLDep
     @RepoURL = @DownloadURL
   end
 
+  def depsList
+    os = getLinuxOS
+
+    if os == "fedora" || os == "centos" || os == "rhel"
+      
+      return [
+        "libXcomposite", "libXtst", "libXScrnSaver", "atk"
+      ]
+      
+    end
+
+    if os == "ubuntu"
+      
+      return [
+        "libxcomposite1", "	libxtst6", "libxss1", "libatk1.0-0"
+      ]
+    end
+    
+    onError "#{@name} unknown packages for os: #{os}"
+
+  end
+
+  def installPrerequisites
+
+    installDepsList depsList
+    
+  end
+  
   def getDefaultOptions
     []
   end
