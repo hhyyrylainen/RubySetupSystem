@@ -16,8 +16,10 @@ class CEF < ZipAndCmakeDLDep
       @UnZippedName = "cef_binary_#{@Version}_linux64_minimal"
       @DLHash = "5077b9580862c6304a34fbe334bc05e4ed1fca55"
     elsif OS.windows?
+      # Needs to patch visual studio 1913 to the supported ones
       @UnZippedName = "cef_binary_#{@Version}_windows64_minimal"
-      @DLHash = "2cac794d9e1bdb0ab8cf5a35f738eb7490eff640"
+      @DownloadURL = "https://boostslair.com/rubysetupsystem/deps/#{@UnZippedName}.tar.bz2"
+      @DLHash = "6acb40dcb68e6346268a5145e1abc827ae0ce419"
     elsif OS.mac?
       @UnZippedName = "cef_binary_#{@Version}_macosx64_minimal"
       @DLHash = "96b9d98ee0ee80a1f826588565efc0820070764f"
@@ -27,7 +29,19 @@ class CEF < ZipAndCmakeDLDep
 
     @LocalFileName = @UnZippedName + ".tar.bz2"
     @LocalPath = File.join(CurrentDir, @LocalFileName)
-    @DownloadURL = "http://opensource.spotify.com/cefbuilds/#{@LocalFileName}"
+    if !@DownloadURL
+      @DownloadURL = "http://opensource.spotify.com/cefbuilds/#{@LocalFileName}"
+    end
+
+    # Windows config options
+    if OS.windows?
+      @Options.push "-DCEF_RUNTIME_LIBRARY_FLAG=/MD"
+      @Options.push "-DUSE_SANDBOX=ON"
+
+      if CMakeBuildType == "RelWithDebInfo"
+        @OverrideBuildType = "Release"
+      end
+    end
 
     # For packaging
     # not that that is needed for this as this is basically precompiled
@@ -101,7 +115,17 @@ class CEF < ZipAndCmakeDLDep
       }
       
     elsif OS.windows?
-      onError "TODO: files"
+      installer.addLibrary File.join(@Folder, "Release/", "libcef.dll")
+      installer.addLibrary File.join(@Folder, "Release/", "chrome_elf.dll")
+      installer.addLibrary File.join(@Folder, "Release/", "libEGL.dll")
+      installer.addLibrary File.join(@Folder, "Release/", "libGLESv2.dll")
+      installer.addLibrary File.join(@Folder, "Release/", "d3dcompiler_47.dll")
+      installer.addLibrary File.join(@Folder, "Release/", "widevinecdmadapter.dll")
+
+      glob = Globber.new "libcef_dll_wrapper.lib", File.join(@Folder, "build")
+      glob.getResult.each{|f|
+        installer.addLibrary f
+      }
     elsif OS.mac?
       onError "TODO: files"
     else

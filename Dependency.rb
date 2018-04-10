@@ -19,7 +19,7 @@ require_relative "Helpers.rb"
 # :preCreateInstallFolder => If installPath is specified will create
 #     the folder if it doesn't exist
 class BaseDep
-  attr_reader :Name, :Folder, :FolderName, :RepoURL, :Version
+  attr_reader :Name, :Folder, :FolderName, :RepoURL, :Version, :OverrideBuildType
   
   def initialize(name, foldername, args)
 
@@ -27,6 +27,8 @@ class BaseDep
     
     @Folder = File.join(CurrentDir, foldername)
     @FolderName = foldername
+
+    @OverrideBuildType = nil
 
     # Standard args handling
     if args[:options]
@@ -320,7 +322,7 @@ class StandardCMakeDep < BaseDep
 
   def DoCompile
     Dir.chdir("build") do
-      return TC.runCompiler
+      return TC.runCompiler @OverrideBuildType
     end
   end
   
@@ -347,6 +349,7 @@ class ZipDLDep < BaseDep
   def initialize(name, foldername, args, zipType: :tar)
     super(name, foldername, args)
 
+    @DLHashType = 1
     @ZipType = zipType
   end
 
@@ -433,7 +436,7 @@ class ZipAndCmakeDLDep < ZipDLDep
 
   def DoCompile
     Dir.chdir("build") do
-      return TC.runCompiler
+      return TC.runCompiler @OverrideBuildType
     end
   end
   

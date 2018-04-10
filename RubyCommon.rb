@@ -338,7 +338,7 @@ def downloadURLIfTargetIsMissing(url, targetFile, hash, hashmethod = 1, skipchec
     require 'sha3'
     dlHash = SHA3::Digest::SHA256.file(targetFile).hexdigest
   elsif hashmethod == 3
-    dlHash = Digest::SHA1.new.hexdigest(File.read(targetFile))
+    dlHash = Digest::SHA1.file(targetFile).hexdigest
   else
     raise AssertionError
   end

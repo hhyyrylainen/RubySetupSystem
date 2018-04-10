@@ -28,7 +28,7 @@ class ToolChain
   # Runs the needed compiler in the current directory
   # Defaults to make, overwrite if make isn't suitable
   # Needs to return true when didn't fail
-  def runCompiler
+  def runCompiler(overrideType = nil)
     runOpen3StuckPrevention("make", "-j", $compileThreads.to_s) == 0
   end
   
@@ -197,7 +197,7 @@ class WindowsMSVC < ToolChain
     return @VSToolSet =~ /LLVM-/i
   end
 
-  def runCompiler
+  def runCompiler(overrideType = nil)
     # if winBothConfigurations
     #   if !runVSCompiler(threads, configuration: "Debug")
     #     return false
@@ -207,7 +207,11 @@ class WindowsMSVC < ToolChain
     #   end
     #   true
     # else
-    runVSCompiler $compileThreads
+    if overrideType
+      runVSCompiler $compileThreads, configuration: overrideType
+    else
+      runVSCompiler $compileThreads
+    end
     # end
   end
   
