@@ -121,6 +121,8 @@ class CEF < ZipAndCmakeDLDep
       installer.addLibrary File.join(@Folder, "Release/", "libGLESv2.dll")
       installer.addLibrary File.join(@Folder, "Release/", "d3dcompiler_47.dll")
       installer.addLibrary File.join(@Folder, "Release/", "widevinecdmadapter.dll")
+      installer.addLibrary File.join(@Folder, "Release/", "cef_sandbox.lib")
+      installer.addLibrary File.join(@Folder, "Release/", "libcef.lib")
 
       glob = Globber.new "libcef_dll_wrapper.lib", File.join(@Folder, "build")
       glob.getResult.each{|f|
