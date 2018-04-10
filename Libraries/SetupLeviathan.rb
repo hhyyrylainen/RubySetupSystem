@@ -45,7 +45,7 @@ class Leviathan < BaseDep
       return false
     end
     runOpen3Checked("git", "submodule", "init")
-    runSystemSafe("git", "submodule", "update")
+    runSystemSafe("git", "submodule", "update") == 0
   end  
 
   def DoSetup
@@ -55,8 +55,7 @@ class Leviathan < BaseDep
   
   def DoCompile
     # This step takes care of everything setup and compiling
-    system("ruby Setup.rb #{passOptionsToSubRubySetupSystemProject}")
-    $?.exitstatus == 0
+    runSystemSafe("ruby", "Setup.rb", passOptionsToSubRubySetupSystemProject) == 0
   end
   
   def DoInstall
