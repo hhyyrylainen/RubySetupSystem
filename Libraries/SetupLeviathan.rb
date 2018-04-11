@@ -55,7 +55,7 @@ class Leviathan < BaseDep
   
   def DoCompile
     # This step takes care of everything setup and compiling
-    runSystemSafe("ruby", "Setup.rb", passOptionsToSubRubySetupSystemProject) == 0
+    runSystemSafe(*["ruby", "Setup.rb", passOptionsToSubRubySetupSystemProject].flatten) == 0
   end
   
   def DoInstall
