@@ -106,7 +106,7 @@ BigListOfPrecompiledStuff = [
   PrecompiledDependency.new(
     "cAudio_master_opts_011351eaf0b6_windows_Visual_Studio_15_2017_Win64",
     "https://boostslair.com/rubysetupsystem/precompiled/",
-    "54970d941117217819a3f91a34c3d3c7d7c220acb8e811d7a1a11209c929cc47"
+    "854ff4950d4a5790a89d71ab62c73c2b45dbe14b1310d40864a745f0073782c8"
   ),
 
   ####################
@@ -138,7 +138,7 @@ BigListOfPrecompiledStuff = [
   PrecompiledDependency.new(
     "FreeImage_master_sv_3_opts_ca4510738395_windows_Visual_Studio_15_2017_Win64",
     "https://boostslair.com/rubysetupsystem/precompiled/",
-    "10df8b8a54e64adfa9d385cacfcca7b163ac8e9682a63dbd935ad0f3accf9ba8"
+    "6debad1b1ba6f18ad5b2ea61aa1c6bba963ffc2141618948161b02cc6556dbbe"
   ),
 
   ####################
