@@ -140,7 +140,31 @@ class CEF < ZipAndCmakeDLDep
   def getInstalledFiles
     # This is only partly precompiled
     if OS.windows?
-      nil
+      [
+        "cefextrablobs",
+        "Resources",
+        "swiftshader",
+
+        "include/base",
+        "include/capi",
+        "include/internal",
+        "include/test",
+        "include/views",
+        "include/wrapper",
+
+        *Dir.glob([@InstallPath + "/include/cef_*.h"]).map{|i| i.sub(@InstallPath + "/", "")},
+
+        # sandbox doesn't work so we don't include it
+        "lib/libcef.lib",
+        "lib/libcef_dll_wrapper.lib",
+
+        "lib/libcef.dll",
+        "lib/chrome_elf.dll",
+        "lib/libEGL.dll",
+        "lib/libGLESv2.dll",
+        "lib/d3dcompiler_47.dll",
+        "lib/widevinecdmadapter.dll",
+      ]
     else
       nil
     end

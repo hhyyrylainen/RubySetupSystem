@@ -88,9 +88,17 @@ BigListOfPrecompiledStuff = [
   ####################
   # AngelScript
   PrecompiledDependency.new(
-    "AngelScript_2_32_0_opts_ca4510738395_windows_Visual_Studio_15_2017_Win64",
+    "AngelScript_2482_opts_ca4510738395_windows_Visual_Studio_15_2017_Win64",
     "https://boostslair.com/rubysetupsystem/precompiled/",
-    "2a9a2b4e7ed8ff99f811b767a224f50c0ee2417438b090ac6202dbf7473a4148"
+    "ef604aab3a7a8653aae48114d5908336edc0c1c90fa83ea1d33b6043a6b20ed8"
+  ),
+
+  ####################
+  # openal soft
+  PrecompiledDependency.new(
+    "OpenAL_Soft_master_opts_ca4510738395_windows_Visual_Studio_15_2017_Win64",
+    "https://boostslair.com/rubysetupsystem/precompiled/",
+    "28b5958e434ab19b0b2881eb9690e6824e8b5bb627fc9e60ea627dfaeac21650"
   ),
 
   ####################
@@ -98,8 +106,16 @@ BigListOfPrecompiledStuff = [
   PrecompiledDependency.new(
     "cAudio_master_opts_011351eaf0b6_windows_Visual_Studio_15_2017_Win64",
     "https://boostslair.com/rubysetupsystem/precompiled/",
-    "02ff2cba48f731339631768b9a5463283a17a914564e196135de5de5e1737404"
+    "54970d941117217819a3f91a34c3d3c7d7c220acb8e811d7a1a11209c929cc47"
   ),
+
+  ####################
+  # CEF
+  PrecompiledDependency.new(
+    "CEF_3_3325_1756_g6d8faa4_opts_3f87dc45b818_windows_Visual_Studio_15_2017_Win64",
+    "https://boostslair.com/rubysetupsystem/precompiled/",
+    "85f6d2e66af7ddcfbe7f80338f8ea359bbef8a37a2ad478b99c09e88ffef8dce"
+  ),  
 
   ####################
   # CEGUI
@@ -114,25 +130,15 @@ BigListOfPrecompiledStuff = [
   PrecompiledDependency.new(
     "FFmpeg_release_3_3_opts_2f846f8da7dc_windows_Visual_Studio_15_2017_Win64",
     "https://boostslair.com/rubysetupsystem/precompiled/",
-    "be09a169c9b23a7e36e56a53075de2a3dc7aa7872cda4b6c6a115f3f899f054e"
+    "d8ea47177c844dfe24dbbc09c52cefb483761ddb14522e865b1ee318414a9ac0"
   ),
 
   ####################
   # FreeImage
   PrecompiledDependency.new(
-    "FreeImage_master_opts_ca4510738395_windows_Visual_Studio_15_2017_Win64",
-    "https://boostslair.com/rubysetupsystem/precompiled/",
-    "8671bdd8500188d54d7978f118b8ce427ea0ca5a0333fc496d0e4b11d3ea35a2"
-  ),
-  PrecompiledDependency.new(
-    "FreeImage_master_sv_2_opts_ca4510738395_windows_Visual_Studio_15_2017_Win64",
-    "https://boostslair.com/rubysetupsystem/precompiled/",
-    "6c32eb67cfd78491ad2e036a42fe2af2331900e6b6503ca1e7bcb51245b85b51"
-  ),
-  PrecompiledDependency.new(
     "FreeImage_master_sv_3_opts_ca4510738395_windows_Visual_Studio_15_2017_Win64",
     "https://boostslair.com/rubysetupsystem/precompiled/",
-    "7004dc2adfdb3feb1725605278949d25609199982ba0347988ed34c623854779"
+    "10df8b8a54e64adfa9d385cacfcca7b163ac8e9682a63dbd935ad0f3accf9ba8"
   ),
 
   ####################
@@ -140,7 +146,7 @@ BigListOfPrecompiledStuff = [
   PrecompiledDependency.new(
     "FreeType_2_8_opts_ca4510738395_windows_Visual_Studio_15_2017_Win64",
     "https://boostslair.com/rubysetupsystem/precompiled/",
-    "d49dc4342394c6f5d4706ffae440f6fc0c25ccb7250ce1bfe57ba2a23f139658"
+    "8dab51b3a7979b07637032905185b3b8c04f58d5e094d807133c800c8c7f6ae0"
   ),
   
   ####################
@@ -148,7 +154,7 @@ BigListOfPrecompiledStuff = [
   PrecompiledDependency.new(
     "Newton_Dynamics_6d9be8ccce94845d8738244f5fd9da19c53886ca_opts_f056e6310903_windows_Visual_Studio_15_2017_Win64",
     "https://boostslair.com/rubysetupsystem/precompiled/",
-    "2565ba6e4177ea8ba28a6165ae4ed73f0e52ea15eaed2c50407dadade5385b36"
+    "50076ddb0225a7eb440bbb67ac07d74186068a31be2c796a6920beeea446e68b"
   ),
 
   ####################
@@ -156,7 +162,7 @@ BigListOfPrecompiledStuff = [
   PrecompiledDependency.new(
     "Ogre_v2-1_opts_57b7e99f7612_windows_Visual_Studio_15_2017_Win64",
     "https://boostslair.com/rubysetupsystem/precompiled/",
-    "03192a1e0f5fa6b1e3679dbeaf417fba5b5483ca484d9fc994aaed00e34326fa"
+    "0caf2a05072da4915da5ddd562d0f0a08d829c35ee8ed3575dea08faa004c60f"
   ),
 
   ####################
@@ -172,7 +178,7 @@ BigListOfPrecompiledStuff = [
   PrecompiledDependency.new(
     "SDL2_release-2_0_6_opts_ca4510738395_windows_Visual_Studio_15_2017_Win64",
     "https://boostslair.com/rubysetupsystem/precompiled/",
-    "8de4294310cbad69e19c7805471dac6130c514c004732090260aa73da1d9f265"
+    "3e78ea3e2dc99720a2f5087d33309ded494993840777a84d6c3cc4d93cc9c2e6"
   ),
 
   ####################
@@ -180,7 +186,7 @@ BigListOfPrecompiledStuff = [
   PrecompiledDependency.new(
     "SFML_2_4_x_opts_ca4510738395_windows_Visual_Studio_15_2017_Win64",
     "https://boostslair.com/rubysetupsystem/precompiled/",
-    "83cab0bf17c06991eaf28d6f3d6ec6a48108259b99603e401726cd7024ed1e43"
+    "b0e4c9d02e5bd8aee92f3971a1e3cb2e76c000d17573cf41b012eafddf67bc6b"
   ),
 
   ####################
@@ -188,7 +194,7 @@ BigListOfPrecompiledStuff = [
   PrecompiledDependency.new(
     "zlib_1_2_11_opts_ca4510738395_windows_Visual_Studio_15_2017_Win64",
     "https://boostslair.com/rubysetupsystem/precompiled/",
-    "4a1a6f16480f7b93687d8fbf8e786fbf185d4710efcda2ec39a8c72885ff999c"
+    "68177dbcce70c835dafb7e4f60b36c46d1a3390183517aaf004b2f160945ddae"
   ),
 ]
 

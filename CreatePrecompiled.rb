@@ -98,7 +98,7 @@ def runPackager
       File.open(infoFile, 'w') {|f|
         f.puts "RubySetupSystem precompiled library for #{CurrentPlatform}"
         f.puts instance.Name + " retrieved from " + instance.RepoURL
-        f.puts instance.Version + " Packaged at " + Time.now.to_s
+        f.puts instance.Version.to_s + " Packaged at " + Time.now.to_s
         f.puts ""
         f.puts "You can probably find license from the repo url if it isn't included here"
         f.puts "This info file is included in " + zipName
