@@ -414,6 +414,8 @@ def requireCMD(cmdName, extraHelp = nil)
       return
     when "start"
       return
+    when "mklink"
+      return
     end
   end
 

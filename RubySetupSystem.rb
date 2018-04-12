@@ -238,7 +238,7 @@ def passOptionsToSubRubySetupSystemProject
     opts.push "--only-project"
   end
 
-  opts.join ' '
+  opts
 end
 
 

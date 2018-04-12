@@ -4,6 +4,20 @@
 require_relative "RubyCommon.rb"
 require_relative "Helpers.rb"
 
+# Converts unix path to windows path
+def convertPathToWindows(path, doubleEscape = false)
+
+  if doubleEscape
+    path.gsub /\//, "\\\\"
+  else
+    path.gsub /\//, "\\"
+  end
+end
+
+def runningAsAdmin?
+  (`reg query HKU\\S-1-5-19 2>&1` =~ /ERROR/).nil?
+end
+
 # Makes sure that the wanted value is specified for all targets that match the regex
 def verifyVSProjectRuntimeLibrary(projFile, solutionFile, matchRegex, wantedRuntimeLib,
                                   justReturnValue: false)
