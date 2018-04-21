@@ -483,6 +483,12 @@ def getLinuxOS()
     raise "getLinuxOS called on Windows!"
   end
 
+  # Pretend to be on fedora to get the package names correctly (as
+  # they aren't attempted to be installed this is fine)
+  if defined? "SkipPackageManager" && SkipPackageManager
+    return "fedora"
+  end
+
   osrelease = `lsb_release -is`.strip
 
   onError "Failed to run 'lsb_release'. Make sure you have it installed" if osrelease.empty?
