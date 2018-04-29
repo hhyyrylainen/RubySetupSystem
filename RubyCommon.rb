@@ -485,7 +485,7 @@ def getLinuxOS()
 
   # Pretend to be on fedora to get the package names correctly (as
   # they aren't attempted to be installed this is fine)
-  if defined? "SkipPackageManager" && SkipPackageManager
+  if (defined? "SkipPackageManager") && SkipPackageManager
     return "fedora"
   end
 
