@@ -23,8 +23,8 @@ class SFML < StandardCMakeDep
 
     if os == "ubuntu"
       return [
-        "libxcb-image0-dev", "libsystemd-dev", " libjpeg9-dev", "libvorbis-dev",
-        "libflac-devel", "libopenal-dev"
+        "libxcb-image0-dev", "libsystemd-dev", "libjpeg9-dev", "libvorbis-dev",
+        "libflac-dev", "libopenal-dev"
       ]
     end
     

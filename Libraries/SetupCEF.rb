@@ -62,7 +62,7 @@ class CEF < ZipAndCmakeDLDep
     if os == "ubuntu"
       
       return [
-        "libxcomposite1", "	libxtst6", "libxss1", "libatk1.0-0"
+        "libxcomposite1", "libxtst6", "libxss1", "libatk1.0-0"
       ]
     end
     

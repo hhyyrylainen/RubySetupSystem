@@ -27,7 +27,7 @@ class CAudio < StandardCMakeDep
 
     if os == "ubuntu"
       return [
-        "openal-soft-dev"
+        "libopenal-dev"
       ]
     end
     
