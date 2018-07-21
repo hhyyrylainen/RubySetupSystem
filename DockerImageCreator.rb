@@ -62,7 +62,7 @@ def doDockerBuild(folder)
 end
 
 def writeCommonDockerFile(file, packageNames)
-  file.puts("FROM fedora:27")
+  file.puts("FROM fedora:28")
   file.puts("RUN dnf install -y --setopt=deltarpm=false ruby ruby-devel " +
             # Needed to compile native extensions
             # Enable rawhide if we need some new stuff (TODO: figure out how the new
@@ -110,6 +110,9 @@ def runDockerCreate(libsList, mainProjectAsDep = nil)
 
   # Might as well install all the svc tools
   packageNames.push "git", "svn", "mercurial"
+
+  # And 7z
+  packageNames.push "p7zip"
 
   packageNames.uniq!
   
