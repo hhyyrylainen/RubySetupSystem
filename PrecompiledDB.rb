@@ -114,7 +114,7 @@ BigListOfPrecompiledStuff = [
   PrecompiledDependency.new(
     "CEF_3_3325_1756_g6d8faa4_opts_3f87dc45b818_windows_Visual_Studio_15_2017_Win64",
     "https://boostslair.com/rubysetupsystem/precompiled/",
-    "28bb3a9f709e683b5eb52e4133cf99c1110dc2249d4da056505001f5df5535f7"
+    "1fe4a577daa91e48a09ffea51a4b9e817b4ee14bf4321e683b0ed57478b282b8"
   ),  
 
   ####################
