@@ -203,7 +203,10 @@ def verifySVNUrl(wantedurl)
 
     if !success
       error "Failed to relocate. Deleting folder contents and re-checking out"
-      FileUtils.rm_rf(Dir.glob("*", File::FNM_DOTMATCH).reject { |a| a =~ /^\.{1,2}$/ })
+      Dir.glob("*", File::FNM_DOTMATCH).reject{ |a| a =~ /^\.{1,2}$/ }.each{|i|
+        puts "Deleting: #{i}"
+        FileUtils.rm_rf(i)
+      }
 
       if !runSystemSafe "svn", "co", wantedurl, "."
         onError "Failed to checkout from svn after deleting previous contents"
