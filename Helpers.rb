@@ -175,7 +175,7 @@ end
 #
 def verifySVNUrl(wantedurl)
 
-  match = `svn info`.strip.match(/.*URL:\s?(.*thrive\S+).*/i)
+  match = `svn info`.strip.match(/.*URL:\s?(\S+).*/i)
 
   onError("'svn info' unable to find URL with regex") if !match
 
@@ -183,12 +183,34 @@ def verifySVNUrl(wantedurl)
 
   if currenturl != wantedurl
 
-    info "SVN url is not the target url with username, #{currenturl} != #{WantedURL}"
+    info "SVN url is not the target url, #{currenturl} != #{wantedurl}"
 
-    runOpen3Checked "svn", "relocate", WantedURL
+    success = false
+
+    if !runSystemSafe "svn", "relocate", wantedurl
+      warning "relocation probably failed"
+    end
+
+    match = `svn info`.strip.match(/.*URL:\s?(\S+).*/i)
+
+    if !match
+      success = false
+    else
+
+      currenturl = match.captures[0]
+      success = currenturl == wantedurl
+    end
+
+    if !success
+      error "Failed to relocate. Deleting folder contents and re-checking out"
+      FileUtils.rm_rf(Dir.glob("*", File::FNM_DOTMATCH).reject { |a| a =~ /^\.{1,2}$/ })
+
+      if !runSystemSafe "svn", "co", wantedurl, "."
+        onError "Failed to checkout from svn after deleting previous contents"
+      end
+    end
 
     success "svn URL updated"
-    
   end
 
   info "svn URL is correct"
