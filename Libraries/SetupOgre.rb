@@ -16,6 +16,10 @@ class Ogre < StandardCMakeDep
       @Options.push "-DOGRE_BUILD_SAMPLES2=OFF"
     end
 
+    if args[:buildTools]
+      @Options.push "-DOGRE_BUILD_TOOLS=ON"
+    end
+
     if !@RepoURL
       @RepoURL = "https://bitbucket.org/sinbad/ogre"
     end
@@ -114,7 +118,7 @@ class Ogre < StandardCMakeDep
         "Docs/License.html",
 
         # Might as well include the tool
-        "bin/relwithdebinfo/OgreMeshTool.exe",
+        "bin/RelWithDebInfo/OgreMeshTool.exe",
       ]
     else
       #onError "TODO: linux file list"

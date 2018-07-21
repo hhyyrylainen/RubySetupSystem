@@ -2,10 +2,11 @@
 #
 class CEF < ZipAndCmakeDLDep
   def initialize(args)
-    super("CEF", "CEF", args)
+    super("CEF", "CEF", args, zipType: :p7zip)
 
     self.HandleStandardCMakeOptions
 
+    # TODO: do similar version select as an SetupAngelScript.rb
     @Version = "3.3325.1756.g6d8faa4"
 
     # sha1
@@ -13,13 +14,15 @@ class CEF < ZipAndCmakeDLDep
 
     # Detect platform
     if OS.linux?
+      # TODO: also move this to 7z
       @UnZippedName = "cef_binary_#{@Version}_linux64_minimal"
       @DLHash = "5077b9580862c6304a34fbe334bc05e4ed1fca55"
     elsif OS.windows?
       # Needs to patch visual studio 1913 to the supported ones
       @UnZippedName = "cef_binary_#{@Version}_windows64_minimal"
-      @DownloadURL = "https://boostslair.com/rubysetupsystem/deps/#{@UnZippedName}.tar.bz2"
-      @DLHash = "6acb40dcb68e6346268a5145e1abc827ae0ce419"
+      @DownloadURL = "https://boostslair.com/rubysetupsystem/deps/#{@UnZippedName}.7z"
+      @DLHash = "6e5efee25057e8b86c347a0e37f3b034376148d872716cc4771eb5f186b86ad0"
+      @DLHashType = 2
     elsif OS.mac?
       @UnZippedName = "cef_binary_#{@Version}_macosx64_minimal"
       @DLHash = "96b9d98ee0ee80a1f826588565efc0820070764f"
@@ -27,7 +30,11 @@ class CEF < ZipAndCmakeDLDep
       onError "Unknown platform for CEF setup"
     end
 
-    @LocalFileName = @UnZippedName + ".tar.bz2"
+    if OS.windows?
+      @LocalFileName = @UnZippedName + ".7z"
+    else
+      @LocalFileName = @UnZippedName + ".tar.bz2"
+    end
     @LocalPath = File.join(CurrentDir, @LocalFileName)
     if !@DownloadURL
       @DownloadURL = "http://opensource.spotify.com/cefbuilds/#{@LocalFileName}"

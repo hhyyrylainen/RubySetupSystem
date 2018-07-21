@@ -376,10 +376,17 @@ class ZipDLDep < BaseDep
     # Unzip it
     Dir.chdir(CurrentDir) do
 
+      # Remove the old unzip attempt
+      if File.exists?(@UnZippedName)
+        info "Deleting previous unzip attempt: #{@UnZippedName}"
+        FileUtils.rm_rf @UnZippedName, secure: true        
+      end
+
       case @ZipType
       when :tar
-        runSystemSafe("tar", "-xvf", @LocalFileName)
-
+        if !runSystemSafe("tar", "-xvf", @LocalFileName)
+          onError "failed to run tar on zip: " + @LocalFileName
+        end
       when :zip
         Zip::File.open(@LocalFileName) do |zip_file|
           zip_file.each do |entry|
@@ -388,16 +395,25 @@ class ZipDLDep < BaseDep
             entry.extract()
           end
         end
+      when :p7zip
+        if !runSystemSafe(p7zip, "x", @LocalFileName)
+          onError "failed to run 7zip on zip: " + @LocalFileName
+        end        
       else
         onError "Invalid zip type used in ZipDLDep: #{@ZipType}"
       end
 
-      if !File.exists?(@UnZippedName)
-        onError "Unzipping file didn't create expected folder '#{@UnZippedName}'"
+      expandedUnzip = File.absolute_path(@UnZippedName)
+
+      if !File.exists?(expandedUnzip)
+        onError "Unzipping file didn't create expected folder '#{expandedUnzip}'"
       end
 
-      FileUtils.rm_rf @Folder, secure: true
-      FileUtils.mv @UnZippedName, @Folder
+      if expandedUnzip != @Folder
+        info "Renaming unzipped folder: #{expandedUnzip} => #{@Folder}"
+        FileUtils.rm_rf @Folder, secure: true        
+        FileUtils.mv expandedUnzip, @Folder
+      end
     end
 
     if !File.exists?(@Folder)
@@ -419,7 +435,7 @@ end
 class ZipAndCmakeDLDep < ZipDLDep
 
   def initialize(name, foldername, args, zipType: :tar)
-    super(name, foldername, args)
+    super(name, foldername, args, zipType: zipType)
 
     @CMakeListFolder = "../"
   end
