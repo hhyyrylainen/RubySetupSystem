@@ -83,6 +83,8 @@ end
 
 class GitVersionType
 
+  # Not a git repo
+  NOTGIT=0
   UNSPECIFIED=1
   BRANCH=2
   HASH=3
@@ -101,7 +103,7 @@ class GitVersionType
 
     if !isInGitRepo
       warning "Git version type detect not run in a git folder (#{Dir.pwd})"
-      return UNSPECIFIED
+      return NOTGIT
     end
 
     if runOpen3Suppressed("git", "show-ref", "--verify",

@@ -123,12 +123,10 @@ class BaseDep
 
     Dir.chdir(@Folder) do
 
-      
-      
       versionType = GitVersionType.detect(@Version)
 
       case versionType
-      when GitVersionType::HASH, GitVersionType::TAG
+      when GitVersionType::HASH, GitVersionType::TAG, GitVersionType::UNSPECIFIED
         puts "This dependency uses a specific git commit (#{@Version})"
         return true
       else
