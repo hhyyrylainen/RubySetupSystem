@@ -83,6 +83,11 @@ def writeCommonDockerFile(file, packageNames)
   # glm is no longer used
   #file.puts("RUN dnf install -y --disablerepo=* --enablerepo=rawhide " +
   #           "--setopt=deltarpm=false glm-devel")
+
+  # Disable SVN password saving
+  file.puts("RUN mkdir /root/.subversion")
+  file.puts("RUN echo $'[global]\\n\\
+store-plaintext-passwords = no\\n' > /root/.subversion/servers")
 end
 
 # Main run method
