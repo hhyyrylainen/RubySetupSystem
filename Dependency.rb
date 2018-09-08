@@ -104,6 +104,36 @@ class BaseDep
   def RequiresClone
     not File.exist?(@Folder)
   end
+
+  def IsUsingSpecificCommit
+
+    # If not cloned can't determine
+    if self.RequiresClone
+      return false
+    end
+
+    # If no specific thing is set can't figure it out
+    if !@Version
+      return false
+    end
+
+    Dir.chdir(@Folder) do
+      
+      versionType = GitVersionType.detect(@Version)
+
+      case versionType
+      when GitVersionType::HASH, GitVersionType::TAG
+        return true
+      end
+    end
+
+    false
+  end
+
+  # Lite version of Retrieve
+  def MakeSureRightCommitIsCheckedOut
+    self.Update
+  end
   
   def Retrieve
     info "Retrieving #{@Name}"

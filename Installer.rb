@@ -160,6 +160,10 @@ class Installer
         if x.RequiresClone
           info "Dependency is missing, downloading it despite update pulling is disabled"
           x.Retrieve
+        elsif x.IsUsingSpecificCommit
+          info "Making sure dependency '#{x.Name}' has right commit even though " +
+               "pull updates is disabled"
+          x.MakeSureRightCommitIsCheckedOut
         end
       end      
     end
