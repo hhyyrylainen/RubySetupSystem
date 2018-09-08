@@ -76,6 +76,11 @@ end
 #
 # Git things
 #
+# Checks if working directory is a git repo
+def isInGitRepo
+  runOpen3Suppressed("git", "status") == 0
+end
+
 class GitVersionType
 
   UNSPECIFIED=1
@@ -92,6 +97,11 @@ class GitVersionType
     if !versionStr || versionStr.length == 0
       # Default branch
       return BRANCH
+    end
+
+    if !isInGitRepo
+      warning "Git version type detect not run in a git folder (#{Dir.pwd})"
+      return UNSPECIFIED
     end
 
     if runOpen3Suppressed("git", "show-ref", "--verify",

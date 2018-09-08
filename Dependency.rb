@@ -122,6 +122,8 @@ class BaseDep
     end
 
     Dir.chdir(@Folder) do
+
+      
       
       versionType = GitVersionType.detect(@Version)
 
@@ -130,7 +132,8 @@ class BaseDep
         puts "This dependency uses a specific git commit (#{@Version})"
         return true
       else
-        puts "Detected version (#{@Version}) is not specific: " + versionType.to_s
+        puts "Detected version (#{@Version}) is not specific: " +
+             GitVersionType.typeToStr(versionType)
         return false
       end
     end
