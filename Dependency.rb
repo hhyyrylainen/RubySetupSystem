@@ -107,13 +107,17 @@ class BaseDep
 
   def IsUsingSpecificCommit
 
+    puts "Checking if '#{@Name}' is using a specific version / commit"
+
     # If not cloned can't determine
     if self.RequiresClone
+      warning "Can't check because this requires cloning"
       return false
     end
 
     # If no specific thing is set can't figure it out
     if !@Version
+      info "Version is empty(#{@Version}). This doesn't use a specific commit"
       return false
     end
 
@@ -123,6 +127,7 @@ class BaseDep
 
       case versionType
       when GitVersionType::HASH, GitVersionType::TAG
+        puts "This dependency uses a specific git commit (#{@Version})"
         return true
       end
     end
@@ -392,6 +397,10 @@ class ZipDLDep < BaseDep
       return true
     end
 
+    false
+  end
+
+  def IsUsingSpecificCommit
     false
   end
 
