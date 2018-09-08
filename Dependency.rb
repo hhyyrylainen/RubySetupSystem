@@ -129,10 +129,11 @@ class BaseDep
       when GitVersionType::HASH, GitVersionType::TAG
         puts "This dependency uses a specific git commit (#{@Version})"
         return true
+      else
+        puts "Detected version (#{@Version}) is not specific: " + versionType.to_s
+        return false
       end
     end
-
-    false
   end
 
   # Lite version of Retrieve
