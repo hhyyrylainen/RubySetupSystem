@@ -3,7 +3,7 @@
 class CEF < ZipAndCmakeDLDep
   def initialize(args)
     # Windows uses 7z as the zip type
-    super("CEF", "CEF", args, zipType: if OS.windows? then :p7zip else :tar end)
+    super("CEF", "CEF", args, zipType: :tar)
 
     self.HandleStandardCMakeOptions
 
