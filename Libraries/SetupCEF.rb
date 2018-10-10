@@ -30,12 +30,21 @@ class CEF < ZipAndCmakeDLDep
 
     # Version specific hashes
     case @Version
+    when "3.3497.1837.g00188c7"
+      if OS.linux?
+        @DLHash = "9c785c3002092236dac2f45ff1e436a1d44bedc0"
+      elsif OS.windows?
+        @DLHash = "6a9c87f9bbc00d453aff62f1598bd1296a4dfc8f"
+      elsif OS.mac?
+        @DLHash = "e30bcab7a0688c51e7c97d5c62ab75f9e6adb59b"
+      end         
     when "3.3497.1836.gb472a8d"
       if OS.linux?
         @DLHash = "47c5dd712d7784c7627df53ad2424d7d8f18ed24"
       elsif OS.windows?
         @DLHash = "8d1367ee069b0658dde031ff24fc5946e707f17b"
       elsif OS.mac?
+        # This is most likely wrong
         @DLHash = "e30bcab7a0688c51e7c97d5c62ab75f9e6adb59b"
       end
     when "3.3396.1777.g636f29b"
