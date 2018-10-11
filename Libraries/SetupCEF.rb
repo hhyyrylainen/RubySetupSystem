@@ -188,7 +188,9 @@ class CEF < ZipAndCmakeDLDep
         "include/views",
         "include/wrapper",
 
-        *Dir.glob([@InstallPath + "/include/cef_*.h"]).map{|i| i.sub(@InstallPath + "/", "")},
+        *Dir.chdir(@InstallPath){
+          Dir.glob(["include/cef_*.h"])
+        },
 
         # sandbox doesn't work so we don't include it
         "lib/libcef.lib",

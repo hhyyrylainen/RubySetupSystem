@@ -93,6 +93,12 @@ BigListOfPrecompiledStuff = [
     "4932ec2ca2f6481e578e092cf6218428d5e1d67160e1cc9ffb29f43a1ace7263"
   ),
 
+  PrecompiledDependency.new(
+    "AngelScript_2547_opts_ca4510738395_windows_Visual_Studio_15_2017_Win64",
+    "https://boostslair.com/rubysetupsystem/precompiled/",
+    "de735df77df1d90fbdb4d6e25ab4b70cfa6f02af2626dd5f523f2bc67c7413b3"
+  ),
+
   ####################
   # OpenAL soft
   PrecompiledDependency.new(
@@ -115,7 +121,13 @@ BigListOfPrecompiledStuff = [
     "CEF_3_3325_1756_g6d8faa4_opts_3f87dc45b818_windows_Visual_Studio_15_2017_Win64",
     "https://boostslair.com/rubysetupsystem/precompiled/",
     "1fe4a577daa91e48a09ffea51a4b9e817b4ee14bf4321e683b0ed57478b282b8"
-  ),  
+  ),
+
+  PrecompiledDependency.new(
+    "CEF_3_3497_1837_g00188c7_opts_3f87dc45b818_windows_Visual_Studio_15_2017_Win64",
+    "https://boostslair.com/rubysetupsystem/precompiled/",
+    "2df57479283cc793c4672c9c47ef28538a740854e7cb8f132bfb7f6a22e3cf33"
+  ),
 
   ####################
   # CEGUI
