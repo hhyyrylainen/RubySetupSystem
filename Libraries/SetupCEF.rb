@@ -32,7 +32,11 @@ class CEF < ZipAndCmakeDLDep
     case @Version
     when "3.3497.1837.g00188c7"
       if OS.linux?
-        @DLHash = "9c785c3002092236dac2f45ff1e436a1d44bedc0"
+        @DLHash = "7fc06e34e07efa7b8dd9859b67bd86fcab28d762fe071d77b62fbb05d7041fe0"
+        @DLHashType = 2
+        self.ChangeZipType(:p7zip)
+        @DownloadURL = "https://boostslair.com/rubysetupsystem/deps/" +
+                       "#{@UnZippedName}#{self.GetExtensionForZipType}"
       elsif OS.windows?
         @DLHash = "6a9c87f9bbc00d453aff62f1598bd1296a4dfc8f"
       elsif OS.mac?
@@ -60,7 +64,7 @@ class CEF < ZipAndCmakeDLDep
     end
 
     if !@LocalFileName
-      @LocalFileName = @UnZippedName + ".tar.bz2"
+      @LocalFileName = @UnZippedName + self.GetExtensionForZipType
     end
     
     @LocalPath = File.join(CurrentDir, @LocalFileName)

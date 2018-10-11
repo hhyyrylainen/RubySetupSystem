@@ -468,6 +468,24 @@ class ZipDLDep < BaseDep
     # RequiresClone and DoClone already handle updating the link in the constructor
     true
   end
+
+  def ChangeZipType(zipType)
+    @ZipType = zipType
+  end
+
+  def GetExtensionForZipType
+    case @ZipType
+    when :tar
+         # this isn't the only possible value with tar
+         ".tar.bz2"
+    when :zip
+      ".zip"
+    when :p7zip
+      ".7z"
+    else
+      onError "unknown zip type: #{@ZipType}"
+    end
+  end
   
   
 end
