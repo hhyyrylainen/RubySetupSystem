@@ -112,6 +112,42 @@ def runOpen3(*cmdAndArgs, errorPrefix: "", redError: false)
   
 end
 
+# Runs Open3 for the commad, returns exit status and output string
+def runOpen3CaptureOutput(*cmdAndArgs)
+
+  output = ""
+
+  if cmdAndArgs.length < 1
+    onError "Empty runOpen3 command"
+  end
+
+  if !File.exists? cmdAndArgs[0] or !Pathname.new(cmdAndArgs[0]).absolute?
+    # check that the command exists if it is not a full path to a file
+    requireCMD cmdAndArgs[0]
+  end
+
+  Open3.popen3(*cmdAndArgs) {|stdin, stdout, stderr, wait_thr|
+
+    # These need to be threads to work nicely on windows
+    outThread = Thread.new{
+      stdout.each {|line|
+        output += line
+      }
+    }
+
+    errThread = Thread.new{
+      stderr.each {|line|
+        output += line
+      }
+    }    
+
+    exit_status = wait_thr.value
+    return exit_status, output
+  }
+
+  onError "Execution shouldn't reach here"
+end
+
 # Runs Open3 for the commad, returns exit status. Restarts command a few times if fails to run
 def runOpen3StuckPrevention(*cmdAndArgs, errorPrefix: "", redError: false, retryCount: 5,
                             stuckTimeout: 120)

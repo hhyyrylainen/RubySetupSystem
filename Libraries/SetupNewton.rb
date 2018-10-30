@@ -5,9 +5,18 @@ class Newton < StandardCMakeDep
   def initialize(args)
     super("Newton Dynamics", "newton-dynamics", args)
 
-    # No longer exists
     if args[:disableDemos]
-      @Options.push "-DNEWTON_DEMOS_SANDBOX=OFF"
+      @Options.push "-DNEWTON_BUILD_SANDBOX_DEMOS=OFF"
+    end
+
+    if args[:disableProfiler]
+      @Options.push "-DNEWTON_BUILD_PROFILER=OFF"
+    end
+
+    if args[:shared]
+      @Options.push "-DNEWTON_BUILD_SHARED_LIBS=ON"
+    else
+      @Options.push "-DNEWTON_BUILD_SHARED_LIBS=OFF"
     end
 
     self.HandleStandardCMakeOptions

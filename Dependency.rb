@@ -292,6 +292,29 @@ class BaseDep
   def standardGitUpdate
 
     runSystemSafe "git", "fetch"
+
+    # make sure the origin is right
+    if @RepoURL
+
+      status, origin = runOpen3CaptureOutput("git", "remote", "get-url", "origin")
+
+      if status != 0
+
+        error "Failed to get current remote git url"
+      else
+
+        origin.strip!
+
+        if @RepoURL != origin
+
+          info "Correcting dependency url from #{origin} to #{@RepoURL}"
+
+          if runSystemSafe("git", "remote", "set-url", "origin", @RepoURL) != 0
+            error "Failed to change url"
+          end
+        end
+      end
+    end
     
     if runSystemSafe("git", "checkout", @Version) != 0
       return false
