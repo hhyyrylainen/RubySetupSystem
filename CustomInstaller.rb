@@ -23,6 +23,7 @@ class CustomInstaller
 
     # Target folders
     @IncludeFolder = "include"
+    @ExtraIncludePrefix = ""
     @Libfolder = "lib"
   end
 
@@ -34,6 +35,11 @@ class CustomInstaller
   # Add library files to install (these are *.lib, *.dll, *.a or *.so files)
   def addLibrary(*libraryFiles)
     @Libraries.push *libraryFiles
+  end
+
+  # Sets an extra path prefix for includes
+  def setIncludePrefix(prefix)
+    @ExtraIncludePrefix = prefix
   end
 
   def run
@@ -50,6 +56,10 @@ class CustomInstaller
     count = 0
     
     includeTarget = File.join(@BasePath, @IncludeFolder)
+
+    if @ExtraIncludePrefix
+      includeTarget = File.join(includeTarget, @ExtraIncludePrefix)
+    end
 
     @Includes.each{|f|
 

@@ -6,6 +6,10 @@ class OpenALSoft < StandardCMakeDep
 
     self.HandleStandardCMakeOptions
 
+    if args[:disableExamples]
+      @Options.push "-DALSOFT_EXAMPLES=OFF"
+    end
+
     if !@RepoURL
       @RepoURL = "https://github.com/kcat/openal-soft.git"
     end

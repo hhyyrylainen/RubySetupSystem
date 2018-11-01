@@ -52,6 +52,11 @@ class Bullet < StandardCMakeDep
       @Options.push "-DBUILD_SHARED_LIBS=OFF"
     end
 
+    # Auto Windows options
+    if OS.windows?
+      @Options.push "-DUSE_MSVC_RUNTIME_LIBRARY_DLL=ON"
+    end
+
     self.HandleStandardCMakeOptions
 
     if !@RepoURL
@@ -65,6 +70,68 @@ class Bullet < StandardCMakeDep
 
   def DoUpdate
     self.standardGitUpdate
+  end
+
+  # TODO: debug suffix for builds
+  def translateBuildType(type)
+    if type == "RelWithDebInfo"
+      return "_RelWithDebugInfo"
+    elsif type == "MinSizeRel"
+      return "_MinimumSizeRelease"
+    elsif type == "Release"
+      return ""
+    elsif type == "Debug"
+      return "_Debug"
+    else
+      return type
+    end
+  end
+
+  def DoInstall
+    if OS.windows?
+      # There isn't an install target on Windows
+      # so copy manually
+      # Copy files to the install target folder
+      
+      base = File.join(@Folder, "build/lib/#{CMakeBuildType}/")
+      target = File.join @InstallPath, "lib/"
+
+      type = translateBuildType CMakeBuildType
+      
+      # libraries
+      # TODO: this needs fixing for debug vs. release mode
+      [
+        "Bullet2FileLoader", "Bullet3Collision", "Bullet3Common", "Bullet3Dynamics",
+        "Bullet3Geometry", "Bullet3OpenCL_clew", "BulletCollision", "BulletDynamics",
+        "BulletFileLoader", "BulletInverseDynamicsUtils", "BulletInverseDynamics",
+        "BulletRobotics", "BulletSoftBody", "BulletWorldImporter", "BulletXmlWorldImporter",
+        "ConvexDecomposition", "GIMPACTUtils", "HACD", "LinearMath"
+      ].each{|item|
+        FileUtils.cp base + "#{item}#{type}.lib", target + item + ".lib"
+      }
+      
+      # include files
+      installer = CustomInstaller.new(@InstallPath, File.join(@Folder, "src"))
+      installer.setIncludePrefix "bullet"
+
+      Dir[File.join(@Folder, "src", "**/{*.h,*.hpp}")].each{|file|
+        installer.addInclude(file)
+      }
+      
+      installer.run
+
+      # extras
+      installer = CustomInstaller.new(@InstallPath, File.join(@Folder, "Extras"))
+      installer.setIncludePrefix "bullet"
+
+      Dir[File.join(@Folder, "Extras", "**/{*.h,*.hpp}")].each{|file|
+        installer.addInclude(file)
+      }
+      
+      installer.run
+    else
+      super
+    end
   end
 
   def getInstalledFiles
