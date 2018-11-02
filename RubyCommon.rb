@@ -519,6 +519,11 @@ def getLinuxOS()
     raise "getLinuxOS called on Windows!"
   end
 
+  # Override OS type if wanted
+  if $pretendLinux
+    return $pretendLinux
+  end
+
   # Pretend to be on fedora to get the package names correctly (as
   # they aren't attempted to be installed this is fine)
   if (defined? "SkipPackageManager") && SkipPackageManager

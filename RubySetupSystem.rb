@@ -60,6 +60,12 @@ OptionParser.new do |opts|
     $options[:noPackager] = true
   end
 
+  opts.on("--pretend-linux OS", "Pretend that setup is ran on specified Linux OS. " +
+                                "A good choice is 'fedora' for getting package names if " +
+                                "your OS isn't supported by this setup") do |os|
+    $pretendLinux = os
+  end 
+
   opts.on("--no-updates", "Skips downloading dependencies / making sure they "+
                           "are up to date") do |b|
     $options[:noUpdates] = true
@@ -186,7 +192,10 @@ if OS.linux?
 
     onError "lsb_release is missing, please install it."
   end
-  
+
+  if $pretendLinux
+    info "Pretending that current Linux OS is: #{$pretendLinux}"
+  end
 else
   HasDNF = false
 end
