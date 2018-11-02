@@ -100,6 +100,14 @@ BigListOfPrecompiledStuff = [
   ),
 
   ####################
+  # bullet
+  PrecompiledDependency.new(
+    "Bullet_2_87_opts_3698054a794e_windows_Visual_Studio_15_2017_Win64",
+    "https://boostslair.com/rubysetupsystem/precompiled/",
+    "bf87d8dd67eb88aef0d8ae2478d0d781d605b87060e19f289ece103b163c2814"
+  ),
+
+  ####################
   # OpenAL soft
   PrecompiledDependency.new(
     "OpenAL_Soft_master_opts_ca4510738395_windows_Visual_Studio_15_2017_Win64",

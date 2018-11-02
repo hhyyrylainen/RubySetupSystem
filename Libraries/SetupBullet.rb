@@ -96,6 +96,8 @@ class Bullet < StandardCMakeDep
       base = File.join(@Folder, "build/lib/#{CMakeBuildType}/")
       target = File.join @InstallPath, "lib/"
 
+      FileUtils.mkdir_p target
+
       type = translateBuildType CMakeBuildType
       
       # libraries
@@ -137,9 +139,26 @@ class Bullet < StandardCMakeDep
   def getInstalledFiles
     if OS.windows?
       [
-        "lib/Newton.dll",
-        "lib/Newton.lib",
-        "include/Newton.h",
+        "lib/Bullet2FileLoader.lib",
+        "lib/Bullet3Collision.lib",
+        "lib/Bullet3Common.lib",
+        "lib/Bullet3Dynamics.lib",
+        "lib/Bullet3Geometry.lib",
+        "lib/Bullet3OpenCL_clew.lib",
+        "lib/BulletCollision.lib",
+        "lib/BulletDynamics.lib",
+        "lib/BulletFileLoader.lib",
+        "lib/BulletInverseDynamicsUtils.lib",
+        "lib/BulletInverseDynamics.lib",
+        "lib/BulletRobotics.lib",
+        "lib/BulletSoftBody.lib",
+        "lib/BulletWorldImporter.lib",
+        "lib/BulletXmlWorldImporter.lib",
+        "lib/ConvexDecomposition.lib",
+        "lib/GIMPACTUtils.lib",
+        "lib/HACD.lib",
+        "lib/LinearMath.lib",
+        "include/bullet",
       ]
     else
       #onError "TODO: linux file list"
