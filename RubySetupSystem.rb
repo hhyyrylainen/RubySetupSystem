@@ -247,6 +247,11 @@ def passOptionsToSubRubySetupSystemProject
     opts.push "--only-project"
   end
 
+  if $pretendLinux
+    opts.push "--pretend-linux"
+    opts.push $pretendLinux
+  end
+  
   opts
 end
 
