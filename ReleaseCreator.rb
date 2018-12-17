@@ -133,7 +133,7 @@ def handlePlatform(props, platform, prettyName)
   Dir.chdir(ProjectDir){
 
     File.open(File.join(target, "revision.txt"), 'w') {
-      |file| file.write("Package time: " + `date --iso-8601=seconds` + "\n\n" + `git log -n 1`)
+      |file| file.write("Package time: " + Time.now.iso8601 + "\n\n" + `git log -n 1`)
     }
   }
 
@@ -181,7 +181,7 @@ def handlePlatform(props, platform, prettyName)
       props.executables.each{|i| handleDebugInfoFileLinux File.join(binTarget, i)}
       
     when "windows"
-      Dir.glob([File.join(binTarget, "**/*.dll")]){|i|
+      Dir.glob([File.join(binTarget, "**/*.pdb")]){|i|
         handleDebugInfoFileWindows i
       }
 
@@ -241,6 +241,10 @@ def runMakeRelease(props)
     handlePlatform props, "linux", "-LINUX-generic"
 
     # TODO: OS specific Linux package
+  elsif OS.windows?
+
+    # Windows 64 bit
+    handlePlatform props, "windows", "-WINDOWS-64bit"
     
   else
     onError "unknown platform to package for"
