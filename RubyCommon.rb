@@ -51,9 +51,15 @@ end
 # Waits for a keypress
 def waitForKeyPress
   print "Press any key to continue"
-  STDIN.getch
+  got = STDIN.getch
   # Extra space to overwrite in case next output is short
-  print "                         \r" 
+  print "                         \r"
+  
+  # Cancel on CTRL-C
+  if got == "\x03"
+    puts "Got interrupt key, quitting"
+    exit 1
+  end
 end
 
 # Runs command with system (escaped like open3 but can't be stopped if running a long time)
@@ -582,4 +588,3 @@ def p7zip
     "7za"
   end
 end
-

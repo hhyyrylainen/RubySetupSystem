@@ -5,14 +5,25 @@
 def isGoodLDDFound(lib)
 
   case lib
-  when /.*swresample.*/i
-    true
-  when /.*ilbc.*/i
-    true
+  # FFMPEG is now bundled so there should not be needed
+  # when /.*swresample.*/i
+  #   true
+  # when /.*avcodec.*/i
+  #   true
+  # when /.*avformat.*/i
+  #   true
+  # when /.*avutil.*/i
+  #   true
+  # when /.*swscale.*/i
+  #   true    
+  # when /.*ilbc.*/i
+  #   true
+  # when /.*theora.*/i
+  #   true
+  # when /.*vpx.*/i
+  #   true    
   when /.*vorbis.*/i
-    true
-  when /.*theora.*/i
-    true
+    true      
   when /.*opus.*/i
     true
   when /.*pcre.*/i
@@ -21,21 +32,11 @@ def isGoodLDDFound(lib)
     true
   when /.*tinyxml.*/i
     true
-  when /.*avcodec.*/i
-    true
-  when /.*avformat.*/i
-    true
-  when /.*avutil.*/i
-    true
-  when /.*swscale.*/i
-    true
   when /.*rtmp.*/i
     true
   when /.*gsm.*/i
     true
   when /.*soxr.*/i
-    true
-  when /.*vpx.*/i
     true
   when /.*x2.*/i
     true
@@ -69,51 +70,53 @@ def isGoodLDDFound(lib)
     true
   when /.*zzip.*/i
     true
-  when /.*Cg.*/i
-    true
-  when /.*va.*/i
-    true
-  when /.*xvid.*/i
-    true
-  when /.*zvbi.*/i
-    true
-  when /.*amr.*/i
-    true
-  when /.*mfx.*/i
-    true
-  when /.*aac.*/i
-    true
-  # nvidia stuff for ffmpeg
-  when /.*nvcu.*/i
-    true
-  when /.*cuda.*/i
-    true
-  when /.*nvidia-fatbinary.*/i
-    true
-  when /.*vdpau.*/i
-    true
-  when /.*twolame.*/i
-    true
-  when /.*h26.*/i
-    true
-  when /.*mp3.*/i
-    true
-  when /.*bluray.*/i
-    true
-  when /.*OpenCL.*/i
-    true
+  # when /.*Cg.*/i
+  #   true
+  # when /.*va.*/i
+  #   true
+  # when /.*xvid.*/i
+  #   true
+  # when /.*zvbi.*/i
+  #   true
+  # when /.*amr.*/i
+  #   true
+  # when /.*mfx.*/i
+  #   true
+  # when /.*aac.*/i
+  #   true
+  # # nvidia stuff for ffmpeg
+  # when /.*nvcu.*/i
+  #   true
+  # when /.*cuda.*/i
+  #   true
+  # when /.*nvidia-fatbinary.*/i
+  #   true
+  # when /.*vdpau.*/i
+  #   true
+  # when /.*twolame.*/i
+  #   true
+  # when /.*h26.*/i
+  #   true
+  # when /.*mp3.*/i
+  #   true
+  # when /.*bluray.*/i
+  #   true
+  # when /.*OpenCL.*/i
+  #   true
   when /.*webp.*/i
     true
-  when /.*schroedinger.*/i
-    true
-  when /.*Xaw.*/i
-    true
-  when /.*numa.*/i
-    true
-  when /.*hogweed.*/i
-    true
+  # when /.*schroedinger.*/i
+  #   true
+  # when /.*Xaw.*/i
+  #   true
+  # when /.*numa.*/i
+  #   true
+  # when /.*hogweed.*/i
+  #   true
   when /.*jasper.*/i
     true
+  when /.*sdl2.*/i
+    true    
   else
     false
   end
