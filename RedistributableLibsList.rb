@@ -62,6 +62,8 @@ def isGoodLDDFound(lib)
     true
   when /.*sdl2.*/i
     true
+  when /.*openal.*/i
+    true    
     # GCC libraries
   when /.*stdc++.*/i
     true
