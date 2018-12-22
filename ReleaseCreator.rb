@@ -1,5 +1,6 @@
 # Helpers for creating packaging scripts for projects
 require 'sha3'
+require "fileutils"
 
 require_relative 'RubyCommon.rb'
 
@@ -141,6 +142,26 @@ def handlePlatform(props, platform, prettyName)
   props.extraFiles.each{|i|
     copyPreserveSymlinks i, target
   }
+
+  # This almost manages to run with a bundled libc
+#   if platform == "linux"
+#     launchFile = File.join(target, "launch.sh")
+    
+#     File.write(launchFile, <<-END
+# #!/usr/bin/sh
+# # This is a launch script for using the packaged libc version
+# SCRIPT=$(readlink -f "$0")
+# SCRIPT_PATH=$(dirname "$SCRIPT")
+# (
+#     cd "$SCRIPT_PATH/bin"
+#     "$SCRIPT_PATH/bin/lib/ld-linux-x86-64.so.2" ./Thrive
+# )
+# END
+#               )
+    
+#     FileUtils.chmod("+x", launchFile)
+#     FileUtils.chmod("+x", File.join(binTarget, "lib/ld-linux-x86-64.so.2")
+#   end
   
 
   # TODO: allow pausing here for manual testing

@@ -3,25 +3,7 @@
 ### LDD found libraries that should be included in full package
 # Used to filter ldd results
 def isGoodLDDFound(lib)
-
   case lib
-  # FFMPEG is now bundled so there should not be needed
-  # when /.*swresample.*/i
-  #   true
-  # when /.*avcodec.*/i
-  #   true
-  # when /.*avformat.*/i
-  #   true
-  # when /.*avutil.*/i
-  #   true
-  # when /.*swscale.*/i
-  #   true    
-  # when /.*ilbc.*/i
-  #   true
-  # when /.*theora.*/i
-  #   true
-  # when /.*vpx.*/i
-  #   true    
   when /.*vorbis.*/i
     true      
   when /.*opus.*/i
@@ -70,53 +52,28 @@ def isGoodLDDFound(lib)
     true
   when /.*zzip.*/i
     true
-  # when /.*Cg.*/i
-  #   true
-  # when /.*va.*/i
-  #   true
-  # when /.*xvid.*/i
-  #   true
-  # when /.*zvbi.*/i
-  #   true
-  # when /.*amr.*/i
-  #   true
-  # when /.*mfx.*/i
-  #   true
-  # when /.*aac.*/i
-  #   true
-  # # nvidia stuff for ffmpeg
-  # when /.*nvcu.*/i
-  #   true
-  # when /.*cuda.*/i
-  #   true
-  # when /.*nvidia-fatbinary.*/i
-  #   true
-  # when /.*vdpau.*/i
-  #   true
-  # when /.*twolame.*/i
-  #   true
-  # when /.*h26.*/i
-  #   true
-  # when /.*mp3.*/i
-  #   true
-  # when /.*bluray.*/i
-  #   true
-  # when /.*OpenCL.*/i
-  #   true
+  when /.*libz.*/i
+    true
   when /.*webp.*/i
     true
-  # when /.*schroedinger.*/i
-  #   true
-  # when /.*Xaw.*/i
-  #   true
-  # when /.*numa.*/i
-  #   true
-  # when /.*hogweed.*/i
-  #   true
+  when /.*Xaw.*/i
+    true
   when /.*jasper.*/i
     true
   when /.*sdl2.*/i
-    true    
+    true
+    # GCC libraries
+  when /.*stdc++.*/i
+    true
+  when /libm.*/i
+    true
+  when /.*libgcc.*/i
+    true
+  # These would be for bundling the system libc, but that doesn't work
+  # due to also needing to bundle ld-linux-x86-64.so.2 and modifying
+  # to active program loader
+  # when /.*libc.*/i
+  #   true
   else
     false
   end
