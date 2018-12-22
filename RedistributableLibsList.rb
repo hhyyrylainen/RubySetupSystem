@@ -65,12 +65,12 @@ def isGoodLDDFound(lib)
   when /.*openal.*/i
     true    
     # GCC libraries
-  when /.*stdc++.*/i
-    true
-  when /libm.*/i
-    true
-  when /.*libgcc.*/i
-    true
+  # when /.*stdc++.*/i
+  #   true
+  # when /libm.*/i
+  #   true
+  # when /.*libgcc.*/i
+  #   true
   # These would be for bundling the system libc, but that doesn't work
   # due to also needing to bundle ld-linux-x86-64.so.2 and modifying
   # to active program loader
