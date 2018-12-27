@@ -480,8 +480,7 @@ end
 
 # Path helper
 # For all tools that need to be in path but shouldn't be installed because of convenience
-# TODO: switch to using this everywhere (the old deps are broken because of this)
-def runWithModifiedPath(newPathEntries, prependWinPath=false)
+def runWithModifiedPath(newPathEntries, prependPath=false)
   
   if !newPathEntries.kind_of?(Array)
     newPathEntries = [newPathEntries]
@@ -492,15 +491,15 @@ def runWithModifiedPath(newPathEntries, prependWinPath=false)
   onError "Failed to get env path" if oldPath == nil
 
   if OS.windows?
-    
-    if prependWinPath
-      newpath = newPathEntries.join(";") + ";" + oldPath
-    else
-      newpath = oldPath + ";" + newPathEntries.join(";")
-    end
+    separator = ";"
   else
+    separator = ":"
+  end
 
-    newpath = newPathEntries.join(":") + ":" + oldPath
+  if prependPath
+    newpath = newPathEntries.join(separator) + separator + oldPath
+  else
+    newpath = oldPath + separator + newPathEntries.join(separator)
   end
 
   info "Setting path to: #{newpath}"
