@@ -111,6 +111,8 @@ def runOpen3(*cmdAndArgs, errorPrefix: "", redError: false)
     }    
 
     exit_status = wait_thr.value
+    outThread.join
+    errThread.join
     return exit_status
   }
 
@@ -137,17 +139,19 @@ def runOpen3CaptureOutput(*cmdAndArgs)
     # These need to be threads to work nicely on windows
     outThread = Thread.new{
       stdout.each {|line|
-        output += line
+        output.concat(line)
       }
     }
 
     errThread = Thread.new{
       stderr.each {|line|
-        output += line
+        output.concat(line)
       }
     }    
 
     exit_status = wait_thr.value
+    outThread.join
+    errThread.join
     return exit_status, output
   }
 
@@ -211,6 +215,7 @@ def runOpen3StuckPrevention(*cmdAndArgs, errorPrefix: "", redError: false, retry
       end
     end
     exit_status = wait_thr.value
+
     outThread.kill
     errThread.kill
     return exit_status
@@ -578,6 +583,19 @@ def sanitizeForPath(str)
   end
   str
 end
+
+# Parses symbol definition from breakpad data
+# call like `platform, arch, hash, name = getBreakpadSymbolInfo data`
+def getBreakpadSymbolInfo(data)
+  match = data.match(/MODULE\s(\w+)\s(\w+)\s(\w+)\s(.+)$/i)
+
+  if !match || match.captures.length != 4
+    raise "invalid breakpad data"
+  end
+
+  match.captures
+end
+
 
 # Returns name of 7zip on platform (7za on linux and 7z on windows)
 def p7zip

@@ -39,8 +39,74 @@ end
 
 require_relative 'RubySetupSystem.rb'
 
-# This handles non-stripped files on linux 
+SymbolTarget = File.join(CurrentDir, "Symbols")
+CopySource = File.join(CurrentDir, "bin")
+
+$stripAfterInstall = true
+$extractSymbols = true
+
+# Try to guess Leviathan folder
+if !$leviathanFolder
+
+  if File.exists? File.join(CurrentDir, "../ThirdParty/Leviathan")
+    $leviathanFolder = File.expand_path File.join(CurrentDir, "../ThirdParty/Leviathan")
+  elsif File.exists? File.join(CurrentDir, "../Engine/Engine.h")
+    $leviathanFolder = File.expand_path File.join(CurrentDir, "../Engine/Engine.h")
+  else
+    warning "Can't detect Leviathan folder automatically, symbol extracting won't work"
+  end
+
+end
+
+def extractor
+  if OS.windows?
+    File.join $leviathanFolder, "build/ThirdParty/bin", "dump_syms.exe"
+  else
+    File.join $leviathanFolder, "build/ThirdParty/bin", "dump_syms"
+  end
+end
+
+# This handles non-stripped files on linux
 def handleDebugInfoFileLinux(file)
+
+  # Ignore symbolic links
+  if File.symlink? file
+    return
+  end
+
+  if $extractSymbols
+
+    fileStatus = `file "#{file}"`
+
+    if fileStatus.match /debug/i
+
+      puts "Extracting symbols from: " + file
+      FileUtils.mkdir_p SymbolTarget
+
+      status, output = runOpen3CaptureOutput extractor, file
+
+      if status != 0 || output == nil || output.length < 1
+        onError "failed to extract symbols"
+      end
+
+      # Place it correctly (this makes local dumping work, but when
+      # sending to a server this doesn't really matter
+      platform, arch, hash, name = getBreakpadSymbolInfo output
+
+      # puts "Symbol info: platform: #{platform}, arch: #{arch}, hash: #{hash}, name: #{name}"
+
+      FileUtils.mkdir_p File.join(SymbolTarget, name, hash)
+
+      File.write File.join(SymbolTarget, name, hash, name + ".sym"), output
+    else
+      puts "No symbols to extract in: " + file
+    end
+  end
+
+  if !$stripAfterInstall
+    return
+  end
+
   puts "Stripping: " + file
   if runSystemSafe("strip", file) != 0
     onError "Failed to strip: " + file
@@ -52,7 +118,15 @@ def handleDebugInfoFileWindows(file)
   if !File.exist? file
     return
   end
-  
+
+  if $extractSymbols
+
+  end
+
+  if !$stripAfterInstall
+    return
+  end
+
   puts "Deleting debug file: " + file
   FileUtils.rm file
 end
@@ -82,16 +156,31 @@ class ReleaseProperties
   def addFile(file)
     @extraFiles.push file
   end
-  
+
 end
 
-CopySource = File.join(CurrentDir, "bin")
-$stripAfterInstall = true
+
+def extractDebugSymbols(platform, releaseFolder)
+
+  if !$extractSymbols
+    return
+  end
+
+  info "Looking for debug symbols to extract for: #{releaseFolder}"
+
+  case platform
+  when "linux"
+    # Just the engine and executables need to be checked and the common symbols from lib
+
+  else
+    onError "TODO"
+  end
+end
 
 def handlePlatform(props, platform, prettyName)
 
   fullName = props.name + prettyName
-  
+
   target = File.join(CurrentDir, fullName)
 
   FileUtils.mkdir_p target
@@ -101,12 +190,19 @@ def handlePlatform(props, platform, prettyName)
   # Install first with cmake
   Dir.chdir CurrentDir do
 
-    info "Configuring install folder: #{target}"    
+    info "Configuring install folder: #{target}"
+
+    # Fail if not MAKE_RELEASE is not defined
+    status, output = runOpen3CaptureOutput "cmake", "..", "-L", "-N"
+
+    if status != 0 || !output.match(/MAKE_RELEASE:BOOL=1/i)
+      onError "You need to compile the project with '-DMAKE_RELEASE=1' before making a release"
+    end
 
     if runSystemSafe("cmake", "..", "-DCMAKE_INSTALL_PREFIX=#{target}") != 0
       onError "Failed to configure cmake install folder"
     end
-    
+
     case platform
     when "linux"
 
@@ -146,7 +242,7 @@ def handlePlatform(props, platform, prettyName)
   # This almost manages to run with a bundled libc
 #   if platform == "linux"
 #     launchFile = File.join(target, "launch.sh")
-    
+
 #     File.write(launchFile, <<-END
 # #!/usr/bin/sh
 # # This is a launch script for using the packaged libc version
@@ -158,18 +254,18 @@ def handlePlatform(props, platform, prettyName)
 # )
 # END
 #               )
-    
+
 #     FileUtils.chmod("+x", launchFile)
 #     FileUtils.chmod("+x", File.join(binTarget, "lib/ld-linux-x86-64.so.2")
 #   end
-  
+
 
   # TODO: allow pausing here for manual testing
   info "Created folder: " + target
   puts "Now is an excellent time to verify that the folder is fine"
   puts "If it isn't press CTRL+C to cancel"
   waitForKeyPress
-  
+
 
   # Then clean all logs and settings
   info "Cleaning logs and configuration files"
@@ -185,13 +281,13 @@ def handlePlatform(props, platform, prettyName)
     removeIfExists i
   }
 
-  # And strip debug info 
-  if $stripAfterInstall
-    info "Removing debug info (TODO: generate Breakpad data if that is used)"
+  # And strip debug info
+  if $stripAfterInstall or $extractSymbols
+    info "Removing debug info"
 
     case platform
     when "linux"
-      Dir.glob([File.join(binTarget, "**/*.so")]){|i|
+      Dir.glob([File.join(binTarget, "**/*.so*")]){|i|
         handleDebugInfoFileLinux i
       }
 
@@ -200,17 +296,21 @@ def handlePlatform(props, platform, prettyName)
       end
 
       props.executables.each{|i| handleDebugInfoFileLinux File.join(binTarget, i)}
-      
+
     when "windows"
       Dir.glob([File.join(binTarget, "**/*.pdb")]){|i|
         handleDebugInfoFileWindows i
       }
 
       props.executables.each{|i| handleDebugInfoFileWindows(
-                               File.join(binTarget, i.sub(/.exe$/i, "") + ".pdb"))}      
+                               File.join(binTarget, i.sub(/.exe$/i, "") + ".pdb"))}
+
+      # TODO: find dependencies, they don't install pdb files, and the
+      # project files as those also don't install pdb files
     else
       onError "unknown platform"
     end
+
   end
 
   if platform == "linux"
@@ -233,7 +333,7 @@ def handlePlatform(props, platform, prettyName)
     success "Copied ldd found libraries"
 
     info "Copied #{HandledLibraries.count} libraries to lib directory"
-    
+
   end
 
   # Zip it up
@@ -257,7 +357,7 @@ def runMakeRelease(props)
   end
 
   if OS.linux?
-    
+
     # Generic Linux
     handlePlatform props, "linux", "-LINUX-generic"
 
@@ -266,7 +366,7 @@ def runMakeRelease(props)
 
     # Windows 64 bit
     handlePlatform props, "windows", "-WINDOWS-64bit"
-    
+
   else
     onError "unknown platform to package for"
   end
