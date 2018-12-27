@@ -1,4 +1,3 @@
-# coding: utf-8
 require_relative "DepotTools.rb"
 
 # Google breakpad. Will automatically setup depot_tools if missing
@@ -13,6 +12,9 @@ class Breakpad < BaseDep
     end
 
     @DepotDependency = DepotTools.new(installPath: @DepotFolder)
+
+    # For packaging fakeness
+    @RepoURL = "gclient fetch"
   end
 
   def DoClone
@@ -59,18 +61,44 @@ class Breakpad < BaseDep
 
       # Configure script
       @DepotDependency.activate{
-        if runSystemSafe("./configure", "--prefix=#{@InstallPath}") != 0
-          onError "configure breakpad failed"
+
+        # ./configure not available for windows. Still needs to
+        # directly create project files with gyp
+        if OS.windows?
+
+          if runSystemSafe("src/tools/gyp/gyp.bat",
+                           "--no-circular-check", "-Dwin_release_RuntimeLibrary=2",
+                           "-Dwin_debug_RuntimeLibrary=2",                           
+                           "src/client/windows/breakpad_client.gyp") != 0
+            onError "configure breakpad_client failed"
+          end
+
+          if runSystemSafe("src/tools/gyp/gyp.bat",
+                           "--no-circular-check", "-Dwin_release_RuntimeLibrary=2",
+                           "-Dwin_debug_RuntimeLibrary=2",
+                           "src/tools/tools.gyp") != 0
+            onError "configure breakpad tools failed"
+          end
+
+          # Verify right runtime types
+          verifyVSProjectRuntimeLibrary(
+            File.join(@Folder, "src/src/client/windows/handler/exception_handler.vcxproj"),
+            File.join(@Folder, "src/src/client/windows/handler/exception_handler.sln"),
+            /release/i, "MultiThreadedDLL")
+
+          # # This check fails due to some extra targets
+          # verifyVSProjectRuntimeLibrary(
+          #   File.join(@Folder, "src/src/tools/windows/dump_syms/dump_syms.vcxproj"),
+          #   File.join(@Folder, "src/src/tools/windows/dump_syms/dump_syms.sln"),
+          #   /release/i, "MultiThreadedDLL")
+
+        else
+
+          if runSystemSafe("./configure", "--prefix=#{@InstallPath}") != 0
+            onError "configure breakpad failed"
+          end
         end
       }
-
-      # Hopefully this windows specific hack isn't needed anymore
-      # if OS.windows?
-      #   runSystemSafe "src/tools/gyp/gyp.bat", "src/client/windows/breakpad_client.gyp"
-      #   #, "–no-circular-check"
-      # else
-      # end
-
     end
 
     true
@@ -80,30 +108,44 @@ class Breakpad < BaseDep
 
     Dir.chdir(File.join(@Folder, "src")) do
 
-      # Configure script
       @DepotDependency.activate{
 
-        if !ToolChain.new.runCompiler
-          return false
+        if OS.windows?
+
+          if !runVSCompiler $compileThreads,
+             project: File.join(@Folder,
+                                "src/src/client/windows/common.vcxproj"),
+             configuration: "Release"
+            return false
+          end
+
+          if !runVSCompiler $compileThreads,
+             project: File.join(@Folder,
+                                "src/src/client/windows/handler/exception_handler.vcxproj"),
+             configuration: "Release"
+            return false
+          end
+
+          if !runVSCompiler $compileThreads,
+             project: File.join(
+               @Folder,
+               "src/src/client/windows/crash_generation/crash_generation_client.vcxproj"),
+             configuration: "Release"
+            return false
+          end
+
+          if !runVSCompiler $compileThreads,
+             project: File.join(@Folder, "src/src/tools/windows/dump_syms/dump_syms.vcxproj"),
+             configuration: "Release"
+            return false
+          end
+
+        else
+          if !ToolChain.new.runCompiler
+            return false
+          end
         end
       }
-
-      # if OS.windows?
-      #   info "Please open the solution at and compile breakpad client in Release and x64. " +
-      #        "Remember to disable treat warnings as errors first: "+
-      #        "#{CurrentDir}/breakpad/src/src/client/windows/breakpad_client.sln"
-
-      #   system "start #{CurrentDir}/breakpad/src/src/client/windows/breakpad_client.sln" if AutoOpenVS
-      #   system "pause"
-      # else
-      #   system "make -j #{$compileThreads}"
-
-      #   if $?.exitstatus > 0
-      #     pathedit.Restore
-      #     onError "breakpad build failed"
-      #   end
-      # end
-
     end
 
     true
@@ -113,57 +155,63 @@ class Breakpad < BaseDep
 
     Dir.chdir(File.join(@Folder, "src")) do
 
-      # Configure script
-      @DepotDependency.activate{
+      if !OS.windows?
+        @DepotDependency.activate{
 
-        return runSystemSafe("make", "install") == 0
-      }
+          return runSystemSafe("make", "install") == 0
+        }
+      else
+
+        # Manual file copy
+        FileUtils.mkdir_p File.join(@InstallPath, "bin")
+        FileUtils.mkdir_p File.join(@InstallPath, "lib")
+        FileUtils.mkdir_p File.join(@InstallPath, "include", "breakpad")
+
+        copyPreserveSymlinks File.join(
+                               @Folder,
+                               "src/src/client/windows/handler/Release/lib/common.lib"),
+                             File.join(@InstallPath, "lib")
+
+        copyPreserveSymlinks(
+          File.join(
+            @Folder,
+            "src/src/client/windows/crash_generation/Release/lib/crash_generation_client.lib"),
+          File.join(@InstallPath, "lib"))
+
+        copyPreserveSymlinks(
+          File.join(
+            @Folder,
+            "src/src/client/windows/handler/Release/lib/exception_handler.lib"),
+          File.join(@InstallPath, "lib"))
+
+        copyPreserveSymlinks File.join(
+                               @Folder,
+                               "src/src/tools/windows/dump_syms/Release/dump_syms.exe"),
+                             File.join(@InstallPath, "bin")
+
+        installer = CustomInstaller.new(File.join(@InstallPath, "include", "breakpad"),
+                                        File.join(@Folder, "src/src"))
+
+        installer.setIncludeFolder ""
+
+        installer.addInclude(Dir.glob(File.join(@Folder, "src/src", "**/*.h")))
+        installer.run
+      end
     end
 
-    # # Create target folders
-    # FileUtils.mkdir_p File.join(CurrentDir, "Breakpad", "lib")
-    # FileUtils.mkdir_p File.join(CurrentDir, "Breakpad", "bin")
-
-    # breakpadincludelink = File.join(CurrentDir, "Breakpad", "include")
-
-    # if OS.windows?
-
-    #   askToRunAdmin "mklink /D \"#{breakpadincludelink}\" \"#{File.join(@Folder, "src/src")}\""
-
-    #   FileUtils.copy_entry File.join(@Folder, "src/src/client/windows/Release/lib"),
-    #                        File.join(CurrentDir, "Breakpad", "lib")
-
-
-
-    # # Might be worth it to have windows symbols dumbed on windows, if the linux dumber can't deal with pdbs
-    # #FileUtils.cp File.join(@Folder, "src/src/tools/linux/dump_syms", "dump_syms"),
-    # #             File.join(CurrentDir, "Breakpad", "bin")
-
-    # else
-
-    #   # Need to delete old file before creating a new symlink
-    #   File.delete(breakpadincludelink) if File.exist?(breakpadincludelink)
-    #   FileUtils.ln_s File.join(@Folder, "src/src"), breakpadincludelink
-
-    #   FileUtils.cp File.join(@Folder, "src/src/client/linux", "libbreakpad_client.a"),
-    #                File.join(CurrentDir, "Breakpad", "lib")
-
-    #   FileUtils.cp File.join(@Folder, "src/src/tools/linux/dump_syms", "dump_syms"),
-    #                File.join(CurrentDir, "Breakpad", "bin")
-
-    #   FileUtils.cp File.join(@Folder, "src/src/processor", "minidump_stackwalk"),
-    #                File.join(CurrentDir, "Breakpad", "bin")
-    # end
+                             true
   end
 
   def getInstalledFiles
     if OS.windows?
       [
         # Tools
-        "bin/breakpad",
+        "bin/dump_syms.exe",
 
         # Libs
-        "lib/breakpadstuff.lib",
+        "lib/exception_handler.lib",
+        "lib/crash_generation_client.lib",
+        "lib/common.lib",
 
         # Includes
         "include/breakpad",

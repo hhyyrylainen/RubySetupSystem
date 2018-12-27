@@ -42,6 +42,10 @@ class CustomInstaller
     @ExtraIncludePrefix = prefix
   end
 
+  def setIncludeFolder(include)
+    @IncludeFolder = include
+  end
+
   def run
 
     if @Includes.empty? and @Libraries.empty?
@@ -76,7 +80,9 @@ class CustomInstaller
 
     libraryTarget = File.join(@BasePath, @Libfolder)
 
-    FileUtils.mkdir_p libraryTarget
+    if !@Libraries.empty?
+      FileUtils.mkdir_p libraryTarget
+    end
 
     @Libraries.each{|f|
 

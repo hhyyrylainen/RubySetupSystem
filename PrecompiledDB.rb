@@ -216,6 +216,14 @@ BigListOfPrecompiledStuff = [
     "https://boostslair.com/rubysetupsystem/precompiled/",
     "938f50ff0b64cec5a3357637893ce2dbd83436fcf8185dea4a8654cc424f0b36"
   ),
+
+  ####################
+  # Breakpad
+  PrecompiledDependency.new(
+    "Google_Breakpad_master_opts_ca4510738395_windows_Visual_Studio_15_2017_Win64",
+    "https://boostslair.com/rubysetupsystem/precompiled/",
+    "34ce355084a78bdf2e06bf8467f44ac8b5fef63f03c41255b0cf9b7521df6d49"
+  ),
 ]
 
 def getPrecompiledByName(name)
