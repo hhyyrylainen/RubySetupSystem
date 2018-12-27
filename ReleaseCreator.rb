@@ -53,7 +53,7 @@ if !$leviathanFolder
   elsif File.exists? File.join(CurrentDir, "../Engine/Engine.h")
     $leviathanFolder = File.expand_path File.join(CurrentDir, "../Engine/Engine.h")
   else
-    warning "Can't detect Leviathan folder automatically, symbol extracting won't work"
+    warning "Can't detect Leviathan folder automatically, packaging will likely fail"
   end
 
 end
@@ -259,6 +259,12 @@ def handlePlatform(props, platform, prettyName)
 #     FileUtils.chmod("+x", File.join(binTarget, "lib/ld-linux-x86-64.so.2")
 #   end
 
+  info "Copying license files"
+  # licenseFolder = File.join(target, "Licenses")
+  # FileUtils.mkdir_p licenseFolder
+
+  File.write File.join(target, "LeviathanLicense.txt"),
+             File.read(File.join$leviathanFolder, "License.txt")
 
   # TODO: allow pausing here for manual testing
   info "Created folder: " + target
