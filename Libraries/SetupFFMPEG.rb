@@ -197,7 +197,7 @@ class FFMPEG < BaseDep
         setCXXEnv
       end
       
-      runWithModifiedPath(self.getModifiedPaths, true){
+      runWithModifiedPath(self.getModifiedPaths, OS.windows?){
         Open3.popen2e(*[TC.VS.runVSVarsAll, "&&", "cd", path, "&&", 
                         "sh", "./configure", @Options].flatten){
           |stdin, out, wait_thr|
@@ -227,7 +227,7 @@ class FFMPEG < BaseDep
       end
 
       requireCMD "make", "Please make sure you have installed 'make' with cygwin"
-      runWithModifiedPath(self.getModifiedPaths, true){
+      runWithModifiedPath(self.getModifiedPaths, OS.windows?){
         Open3.popen2e(*[TC.VS.runVSVarsAll, "&&", "cd", path, "&&", "make", "-j", 
                         $compileThreads.to_s].flatten) {|stdin, out, wait_thr|
           
@@ -259,7 +259,7 @@ class FFMPEG < BaseDep
         setCXXEnv
       end
       
-      runWithModifiedPath(self.getModifiedPaths, true){
+      runWithModifiedPath(self.getModifiedPaths, OS.windows?){
         Open3.popen2e(*[TC.VS.runVSVarsAll, "&&", "cd", path, "&&", "make",
                         "install"].flatten){
           |stdin, out, wait_thr|

@@ -61,6 +61,8 @@ class BaseDep
     if args[:version]
       @Version = args[:version]
       puts "#{@Name}: using version: #{@Version}"
+    else
+      @Version = "master"
     end
 
     if args[:installPath]
@@ -317,6 +319,7 @@ class BaseDep
     end
     
     if runSystemSafe("git", "checkout", @Version) != 0
+      info "Git checkout was performed in: #{Dir.pwd}"
       return false
     end
 
