@@ -13,8 +13,8 @@ class Breakpad < BaseDep
 
     @DepotDependency = DepotTools.new(installPath: @DepotFolder)
 
-    # For packaging fakeness
-    @RepoURL = "gclient fetch"
+    # This isn't actually used directly but must match what gclient wants
+    @RepoURL = "https://chromium.googlesource.com/breakpad/breakpad.git"
   end
 
   def DoClone
