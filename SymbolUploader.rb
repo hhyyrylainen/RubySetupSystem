@@ -77,8 +77,15 @@ def findSymbolFiles(folder)
       end
 
       # Some extra sanity checks
+      # when something is unknown then we can skip
+      if arch == "unknown"
+        puts "File arch is unknnow (probably a Windows symbol without exe): ", platform,
+             arch, hash, name
+        next
+      end
+      
       # Not sure why some files have "unknown" as the arch on windows
-      if name.count(' ') > 0 || (arch != "x86_64" && arch != "x86" && arch != "unknown") ||
+      if name.count(' ') > 0 || (arch != "x86_64" && arch != "x86") ||
          (platform != "Linux" && platform != "Windows" && platform != "windows")
         puts "File properties: ", platform, arch, hash, name
         raise "file has invalid looking data"
