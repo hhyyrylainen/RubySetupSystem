@@ -85,7 +85,8 @@ def doSymbolDump(file)
 
   FileUtils.mkdir_p File.join(SymbolTarget, name, hash)
 
-  File.write File.join(SymbolTarget, name, hash, name + ".sym"), output
+  # The .pdb extension is always removed if present
+  File.write File.join(SymbolTarget, name, hash, name.chomp(".pdb") + ".sym"), output
 end
 
 # This handles non-stripped files on linux

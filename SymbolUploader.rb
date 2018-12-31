@@ -79,21 +79,20 @@ def findSymbolFiles(folder)
       # Some extra sanity checks
       # when something is unknown then we can skip
       if arch == "unknown"
-        puts "File arch is unknnow (probably a Windows symbol without exe): ", platform,
-             arch, hash, name
+        puts "File arch is unknown (probably a Windows symbol without exe): " +
+             "platform: #{platform} arch: #{arch} hash: #{hash} name: #{name}"
         next
       end
       
       # Not sure why some files have "unknown" as the arch on windows
-      if name.count(' ') > 0 || (arch != "x86_64" && arch != "x86") ||
+      if name.count(' ') > 0 || name.empty? || (arch != "x86_64" && arch != "x86") ||
          (platform != "Linux" && platform != "Windows" && platform != "windows")
-        puts "File properties: ", platform, arch, hash, name
+        puts "File properties: platform: #{platform} arch: #{arch} hash: #{hash} name: #{name}"
         raise "file has invalid looking data"
-      end      
-      
+      end
 
-    rescue
-      warning "Invalid file: #{i}"
+    rescue => e
+      warning "Invalid file: #{i}, error: #{e}"
       next
     end
 
@@ -170,6 +169,11 @@ def runUploadSymbols(props)
   symbols = findSymbolFiles(CurrentDir)
 
   info "Found #{symbols.length} symbol files"
+
+  if symbols.length < 1
+    error "Didn't find any symbol files"
+    exit 2
+  end
 
   # Determine which symbols aren't on the server
   existing = queryExistingSymbols symbols, url
