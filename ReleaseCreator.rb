@@ -15,27 +15,26 @@ def checkRunFolder(suggested)
   target = File.join suggested, "build"
 
   target
-  
+
 end
 
 def projectFolder(baseDir)
 
   File.expand_path File.join(baseDir, "../")
-  
+
 end
 
-# def getExtraOptions(opts)
+def getExtraOptions(opts)
 
-#   # opts.on("--build-docker", "If specified builds a docker file automatically otherwise " +
-#   #                           "only a Dockerfile is created") do |b|
-#   #   $options[:dockerbuild] = true
-#   # end
-  
-# end
+  opts.on("--development", "Allow making development, -DMAKE_RELEASE=0, builds") do |b|
+    $options[:allowDevelopment] = true
+  end
 
-# def extraHelp
-#   puts $extraParser
-# end
+end
+
+def extraHelp
+  puts $extraParser
+end
 
 require_relative 'RubySetupSystem.rb'
 
@@ -66,6 +65,30 @@ def extractor
   end
 end
 
+# General Breakpad symbol dumper
+def doSymbolDump(file)
+  puts "Extracting symbols from: " + file
+  FileUtils.mkdir_p SymbolTarget
+
+  status, output = runOpen3CaptureOutput extractor, file
+
+  if status != 0 || output == nil || output.length < 1
+    puts "Extractor output: " + output[0..1000]
+    onError "failed to extract symbols"
+  end
+
+  # Place it correctly (this makes local dumping work, but when
+  # sending to a server this doesn't really matter
+  platform, arch, hash, name = getBreakpadSymbolInfo output
+
+  # puts "Symbol info: platform: #{platform}, arch: #{arch}, hash: #{hash}, name: #{name}"
+
+  FileUtils.mkdir_p File.join(SymbolTarget, name, hash)
+
+  # The .pdb extension is always removed if present
+  File.write File.join(SymbolTarget, name, hash, name.chomp(".pdb") + ".sym"), output
+end
+
 # This handles non-stripped files on linux
 def handleDebugInfoFileLinux(file)
 
@@ -80,24 +103,7 @@ def handleDebugInfoFileLinux(file)
 
     if fileStatus.match /debug/i
 
-      puts "Extracting symbols from: " + file
-      FileUtils.mkdir_p SymbolTarget
-
-      status, output = runOpen3CaptureOutput extractor, file
-
-      if status != 0 || output == nil || output.length < 1
-        onError "failed to extract symbols"
-      end
-
-      # Place it correctly (this makes local dumping work, but when
-      # sending to a server this doesn't really matter
-      platform, arch, hash, name = getBreakpadSymbolInfo output
-
-      # puts "Symbol info: platform: #{platform}, arch: #{arch}, hash: #{hash}, name: #{name}"
-
-      FileUtils.mkdir_p File.join(SymbolTarget, name, hash)
-
-      File.write File.join(SymbolTarget, name, hash, name + ".sym"), output
+      doSymbolDump file
     else
       puts "No symbols to extract in: " + file
     end
@@ -113,17 +119,40 @@ def handleDebugInfoFileLinux(file)
   end
 end
 
+# This filters known "bad" and known good pdb files for windows
+def filterPDBFile(file)
+  case file
+  when /vc\d\d+.pdb/i
+    false
+  when /breakpad\/src/i
+    false
+  when /OgreMeshTool.pdb/i
+    false
+  when /FileGenerator/i
+    false
+  when /Demos/i
+    false
+  when /Pong/i
+    false
+  # SFML debug info is in weird places
+  when /sfml-.*\.pdb/i
+    false
+  else
+    true
+  end
+end
+
 # And this handles pdb files on windows
-def handleDebugInfoFileWindows(file)
+def handleDebugInfoFileWindows(file, delete: false)
   if !File.exist? file
     return
   end
 
   if $extractSymbols
-
+    doSymbolDump file
   end
 
-  if !$stripAfterInstall
+  if !$stripAfterInstall || !delete
     return
   end
 
@@ -160,23 +189,6 @@ class ReleaseProperties
 end
 
 
-def extractDebugSymbols(platform, releaseFolder)
-
-  if !$extractSymbols
-    return
-  end
-
-  info "Looking for debug symbols to extract for: #{releaseFolder}"
-
-  case platform
-  when "linux"
-    # Just the engine and executables need to be checked and the common symbols from lib
-
-  else
-    onError "TODO"
-  end
-end
-
 def handlePlatform(props, platform, prettyName)
 
   fullName = props.name + prettyName
@@ -187,6 +199,14 @@ def handlePlatform(props, platform, prettyName)
 
   binTarget = File.join(target, "bin")
 
+  windowsSymbolSources = [File.join(CurrentDir, "bin"),
+                          File.join($leviathanFolder, "build/bin"),
+                          File.join($leviathanFolder, "build/ThirdParty"),
+                          # And this is a ton of files to dig through
+                          # And needs a lot of filters to work properly
+                          File.join($leviathanFolder, "ThirdParty"),
+                         ]
+
   # Install first with cmake
   Dir.chdir CurrentDir do
 
@@ -196,7 +216,18 @@ def handlePlatform(props, platform, prettyName)
     status, output = runOpen3CaptureOutput "cmake", "..", "-L", "-N"
 
     if status != 0 || !output.match(/MAKE_RELEASE:BOOL=1/i)
-      onError "You need to compile the project with '-DMAKE_RELEASE=1' before making a release"
+
+      if !$options[:allowDevelopment]
+        onError "You need to compile the project with '-DMAKE_RELEASE=1' " +
+                "before making a release. Or specify flags for development build"
+      else
+        warning "Making a development build. Crash reporting won't be enabled!"
+
+        if $extractSymbols
+          info "Disabling symbol extraction"
+          $extractSymbols = false
+        end
+      end
     end
 
     if runSystemSafe("cmake", "..", "-DCMAKE_INSTALL_PREFIX=#{target}") != 0
@@ -305,14 +336,31 @@ def handlePlatform(props, platform, prettyName)
 
     when "windows"
       Dir.glob([File.join(binTarget, "**/*.pdb")]){|i|
-        handleDebugInfoFileWindows i
+        handleDebugInfoFileWindows i, delete: true
       }
 
       props.executables.each{|i| handleDebugInfoFileWindows(
-                               File.join(binTarget, i.sub(/.exe$/i, "") + ".pdb"))}
+                               File.join(binTarget, i.sub(/.exe$/i, "") + ".pdb"),
+                               delete: true)}
 
       # TODO: find dependencies, they don't install pdb files, and the
       # project files as those also don't install pdb files
+
+      # TODO: these should be done only once
+      Dir.glob([File.join(binTarget, "**/*.pdb")]){|i|
+        handleDebugInfoFileWindows i
+      }
+
+      windowsSymbolSources.each{|i|
+        Dir.glob([File.join(i, "**/*.pdb")]){|i|
+
+          if filterPDBFile i
+            handleDebugInfoFileWindows i
+          else
+            puts "filtered out: " + i
+          end
+        }
+      }
     else
       onError "unknown platform"
     end
