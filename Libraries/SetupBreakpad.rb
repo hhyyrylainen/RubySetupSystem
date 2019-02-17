@@ -169,9 +169,11 @@ class Breakpad < BaseDep
         FileUtils.mkdir_p File.join(@InstallPath, "lib")
         FileUtils.mkdir_p File.join(@InstallPath, "include", "breakpad")
 
+        # This path has changed.
+        # Old was "src/src/client/windows/handler/Release/lib/common.lib"
         copyPreserveSymlinks File.join(
                                @Folder,
-                               "src/src/client/windows/handler/Release/lib/common.lib"),
+                               "src/src/client/windows/Release/lib/common.lib"),
                              File.join(@InstallPath, "lib")
 
         copyPreserveSymlinks(
