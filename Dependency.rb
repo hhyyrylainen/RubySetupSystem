@@ -65,6 +65,13 @@ class BaseDep
       @Version = "master"
     end
 
+    # For naming precompiled releases from a branch differently
+    if args[:epoch]
+      @BranchEpoch = args[:epoch]
+    else
+      @BranchEpoch = nil
+    end
+
     if args[:installPath]
       @InstallPath = args[:installPath]
       puts "#{@Name}: using install prefix: #{@InstallPath}"
@@ -87,9 +94,6 @@ class BaseDep
     if args[:fork]
       @RepoURL = args[:fork]
     end
-
-    # For naming precompiled releases from a branch differently
-    @BranchEpoch = nil
   end
 
   def HandleStandardCMakeOptions
@@ -348,13 +352,15 @@ class BaseDep
     # Get only hash relevant options
     # Filter out paths
     toHash = @Options.select{|i| i !~ /.*\/.*(\/|$)/i}
+
+    # Reject some known keys
+    toHash.delete :epoch
+
     SHA3::Digest::SHA256.hexdigest(JSON.generate(toHash).to_s)[0 .. length - 1]
   end
 
   # Creates a name for precompiled binary (if this doesn't use a
-  # commit, please add a new suffix for each created release and mark
-  # the newest as the newest in PrecompiledDB to make people using
-  # precompiled versions get a newer build, Or set @BranchEpoch in child class)
+  # commit, it's possible to use :epoch variable for making sure people use newer version)
   def getNameForPrecompiled
     sanitizeForPath("#{@Name}_#{@Version}_" +
                     if @BranchEpoch then "sv_#{@BranchEpoch}_" else "" end +

@@ -9,8 +9,6 @@ class FreeImage < StandardCMakeDep
     if !@RepoURL
       @RepoURL = "https://github.com/hhyyrylainen/FreeImage.git"
     end
-
-    @BranchEpoch = 3
   end
 
   def DoClone
