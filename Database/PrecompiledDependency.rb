@@ -13,7 +13,7 @@ end
 # should be unzipped to
 class PrecompiledDependency
 
-  attr_reader :FullName, :URL, :RelativeUnPack, :Hash
+  attr_reader :FullName, :URL, :RelativeUnPack, :Hash, :ZipName
   
   def initialize(name, url, hash, relativeunpack = "")
 
@@ -35,9 +35,17 @@ class PrecompiledDependency
 
     FileUtils.mkdir_p dlFolder
 
-    downloadURLIfTargetIsMissing @URL, targetFile, @Hash, 2
+    download targetFile
     success "Done"
     
+  end
+
+  def download(target)
+    downloadURLIfTargetIsMissing @URL, target, @Hash, 2
+  end
+
+  def to_s
+    %{dependency "#{@FullName}" from #{@URL} with hash #{@Hash}}
   end
 
   def dlFolder
