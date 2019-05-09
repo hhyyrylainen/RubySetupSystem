@@ -48,7 +48,7 @@ class DepotTools < BaseDep
     runWithModifiedPath(@Folder, OS.windows?){
 
       # Windows gclient run
-      if OS.windows? && !@UpdateDone = true
+      if OS.windows? && @UpdateDone != true
         if runSystemSafe("cmd", %{"glclient"}) != 0
           raise "Failed to do initial gclient run"
         end
