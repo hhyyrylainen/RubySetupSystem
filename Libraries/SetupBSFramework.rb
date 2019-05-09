@@ -2,6 +2,7 @@
 # physicsModule: specify the physics module
 # audioModule: specify the audio module
 # renderAPI: specify the primary render API
+# buildAllRenderAPI: if true build all render modules at once
 class BSFramework < StandardCMakeDep
   def initialize(args)
     super("bs::framework", "bsf", args)
@@ -16,6 +17,10 @@ class BSFramework < StandardCMakeDep
 
     if args.include? :renderAPI
       @Options.push "-DRENDER_API_MODULE=#{args[:renderAPI]}"
+    end
+
+    if args.include? :buildAllRenderAPI
+      @Options.push "-DBUILD_ALL_RENDER_API=#{args[:buildAllRenderAPI]}"
     end
 
     self.HandleStandardCMakeOptions
