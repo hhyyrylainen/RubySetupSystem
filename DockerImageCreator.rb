@@ -62,16 +62,11 @@ def doDockerBuild(folder)
 end
 
 def writeCommonDockerFile(file, packageNames)
-  file.puts("FROM fedora:28")
+  file.puts("FROM fedora:30")
   file.puts("RUN dnf install -y --setopt=deltarpm=false ruby ruby-devel " +
-            # Needed to compile native extensions
-            # Enable rawhide if we need some new stuff (TODO: figure out how the new
-            # rawhide key works)
-            "gcc make redhat-rpm-config fedora-repos-rawhide")
+            packageNames.join(' ') + " gcc make redhat-rpm-config fedora-repos-rawhide " +
+                              "&& dnf clean all")
   file.puts("RUN gem install os colorize rubyzip json sha3")
-  file.puts("RUN dnf install -y --setopt=deltarpm=false #{packageNames.join ' '}; exit 0")
-  file.puts("RUN dnf install -y --setopt=deltarpm=false #{packageNames.join ' '}")
-  file.puts("RUN dnf clean all")
 
   # vnc setup part
   # This doesn't seem to actually help with a missing x server
