@@ -337,6 +337,14 @@ class BaseDep
     @Options.reject!(&:empty?)
   end
 
+  def buildType
+    if self.respond_to? :translateBuildType
+      self.translateBuildType CMakeBuildType
+    else
+      CMakeBuildType
+    end
+  end
+
   # Overwrite to support precompiled distribution
   def getInstalledFiles
     warning "This dependency (#{@Name}) doesn't support getting file list for " +
@@ -385,7 +393,7 @@ class StandardCMakeDep < BaseDep
     FileUtils.mkdir_p "build"
 
     Dir.chdir("build") do
-      return runCMakeConfigure @Options, @CMakeListFolder
+      return runCMakeConfigure @Options, @CMakeListFolder, buildType: self.buildType
     end
   end
 
@@ -537,7 +545,7 @@ class ZipAndCmakeDLDep < ZipDLDep
     FileUtils.mkdir_p "build"
 
     Dir.chdir("build") do
-      return runCMakeConfigure @Options, @CMakeListFolder
+      return runCMakeConfigure @Options, @CMakeListFolder, buildType: self.buildType
     end
   end
 

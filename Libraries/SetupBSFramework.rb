@@ -23,10 +23,54 @@ class BSFramework < StandardCMakeDep
       @Options.push "-DBUILD_ALL_RENDER_API=#{args[:buildAllRenderAPI]}"
     end
 
+    if args.include? :extraLibSearch
+      @Options.push "-DDYNLIB_EXTRA_SEARCH_DIRECTORY=#{args[:extraLibSearch]}"
+    end
+
+    @Options.push "-DBSF_ENABLE_EXCEPTIONS=ON"
+    @Options.push "-DBSF_ENABLE_RTTI=ON"
+    @Options.push "-DBSF_STRIP_DEBUG_INFO=OFF"
+
     self.HandleStandardCMakeOptions
 
     if !@RepoURL
       @RepoURL = "https://github.com/GameFoundry/bsf.git"
+    end
+  end
+
+  def depsList
+    os = getLinuxOS
+
+    if os == "fedora" || os == "centos" || os == "rhel"
+
+      return [
+        "vulkan-headers", "vulkan-loader", "vulkan-tools", "vulkan-validation-layers"
+      ]
+
+    end
+
+    if os == "ubuntu"
+
+      return [
+        "libvulkan-dev", "vulkan-tools", "vulkan-validationlayers"
+      ]
+    end
+
+    onError "#{@name} unknown packages for os: #{os}"
+
+  end
+
+  def installPrerequisites
+
+    installDepsList depsList
+
+  end
+
+  def translateBuildType(type)
+    if type == "Debug"
+      "Debug"
+    else
+      "Release"
     end
   end
 
@@ -61,5 +105,3 @@ class BSFramework < StandardCMakeDep
     end
   end
 end
-
-

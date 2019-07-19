@@ -4,14 +4,14 @@ require_relative "RubyCommon.rb"
 require_relative "WindowsHelpers.rb"
 
 # Runs cmake with options and returns true on success
-def runCMakeConfigure(additionalArgs, directory = "..")
+def runCMakeConfigure(additionalArgs, directory = "..", buildType: CMakeBuildType)
 
   onError "additionalArgs must be an array" if not additionalArgs.is_a? Array
 
   command = ["cmake", directory]
 
   if TC.supportsPresetBuildType
-    command.push "-DCMAKE_BUILD_TYPE=#{CMakeBuildType}"
+    command.push "-DCMAKE_BUILD_TYPE=#{buildType}"
   end
 
   if TC.cmakeGenerator
