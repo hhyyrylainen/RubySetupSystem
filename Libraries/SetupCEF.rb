@@ -11,8 +11,7 @@ class CEF < ZipAndCmakeDLDep
     @DLHashType = 3
 
     if !@Version
-      # @Version = "3.3497.1836.gb472a8d"
-      @Version = "3.3396.1777.g636f29b"
+      @Version = "75.1.4+g4210896+chromium-75.0.3770.100"
     end
 
     # Detect platform
@@ -30,6 +29,14 @@ class CEF < ZipAndCmakeDLDep
 
     # Version specific hashes
     case @Version
+    when "75.1.4+g4210896+chromium-75.0.3770.100"
+      if OS.linux?
+        @DLHash = "2f4192b5a9f7a4dc84c749709a4c3c66acd473c7"
+      elsif OS.windows?
+        @DLHash = "ab1131d73a9609044f0d50c976064bc0a5e393a7"
+      elsif OS.mac?
+        @DLHash = "015516617e2014e149b74baa60806b1e328e4067"
+      end
     when "3.3497.1837.g00188c7"
       if OS.linux?
         @DLHash = "7fc06e34e07efa7b8dd9859b67bd86fcab28d762fe071d77b62fbb05d7041fe0"
@@ -41,7 +48,7 @@ class CEF < ZipAndCmakeDLDep
         @DLHash = "6a9c87f9bbc00d453aff62f1598bd1296a4dfc8f"
       elsif OS.mac?
         @DLHash = "e30bcab7a0688c51e7c97d5c62ab75f9e6adb59b"
-      end         
+      end
     when "3.3497.1836.gb472a8d"
       if OS.linux?
         @DLHash = "47c5dd712d7784c7627df53ad2424d7d8f18ed24"
@@ -66,10 +73,10 @@ class CEF < ZipAndCmakeDLDep
     if !@LocalFileName
       @LocalFileName = @UnZippedName + self.GetExtensionForZipType
     end
-    
+
     @LocalPath = File.join(CurrentDir, @LocalFileName)
     if !@DownloadURL
-      @DownloadURL = "http://opensource.spotify.com/cefbuilds/#{@LocalFileName}"
+      @DownloadURL = "http://opensource.spotify.com/cefbuilds/#{dlFileName}"
     end
 
     # Windows config options
@@ -86,24 +93,28 @@ class CEF < ZipAndCmakeDLDep
     @RepoURL = @DownloadURL
   end
 
+  def dlFileName
+    @LocalFileName.gsub '+', '%2B'
+  end
+
   def depsList
     os = getLinuxOS
 
     if os == "fedora" || os == "centos" || os == "rhel"
-      
+
       return [
         "libXcomposite", "libXtst", "libXScrnSaver", "atk"
       ]
-      
+
     end
 
     if os == "ubuntu"
-      
+
       return [
         "libxcomposite1", "libxtst6", "libxss1", "libatk1.0-0"
       ]
     end
-    
+
     onError "#{@name} unknown packages for os: #{os}"
 
   end
@@ -111,21 +122,35 @@ class CEF < ZipAndCmakeDLDep
   def installPrerequisites
 
     installDepsList depsList
-    
+
   end
-  
+
   def getDefaultOptions
     []
   end
-  
+
   def DoInstall
     # There's no install target so we need to manually do it
 
     # Includes
     copyPreserveSymlinks File.join(@Folder, "include/."), File.join(@InstallPath, "include")
-    # Resources
     
+    # Resources
     copyPreserveSymlinks File.join(@Folder, "Resources"), File.join(@InstallPath)
+
+    # Make a symlink for Linux as CEF now needs that for some reason
+    # https://magpcss.org/ceforum/viewtopic.php?f=6&t=16916
+    if OS.linux?
+      target = File.join(@InstallPath, "Resources", "libcef.so")
+
+      begin
+        File.unlink(target) if File.exist?(target) or File.symlink?(target)
+      rescue
+        FileUtils.rm target
+      end
+      
+      File.symlink "lib/libcef.so", target
+    end
 
     # Extra libs
     copyPreserveSymlinks File.join(@Folder, "Release/swiftshader"), @InstallPath
@@ -139,7 +164,7 @@ class CEF < ZipAndCmakeDLDep
     # And finally the libraries
     installer = CustomInstaller.new(@InstallPath,
                                     File.join(@Folder, "Release"))
-    
+
     # Libraries
     if OS.linux?
       installer.addLibrary File.join(@Folder, "Release/", "libcef.so")
@@ -154,7 +179,7 @@ class CEF < ZipAndCmakeDLDep
       FileUtils.mkdir_p File.join(@InstallPath, "bin")
       copyPreserveSymlinks File.join(@Folder, "Release/", "chrome-sandbox"),
                            File.join(@InstallPath, "bin")
-      
+
     elsif OS.windows?
       installer.addLibrary File.join(@Folder, "Release/", "libcef.dll")
       installer.addLibrary File.join(@Folder, "Release/", "chrome_elf.dll")
@@ -175,7 +200,7 @@ class CEF < ZipAndCmakeDLDep
     end
 
     installer.run
-  end  
+  end
 
   def getInstalledFiles
     # This is only partly precompiled

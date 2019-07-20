@@ -86,6 +86,10 @@ class CustomInstaller
 
     @Libraries.each{|f|
 
+      if !File.exists? f
+        onError "installer file doesn't exist: #{f}"
+      end
+
       copyPreserveSymlinks f, libraryTarget
       count += 1
     }
