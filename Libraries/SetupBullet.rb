@@ -73,7 +73,7 @@ class Bullet < StandardCMakeDep
   end
 
   # TODO: debug suffix for builds
-  def translateBuildType(type)
+  def libraryNameSuffixForType(type)
     if type == "RelWithDebInfo"
       return "_RelWithDebugInfo"
     elsif type == "MinSizeRel"
@@ -98,7 +98,7 @@ class Bullet < StandardCMakeDep
 
       FileUtils.mkdir_p target
 
-      type = translateBuildType CMakeBuildType
+      type = libraryNameSuffixForType CMakeBuildType
       
       # libraries
       # TODO: this needs fixing for debug vs. release mode

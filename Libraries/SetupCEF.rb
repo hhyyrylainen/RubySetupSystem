@@ -85,14 +85,23 @@ class CEF < ZipAndCmakeDLDep
     if OS.windows?
       @Options.push "-DCEF_RUNTIME_LIBRARY_FLAG=/MD"
       @Options.push "-DUSE_SANDBOX=ON"
-
-      if CMakeBuildType == "RelWithDebInfo"
-        @OverrideBuildType = "Release"
-      end
     end
 
     # Version for packaging
     @RepoURL = @DownloadURL
+  end
+
+  def translateBuildType(type)
+    if OS.windows?
+      if type == "Debug"
+        "Debug"
+      else
+        "Release"
+      end
+    else
+      type
+    end
+
   end
 
   def dlFileName

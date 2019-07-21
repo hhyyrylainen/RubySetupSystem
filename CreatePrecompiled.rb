@@ -12,7 +12,6 @@ require 'fileutils'
 
 require_relative 'RubyCommon.rb'
 
-require_relative 'PrecompiledDependency.rb'
 require_relative 'PrecompiledDB.rb'
 
 def checkRunFolder(suggested)
@@ -64,6 +63,7 @@ CurrentPlatform = describePlatform
 def runPackager
   puts ""
   puts "Packaging dependencies: #{$toPackageDeps}"
+  puts "Target folder: #{DependencyInstallFolder}"
 
   $toPackageDeps.each{|dep|
 

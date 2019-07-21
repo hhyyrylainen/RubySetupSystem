@@ -19,7 +19,7 @@ require_relative "Helpers.rb"
 # :preCreateInstallFolder => If installPath is specified will create
 #     the folder if it doesn't exist
 class BaseDep
-  attr_reader :Name, :Folder, :FolderName, :RepoURL, :Version, :OverrideBuildType
+  attr_reader :Name, :Folder, :FolderName, :RepoURL, :Version
   
   def initialize(name, foldername, args)
 
@@ -27,8 +27,6 @@ class BaseDep
     
     @Folder = File.join(CurrentDir, foldername)
     @FolderName = foldername
-
-    @OverrideBuildType = nil
 
     # Standard args handling
     if args[:options]
@@ -272,15 +270,21 @@ class BaseDep
       end
 
       if winBothConfigurations
-        if !runVSCompiler(1, project: "INSTALL.vcxproj", configuration: "Debug")
+        if !runVSCompiler(1, project: "INSTALL.vcxproj",
+                          configuration: (if self.respond_to?(:translateBuildType)
+                                          self.translateBuildType("Debug")
+                                         else
+                                           "Debug"
+                                          end))
           return false
         end
-        if !runVSCompiler(1, project: "INSTALL.vcxproj", configuration: "RelWithDebInfo")
+        if !runVSCompiler(1, project: "INSTALL.vcxproj", configuration:
+                                                           buildType)
           return false
         end
         true
       else
-        return runVSCompiler 1, project: "INSTALL.vcxproj"
+        return runVSCompiler 1, project: "INSTALL.vcxproj", configuration: buildType
       end
     end
   end
@@ -399,7 +403,7 @@ class StandardCMakeDep < BaseDep
 
   def DoCompile
     Dir.chdir("build") do
-      return TC.runCompiler @OverrideBuildType
+      return TC.runCompiler buildType
     end
   end
   
@@ -551,7 +555,7 @@ class ZipAndCmakeDLDep < ZipDLDep
 
   def DoCompile
     Dir.chdir("build") do
-      return TC.runCompiler @OverrideBuildType
+      return TC.runCompiler buildType
     end
   end
   

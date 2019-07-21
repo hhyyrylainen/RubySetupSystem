@@ -1,5 +1,4 @@
-# List of precompiled things. Could maybe be better if this was online
-# somewhere and was downloaded (as JSON to not run untrusted code)
+# List of precompiled things. New database implementation is in the Database folder
 require_relative 'Database/Database'
 
 # Dependency is a BaseDep derived class that can be used with a dependency

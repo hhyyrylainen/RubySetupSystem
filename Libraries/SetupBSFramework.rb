@@ -84,7 +84,6 @@ class BSFramework < StandardCMakeDep
 
   def getInstalledFiles
     if OS.windows?
-      onError "TODO: windows precompiled files"
       [
         # data files
         "bin/Data",
@@ -95,6 +94,30 @@ class BSFramework < StandardCMakeDep
         "include/bsfEngine",
 
         # libraries
+        "bin/bsfVulkanRenderAPI.dll",
+        "lib/bsf.lib",
+        "lib/bsfD3D11RenderAPI.lib",
+        "lib/bsfFBXImporter.lib",
+        "lib/bsfFontImporter.lib",
+        "lib/bsfFreeImgImporter.lib",
+        "lib/bsfGLRenderAPI.lib",
+        "lib/bsfNullAudio.lib",
+        "lib/bsfNullPhysics.lib",
+        "lib/bsfRenderBeast.lib",
+        "lib/bsfSL.lib",
+        "lib/bsfVulkanRenderAPI.lib",
+        
+        # dlls
+        "bin/bsf.dll",
+        "bin/bsfD3D11RenderAPI.dll",
+        "bin/bsfFBXImporter.dll",
+        "bin/bsfFontImporter.dll",
+        "bin/bsfFreeImgImporter.dll",
+        "bin/bsfGLRenderAPI.dll",
+        "bin/bsfNullAudio.dll",
+        "bin/bsfNullPhysics.dll",
+        "bin/bsfRenderBeast.dll",
+        "bin/bsfSL.dll",        
 
         # executables
         "bin/bsfImportTool.exe",

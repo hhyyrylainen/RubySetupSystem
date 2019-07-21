@@ -216,6 +216,7 @@ def runVSCompiler(threads, project: "ALL_BUILD.vcxproj", configuration: CMakeBui
   end
 
   info "Running MSBuild.exe with max cpu count = #{threads} on project #{targetSelect}"
+  info "with configuration = #{configuration} and platform = #{platform}"
   
   runSystemSafe(*args) == 0      
 end
