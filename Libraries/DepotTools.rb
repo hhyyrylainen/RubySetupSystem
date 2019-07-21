@@ -49,7 +49,8 @@ class DepotTools < BaseDep
 
       # Windows gclient run
       if OS.windows? && @UpdateDone != true
-        if runSystemSafe("cmd", %{"glclient"}) != 0
+        puts "Doing initial gclient run."
+        if runSystemSafe(File.realpath File.join(@Folder, "gclient.bat")) != 0
           raise "Failed to do initial gclient run"
         end
       end
