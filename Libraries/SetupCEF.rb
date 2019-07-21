@@ -33,7 +33,9 @@ class CEF < ZipAndCmakeDLDep
       if OS.linux?
         @DLHash = "2f4192b5a9f7a4dc84c749709a4c3c66acd473c7"
       elsif OS.windows?
-        @DLHash = "ab1131d73a9609044f0d50c976064bc0a5e393a7"
+        # For some reason the hash listed on the website is wrong
+        # @DLHash = "ab1131d73a9609044f0d50c976064bc0a5e393a7"
+        @DLHash = "0aecfa3de37f6c7729f755016fd5e27999ab7d91"
       elsif OS.mac?
         @DLHash = "015516617e2014e149b74baa60806b1e328e4067"
       end
