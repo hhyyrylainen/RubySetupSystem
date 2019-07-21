@@ -138,20 +138,6 @@ class CEF < ZipAndCmakeDLDep
     # Resources
     copyPreserveSymlinks File.join(@Folder, "Resources"), File.join(@InstallPath)
 
-    # Make a symlink for Linux as CEF now needs that for some reason
-    # https://magpcss.org/ceforum/viewtopic.php?f=6&t=16916
-    if OS.linux?
-      target = File.join(@InstallPath, "Resources", "libcef.so")
-
-      begin
-        File.unlink(target) if File.exist?(target) or File.symlink?(target)
-      rescue
-        FileUtils.rm target
-      end
-      
-      File.symlink "lib/libcef.so", target
-    end
-
     # Extra libs
     copyPreserveSymlinks File.join(@Folder, "Release/swiftshader"), @InstallPath
 
@@ -178,7 +164,7 @@ class CEF < ZipAndCmakeDLDep
 
       FileUtils.mkdir_p File.join(@InstallPath, "bin")
       copyPreserveSymlinks File.join(@Folder, "Release/", "chrome-sandbox"),
-                           File.join(@InstallPath, "bin")
+                           File.join(@InstallPath, "Resources")
 
     elsif OS.windows?
       installer.addLibrary File.join(@Folder, "Release/", "libcef.dll")
