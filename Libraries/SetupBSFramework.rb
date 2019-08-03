@@ -44,7 +44,9 @@ class BSFramework < StandardCMakeDep
     if os == "fedora" || os == "centos" || os == "rhel"
 
       return [
-        "vulkan-headers", "vulkan-loader", "vulkan-tools", "vulkan-validation-layers"
+        "vulkan-headers", "vulkan-loader", "vulkan-loader-devel", "vulkan-tools",
+        "vulkan-validation-layers", "libuuid-devel", "libX11-devel", "libXcursor-devel",
+        "libXrandr-devel", "libXi-devel",
       ]
 
     end
@@ -52,7 +54,8 @@ class BSFramework < StandardCMakeDep
     if os == "ubuntu"
 
       return [
-        "libvulkan-dev", "vulkan-tools", "vulkan-validationlayers"
+        "libvulkan-dev", "vulkan-tools", "vulkan-validationlayers", "uuid-dev", "libx11-dev",
+        "libxcursor-dev", "libxrandr-dev", "libxi-dev",
       ]
     end
 

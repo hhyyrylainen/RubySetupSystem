@@ -114,7 +114,8 @@ class CEF < ZipAndCmakeDLDep
     if os == "fedora" || os == "centos" || os == "rhel"
 
       return [
-        "libXcomposite", "libXtst", "libXScrnSaver", "atk"
+        "libXcomposite", "libXtst", "libXScrnSaver", "atk", "at-spi2-core-devel",
+        "at-spi2-atk-devel",
       ]
 
     end
@@ -122,7 +123,7 @@ class CEF < ZipAndCmakeDLDep
     if os == "ubuntu"
 
       return [
-        "libxcomposite1", "libxtst6", "libxss1", "libatk1.0-0"
+        "libxcomposite1", "libxtst6", "libxss1", "libatk1.0-0", "libatspi2.0-dev",
       ]
     end
 
