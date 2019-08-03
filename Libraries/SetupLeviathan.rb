@@ -19,14 +19,14 @@ class Leviathan < BaseDep
     if os == "fedora" || os == "centos" || os == "rhel"
       return [
         "boost-devel", "SDL2-devel", "ImageMagick", "libXfixes-devel",
-        "subversion", "doxygen"
+        "subversion", "doxygen", "libXmu-devel",
       ]
     end
 
     if os == "ubuntu"
       return [
         "libboost-dev", "libsdl2-dev", "imagemagick", "libxfixes-dev",
-        "subversion", "doxygen"
+        "subversion", "doxygen", "libxmu-dev"
       ]
     end
     

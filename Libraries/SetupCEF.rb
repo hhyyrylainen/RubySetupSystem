@@ -115,7 +115,7 @@ class CEF < ZipAndCmakeDLDep
 
       return [
         "libXcomposite", "libXtst", "libXScrnSaver", "atk", "at-spi2-core-devel",
-        "at-spi2-atk-devel",
+        "at-spi2-atk-devel", "alsa-lib",
       ]
 
     end
@@ -124,6 +124,7 @@ class CEF < ZipAndCmakeDLDep
 
       return [
         "libxcomposite1", "libxtst6", "libxss1", "libatk1.0-0", "libatspi2.0-dev",
+        "libasound2",
       ]
     end
 

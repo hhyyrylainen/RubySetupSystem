@@ -17,14 +17,14 @@ class SFML < StandardCMakeDep
     if os == "fedora" || os == "centos" || os == "rhel"
       return [
         "xcb-util-image-devel", "systemd-devel", "libjpeg-devel", "libvorbis-devel",
-        "flac-devel", "openal-soft-devel"
+        "flac-devel", "openal-soft-devel", "mesa-libGL-devel",
       ]
     end
 
     if os == "ubuntu"
       return [
         "libxcb-image0-dev", "libsystemd-dev", "libjpeg9-dev", "libvorbis-dev",
-        "libflac-dev", "libopenal-dev"
+        "libflac-dev", "libopenal-dev", "libgl1-mesa-dev",
       ]
     end
     
