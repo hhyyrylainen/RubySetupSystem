@@ -308,12 +308,15 @@ def handlePlatform(props, platform, prettyName)
   info "Cleaning logs and configuration files"
   removeIfExists File.join(binTarget, "Data/Cache")
 
+  removeIfExists File.join(binTarget, "CrashReports")
+
   Dir.glob([File.join(binTarget, "*.conf"), File.join(binTarget, "*Persist.txt"),
             # These are Ogre cache files
             File.join(binTarget, "*.glsl"),
             # Log files
             File.join(binTarget, "*Log.txt"), File.join(binTarget, "*cAudioLog.html"),
-            File.join(binTarget, "*LogOGRE.txt"), File.join(binTarget, "*LogCEF.txt")]
+            File.join(binTarget, "*LogOGRE.txt"), File.join(binTarget, "*LogCEF.txt"),
+            File.join(binTarget, "*.dmp")]
           ){|i|
     removeIfExists i
   }
