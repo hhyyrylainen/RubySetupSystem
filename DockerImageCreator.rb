@@ -61,11 +61,11 @@ def doDockerBuild(folder)
   
 end
 
-def writeCommonDockerFile(file, packageNames)
+def writeCommonDockerFile(file, packageNames, extraSteps)
   file.puts("FROM fedora:30")
   file.puts("RUN dnf install -y --setopt=deltarpm=false ruby ruby-devel " +
             packageNames.join(' ') + " gcc make redhat-rpm-config fedora-repos-rawhide " +
-                              "&& dnf clean all")
+                              "clang && dnf clean all")
   file.puts("RUN gem install os colorize rubyzip json sha3")
 
   # vnc setup part
@@ -83,10 +83,16 @@ def writeCommonDockerFile(file, packageNames)
   file.puts("RUN mkdir /root/.subversion")
   file.puts("RUN echo $'[global]\\n\\
 store-plaintext-passwords = no\\n' > /root/.subversion/servers")
+
+  if extraSteps
+    extraSteps.each{|step|
+      file.puts step
+    }
+  end
 end
 
 # Main run method
-def runDockerCreate(libsList, mainProjectAsDep = nil)
+def runDockerCreate(libsList, mainProjectAsDep = nil, extraPackages: [], extraSteps: [])
 
   if mainProjectAsDep
     libsList.push mainProjectAsDep
@@ -114,6 +120,9 @@ def runDockerCreate(libsList, mainProjectAsDep = nil)
   # And 7z
   packageNames.push "p7zip"
 
+  # Optional
+  packageNames.concat extraPackages
+  
   packageNames.uniq!
   
   puts ""
@@ -131,7 +140,7 @@ def runDockerCreate(libsList, mainProjectAsDep = nil)
 
   File.open(dockerFile, 'w'){|file|
 
-    writeCommonDockerFile file, packageNames
+    writeCommonDockerFile file, packageNames, extraSteps
   }
 
   jenkinsDocker = File.join CurrentDir, "jenkins", "Dockerfile"
@@ -141,11 +150,12 @@ def runDockerCreate(libsList, mainProjectAsDep = nil)
 
   File.open(jenkinsDocker, 'w'){|file|
     
-    writeCommonDockerFile file, packageNames
+    writeCommonDockerFile file, packageNames, extraSteps
 
     # Needed things for jenkins.
     # From here: https://wiki.jenkins.io/display/JENKINS/Docker+Plugin
-    file.puts("RUN dnf install -y --setopt=deltarpm=false openssh-server java-1.8.0-openjdk")
+    file.puts("RUN dnf install -y --setopt=deltarpm=false openssh-server " +
+              "java-1.8.0-openjdk && dnf clean all")
     # This probably messes up everything as this probably runs before the keys are fine
     # file.puts("RUN systemctl enable sshd")
     # And stuff from: https://hub.docker.com/r/jenkins/ssh-slave/~/dockerfile/
