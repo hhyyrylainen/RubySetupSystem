@@ -88,9 +88,22 @@ class BaseDep
       FileUtils.mkdir_p @InstallPath
     end
 
+    if args[:pic]
+      @Options.push "-DCMAKE_POSITION_INDEPENDENT_CODE=ON"
+    end
+
     # URL overwriting
     if args[:fork]
       @RepoURL = args[:fork]
+    end
+  end
+
+  def HandleStaticAndSharedSelectors(args, prefix: "BUILD_")
+    if args.include? :static
+      @Options.push "-D#{prefix}STATIC=#{args[:static]}"
+    end
+    if args.include? :shared
+      @Options.push "-D#{prefix}SHARED=#{args[:shared]}"
     end
   end
 
