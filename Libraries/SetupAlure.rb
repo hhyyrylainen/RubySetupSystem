@@ -69,7 +69,12 @@ class Alure < StandardCMakeDep
       [
         "lib/alure.lib",
         "bin/alure.dll",
-        "include/alure",
+        "AL/alure2.h",
+        "AL/alure2-alext.h",
+        "AL/alure2-aliases.h",
+        "AL/alure2-typeviews.h",
+        "AL/efx.h",
+        "AL/efx-presets.h",
       ]
     else
       #onError "TODO: linux file list"
