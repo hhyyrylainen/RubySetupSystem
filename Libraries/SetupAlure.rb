@@ -67,14 +67,14 @@ class Alure < StandardCMakeDep
   def getInstalledFiles
     if OS.windows?
       [
-        "lib/alure.lib",
-        "bin/alure.dll",
-        "AL/alure2.h",
-        "AL/alure2-alext.h",
-        "AL/alure2-aliases.h",
-        "AL/alure2-typeviews.h",
-        "AL/efx.h",
-        "AL/efx-presets.h",
+        "lib/alure2.lib",
+        "bin/alure2.dll",
+        "include/AL/alure2.h",
+        "include/AL/alure2-alext.h",
+        "include/AL/alure2-aliases.h",
+        "include/AL/alure2-typeviews.h",
+        "include/AL/efx.h",
+        "include/AL/efx-presets.h",
       ]
     else
       #onError "TODO: linux file list"

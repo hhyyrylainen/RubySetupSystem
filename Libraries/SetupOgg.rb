@@ -22,7 +22,7 @@ class Ogg < StandardCMakeDep
   def getInstalledFiles
     if OS.windows?
       [
-        "lib/libogg.lib",
+        "lib/ogg.lib",
         "include/ogg",
       ]
     else

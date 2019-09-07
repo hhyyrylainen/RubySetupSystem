@@ -65,7 +65,7 @@ class SFML < StandardCMakeDep
 
         "include/SFML",
         # This seems to be sfml license
-        "license.txt",
+        "license.md",
       ]
     else
       #onError "TODO: linux file list"

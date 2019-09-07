@@ -8,7 +8,7 @@ require_relative '../RubyCommon'
 
 class Database
   attr_reader :Name, :URL
-  
+
   def initialize(name, url, keyFile)
     @Name = name
     @URL = url
@@ -19,7 +19,7 @@ class Database
     open(url + ".sha512", "rb", read_timeout: 10) do |req|
       @Signature = req.read
     end
-    
+
     puts "Downloading: #{@URL}"
     open(url, "rb", read_timeout: 20) do |req|
       text = req.read
@@ -32,7 +32,7 @@ class Database
       end
 
       success "Signature is good"
-      
+
       @Data = JSON.parse(text)
     end
 
@@ -63,7 +63,36 @@ class Database
       key.include? name
     }.map{|key, value| value}
   end
-  
+
+  def add(dep)
+    @Precompiled[dep.FullName] = dep
+  end
+
+  def write(file)
+    File.open(file, 'wb') {|f|
+      f.puts JSON.pretty_generate serialize
+    }
+  end
+
+  def serialize
+    precompiled = {}
+
+    @Precompiled.each{|key, value|
+      if key != value.FullName
+        warning "Precompiled key doesn't match its name: #{key} != #{value.Fullname}"
+      end
+
+      precompiled[key] = {hash: value.Hash}
+    }
+
+    precompiled = precompiled.sort_by{|key| key}.to_h
+
+    {
+      baseurl: baseURL,
+      precompiled: precompiled
+    }
+  end
+
 end
 
 def loadDatabase(name, url, key)
@@ -79,7 +108,7 @@ end
 def loadKeyFromFile(file)
   OpenSSL::X509::Certificate.new(File.read file).public_key
 end
-     
+
 
 # Loads and returns all the default databases
 def getDefaultDatabases
@@ -100,7 +129,7 @@ def getDefaultDatabases
       warning "One or more databases failed to download."
       warning "Precompiled and other features may be unavailable."
     end
-    
+
     $remoteDatabasesLoaded = true
     info "#{$remoteDatabases.length} remote databases loaded"
   end

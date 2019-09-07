@@ -22,7 +22,9 @@ class Vorbis < StandardCMakeDep
   def getInstalledFiles
     if OS.windows?
       [
-        "lib/libvorbis.lib",
+        "lib/vorbis.lib",
+        "lib/vorbisenc.lib",
+        "lib/vorbisfile.lib",
         "include/vorbis",
       ]
     else
