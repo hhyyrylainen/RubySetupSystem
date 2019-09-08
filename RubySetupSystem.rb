@@ -124,6 +124,12 @@ CMakeBuildType = "RelWithDebInfo"
 $compileThreads = if $options.include?(:parallel) then $options[:parallel] else
                     Etc.nprocessors end
 
+if $compileThreads > Etc.nprocessors
+  $compileThreads = Etc.nprocessors
+  puts "Limiting parallel compile to detected number of CPU cores: #{$compileThreads}"
+end
+
+
 # If set to false won't install libs that need sudo
 DoSudoInstalls = if $options.include?(:sudo) then $options[:sudo] else true end
 
@@ -272,6 +278,10 @@ puts "Using #{$compileThreads} threads to compile, configuration: #{CMakeBuildTy
 if $options.include?(:projectFullParallel)
   puts "Main project uses all cores (#{Etc.nprocessors})"
   if $options.include?(:projectFullParallelLimit)
+    if $options[:projectFullParallelLimit] > Etc.nprocessors
+      puts "Limiting project parallel to number of detected CPU cores."
+      $options[:projectFullParallelLimit] = Etc.nprocessors
+    end
     puts "With extra limit set to #{$options[:projectFullParallelLimit]}"
   end
 end
