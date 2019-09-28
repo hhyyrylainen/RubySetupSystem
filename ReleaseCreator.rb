@@ -26,8 +26,16 @@ end
 
 def getExtraOptions(opts)
 
-  opts.on("--development", "Allow making development, -DMAKE_RELEASE=0, builds") do |b|
+  opts.on("-d", "--development", "Allow making development, -DMAKE_RELEASE=0, builds") do |b|
     $options[:allowDevelopment] = true
+  end
+
+  opts.on("-u", "--unattended", "Don't ask if the folder is fine") do |b|
+    $options[:unattendedMode] = true
+  end
+
+  opts.on("-z", "--zip-path PATH", "Override the final zip's path (including file name and extension)") do |path|
+    $options[:zipPath] = path
   end
 
 end
@@ -299,9 +307,12 @@ def handlePlatform(props, platform, prettyName)
 
   # TODO: allow pausing here for manual testing
   info "Created folder: " + target
-  puts "Now is an excellent time to verify that the folder is fine"
-  puts "If it isn't press CTRL+C to cancel"
-  waitForKeyPress
+
+  if !$options[:unattendedMode]
+    puts "Now is an excellent time to verify that the folder is fine"
+    puts "If it isn't press CTRL+C to cancel"
+    waitForKeyPress
+  end
 
 
   # Then clean all logs and settings
@@ -393,13 +404,15 @@ def handlePlatform(props, platform, prettyName)
 
   end
 
+  zipPath = $options[:zipPath] ? $options[:zipPath] : target + ".7z"
+
   # Zip it up
-  if runSystemSafe(p7zip, "a", target + ".7z", target) != 0
+  if runSystemSafe(p7zip, "a", zipPath, target) != 0
     onError "Failed to zip folder: " + target
   end
 
   puts ""
-  success "Created archive: #{target}.7z"
+  success "Created archive: #{zipPath}"
   info "SHA3: " + SHA3::Digest::SHA256.file(target + ".7z").hexdigest
   puts ""
 end
