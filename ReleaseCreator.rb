@@ -413,7 +413,7 @@ def handlePlatform(props, platform, prettyName)
 
   puts ""
   success "Created archive: #{zipPath}"
-  info "SHA3: " + SHA3::Digest::SHA256.file(target + ".7z").hexdigest
+  info "SHA3: " + SHA3::Digest::SHA256.file(zipPath).hexdigest
   puts ""
 end
 
