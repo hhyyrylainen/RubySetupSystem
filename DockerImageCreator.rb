@@ -5,33 +5,27 @@ require 'optparse'
 require_relative 'RubyCommon.rb'
 
 def checkRunFolder(suggested)
+  buildFolder = File.join(suggested, 'build')
 
-  buildFolder = File.join(suggested, "build")
+  onError('Not ran from base folder (no build directory exists)') unless
+    File.exist?(buildFolder)
 
-  onError("Not ran from base folder (no build directory exists)") if
-    not File.exist?(buildFolder)
-
-  target = File.join suggested, "build", "docker"
+  target = File.join suggested, 'build', 'docker'
 
   FileUtils.mkdir_p target
 
   target
-  
 end
 
 def projectFolder(baseDir)
-
-  File.expand_path File.join(baseDir, "../../")
-  
+  File.expand_path File.join(baseDir, '../../')
 end
 
 def getExtraOptions(opts)
-
-  opts.on("--build-docker", "If specified builds a docker file automatically otherwise " +
-         "only a Dockerfile is created") do |b|
+  opts.on('--build-docker', 'If specified builds a docker file automatically otherwise ' \
+         'only a Dockerfile is created') do |_b|
     $options[:dockerbuild] = true
-  end 
-  
+  end
 end
 
 def extraHelp
@@ -41,32 +35,32 @@ end
 require_relative 'RubySetupSystem.rb'
 
 # Read extraOptions
-$doBuild = if $options.include?(:dockerbuild) then $options[:dockerbuild] else false end
+$doBuild = $options.include?(:dockerbuild) ? $options[:dockerbuild] : false
 
 # Overwrite the the operating system to work well with the fedora
 # images
 def getLinuxOS
-  "fedora"
+  'fedora'
 end
 
 def doDockerBuild(folder)
+  if runSystemSafe('docker', 'build', folder) != 0
 
-  if runSystemSafe("docker", "build", folder) != 0
+    warning 'Failed to run docker as normal user, trying sudo'
 
-    warning "Failed to run docker as normal user, trying sudo"
-    
-    runOpen3Checked("sudo", "docker", "build", folder)
-    
+    runOpen3Checked('sudo', 'docker', 'build', folder)
+
   end
-  
 end
 
 def writeCommonDockerFile(file, packageNames, extraSteps)
-  file.puts("FROM fedora:30")
-  file.puts("RUN dnf install -y --setopt=deltarpm=false ruby ruby-devel " +
-            packageNames.join(' ') + " gcc make redhat-rpm-config fedora-repos-rawhide " +
-                              "clang && dnf clean all")
-  file.puts("RUN gem install os colorize rubyzip json sha3")
+  file.puts('FROM fedora:30')
+  file.puts('RUN dnf install -y --setopt=deltarpm=false ruby ruby-devel ' +
+            packageNames.join(' ') + ' gcc make redhat-rpm-config fedora-repos-rawhide ' \
+                                     'clang && dnf clean all')
+  # This isn't a forced package, so this line may cause issues later
+  file.puts('RUN git lfs install')
+  file.puts('RUN gem install os colorize rubyzip json sha3')
 
   # vnc setup part
   # This doesn't seem to actually help with a missing x server
@@ -76,86 +70,80 @@ def writeCommonDockerFile(file, packageNames, extraSteps)
 
   # Rawhide overrides
   # glm is no longer used
-  #file.puts("RUN dnf install -y --disablerepo=* --enablerepo=rawhide " +
+  # file.puts("RUN dnf install -y --disablerepo=* --enablerepo=rawhide " +
   #           "--setopt=deltarpm=false glm-devel")
 
   # Disable SVN password saving
-  file.puts("RUN mkdir /root/.subversion")
+  file.puts('RUN mkdir /root/.subversion')
   file.puts("RUN echo $'[global]\\n\\
 store-plaintext-passwords = no\\n' > /root/.subversion/servers")
 
   if extraSteps
-    extraSteps.each{|step|
+    extraSteps.each do |step|
       file.puts step
-    }
+    end
   end
 end
 
 # Main run method
 def runDockerCreate(libsList, mainProjectAsDep = nil, extraPackages: [], extraSteps: [])
-
-  if mainProjectAsDep
-    libsList.push mainProjectAsDep
-  end
+  libsList.push mainProjectAsDep if mainProjectAsDep
 
   packageNames = []
 
-  libsList.each{|lib|
-
-    if not lib.respond_to?(:installPrerequisites)
+  libsList.each do |lib|
+    unless lib.respond_to?(:installPrerequisites)
 
       puts "Skipping #{lib.Name} which doesn't specify packages to install"
       next
     end
 
     packageNames.push(*lib.depsList)
-  }
+  end
 
   # We need lsb_release
-  packageNames.push "redhat-lsb-core"
+  packageNames.push 'redhat-lsb-core'
 
   # Might as well install all the svc tools
-  packageNames.push "git", "svn", "mercurial"
+  packageNames.push 'git', 'svn', 'mercurial'
 
   # And 7z
-  packageNames.push "p7zip"
+  packageNames.push 'p7zip'
 
   # Optional
   packageNames.concat extraPackages
-  
+
   packageNames.uniq!
-  
-  puts ""
-  success "Successfully ran package collection"
+
+  puts ''
+  success 'Successfully ran package collection'
   info "Detected packages: #{packageNames}"
 
   info "Package count: #{packageNames.count}"
 
-  FileUtils.mkdir_p File.join(CurrentDir, "simple")
-  FileUtils.mkdir_p File.join(CurrentDir, "jenkins")
+  FileUtils.mkdir_p File.join(CurrentDir, 'simple')
+  FileUtils.mkdir_p File.join(CurrentDir, 'jenkins')
 
-  dockerFile = File.join CurrentDir, "simple", "Dockerfile"
-  
+  dockerFile = File.join CurrentDir, 'simple', 'Dockerfile'
+
   puts "Writing docker file at '#{dockerFile}'"
 
-  File.open(dockerFile, 'w'){|file|
-
+  File.open(dockerFile, 'w') do |file|
     writeCommonDockerFile file, packageNames, extraSteps
-  }
+  end
 
-  jenkinsDocker = File.join CurrentDir, "jenkins", "Dockerfile"
-  jenkinsSetupSSHD = File.join CurrentDir, "jenkins", "setup-sshd"
-  
+  jenkinsDocker = File.join CurrentDir, 'jenkins', 'Dockerfile'
+  jenkinsSetupSSHD = File.join CurrentDir, 'jenkins', 'setup-sshd'
+
   puts "Writing docker (jenkins) file at '#{jenkinsDocker}'"
 
-  File.open(jenkinsDocker, 'w'){|file|
-    
+  File.open(jenkinsDocker, 'w') do |file|
     writeCommonDockerFile file, packageNames, extraSteps
 
     # Needed things for jenkins.
     # From here: https://wiki.jenkins.io/display/JENKINS/Docker+Plugin
-    file.puts("RUN dnf install -y --setopt=deltarpm=false openssh-server " +
-              "java-1.8.0-openjdk && dnf clean all")
+    file.puts('RUN dnf install -y --setopt=deltarpm=false openssh-server ' \
+              'java-1.8.0-openjdk && dnf clean all')
     # This probably messes up everything as this probably runs before the keys are fine
     # file.puts("RUN systemctl enable sshd")
     # And stuff from: https://hub.docker.com/r/jenkins/ssh-slave/~/dockerfile/
@@ -209,7 +197,7 @@ EXPOSE 22
 
 ENTRYPOINT ["setup-sshd"]
 
-END
+    END
 
     File.write(jenkinsSetupSSHD, <<-END
 #!/bin/bash
@@ -270,29 +258,23 @@ fi
 # ensure variables passed to docker container are also exposed to ssh sessions
 env | grep _ >> /etc/environment
 
-exec /usr/sbin/sshd -D -e "${@}"    
-END
-              )
+exec /usr/sbin/sshd -D -e "${@}"
+    END
+  )
 
-    FileUtils.chmod "+x", jenkinsSetupSSHD
-  }  
+    FileUtils.chmod '+x', jenkinsSetupSSHD
+  end
 
-  if !$doBuild
+  unless $doBuild
 
     success "Skipping building. Run 'docker build' manually. All done."
     exit 0
-  end  
+  end
 
-  success "Done writing docker file. Building the image(s)..."
+  success 'Done writing docker file. Building the image(s)...'
 
-  doDockerBuild File.join(CurrentDir, "simple")
-  doDockerBuild File.join(CurrentDir, "jenkins")
-  
-  success "Done. See above output for the created image details"
+  doDockerBuild File.join(CurrentDir, 'simple')
+  doDockerBuild File.join(CurrentDir, 'jenkins')
+
+  success 'Done. See above output for the created image details'
 end
-
-
-
-
-
-
