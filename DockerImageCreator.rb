@@ -57,7 +57,7 @@ def writeCommonDockerFile(file, packageNames, extraSteps)
   file.puts('FROM fedora:30')
   file.puts('RUN dnf install -y --setopt=deltarpm=false ruby ruby-devel ' +
             packageNames.join(' ') + ' gcc make redhat-rpm-config fedora-repos-rawhide ' \
-                                     'clang && dnf clean all')
+                                     'clang cmake && dnf clean all')
   file.puts('RUN git lfs install') if packageNames.include? 'git-lfs'
   file.puts('RUN gem install os colorize rubyzip json sha3')
 
