@@ -1,127 +1,121 @@
 # Random functions to be used by the install things
 # CMake configure
-require_relative "RubyCommon.rb"
-require_relative "WindowsHelpers.rb"
+require_relative 'RubyCommon.rb'
+require_relative 'WindowsHelpers.rb'
 
 # Runs cmake with options and returns true on success
-def runCMakeConfigure(additionalArgs, directory = "..", buildType: CMakeBuildType)
+def runCMakeConfigure(additionalArgs, directory = '..', buildType: CMakeBuildType)
+  onError 'additionalArgs must be an array' unless additionalArgs.is_a? Array
 
-  onError "additionalArgs must be an array" if not additionalArgs.is_a? Array
+  command = ['cmake', directory]
 
-  command = ["cmake", directory]
+  command.push "-DCMAKE_BUILD_TYPE=#{buildType}" if TC.supportsPresetBuildType
 
-  if TC.supportsPresetBuildType
-    command.push "-DCMAKE_BUILD_TYPE=#{buildType}"
-  end
+  command.push '-G', TC.cmakeGenerator if TC.cmakeGenerator
 
-  if TC.cmakeGenerator
-    command.push "-G", TC.cmakeGenerator
-  end
-
-  if TC.cmakeToolSet
-    command.push "-T", TC.cmakeToolSet
-  end
+  command.push '-T', TC.cmakeToolSet if TC.cmakeToolSet
 
   command.push *additionalArgs
 
-  return runOpen3StuckPrevention(*command) == 0
+  runOpen3StuckPrevention(*command) == 0
 end
 
 # Installs a list of dependencies
 def installDepsList(deps)
-
   os = getLinuxOS
 
   # TODO: if we used some terminal redirecting or something these
   # might be possible to not have to use the "automatic yes" options
 
-  if os == "fedora" || os == "centos" || os == "rhel"
+  if os == 'fedora' || os == 'centos' || os == 'rhel'
 
     if HasDNF
-      askRunSudo "sudo", "dnf", "install", "-y", *deps
+      askRunSudo 'sudo', 'dnf', 'install', '-y', *deps
     else
-      askRunSudo "sudo", "yum", "install", "-y", *deps
+      askRunSudo 'sudo', 'yum', 'install', '-y', *deps
     end
 
     return
   end
 
-  if os == "ubuntu"
+  if os == 'ubuntu'
 
-    askRunSudo "sudo", "apt-get", "install", "-y", *deps
+    askRunSudo 'sudo', 'apt-get', 'install', '-y', *deps
 
     return
   end
 
-  if os == "arch"
+  if os == 'arch'
 
-    askRunSudo "sudo", "pacman", "-S", "--noconfirm", *deps
-    
+    askRunSudo 'sudo', 'pacman', '-S', '--noconfirm', *deps
+
     return
   end
 
-  if os == "opensuse"
+  if os == 'opensuse'
 
-    askRunSudo "sudo", "zypper", "in", "-y", *deps
-    
-    return 
+    askRunSudo 'sudo', 'zypper', 'in', '-y', *deps
+
+    return
   end
 
-  onError "unkown linux os '#{os}' for package manager installing " +
+  onError "unkown linux os '#{os}' for package manager installing " \
           "dependencies: #{deps.join(' ')}"
-  
 end
-
 
 #
 # Git things
 #
 # Checks if working directory is a git repo
 def isInGitRepo
-  runOpen3Suppressed("git", "status") == 0
+  runOpen3Suppressed('git', 'status') == 0
+end
+
+def get_current_git_commit(folder)
+  Dir.chdir(folder) do
+    `git rev-parse HEAD`.strip
+  end
 end
 
 class GitVersionType
-
   # Not a git repo
-  NOTGIT=0
-  UNSPECIFIED=1
-  BRANCH=2
-  HASH=3
+  NOTGIT = 0
+  UNSPECIFIED = 1
+  BRANCH = 2
+  HASH = 3
   # A specific commit
-  TAG=4
+  TAG = 4
   # A remote repo?
-  REMOTE=5
+  REMOTE = 5
 
   # Must be in the folder where git can find the current repo
-  def GitVersionType.detect(versionStr)
-
-    if !versionStr || versionStr.length == 0
+  def self.detect(versionStr)
+    if !versionStr || versionStr.empty?
       # Default branch
       return BRANCH
     end
 
-    if !isInGitRepo
+    unless isInGitRepo
       warning "Git version type detect not run in a git folder (#{Dir.pwd})"
       return NOTGIT
     end
 
-    if runOpen3Suppressed("git", "show-ref", "--verify",
+    if runOpen3Suppressed('git', 'show-ref', '--verify',
                           "refs/heads/#{versionStr}") == 0
       return BRANCH
     end
 
-    if runOpen3Suppressed("git", "rev-parse", "--verify",
+    if runOpen3Suppressed('git', 'rev-parse', '--verify',
                           "#{versionStr}^{commit}") == 0
       return HASH
     end
-    
-    if runOpen3Suppressed("git", "show-ref", "--verify",
+
+    if runOpen3Suppressed('git', 'show-ref', '--verify',
                           "refs/tags/#{versionStr}") == 0
       return TAG
     end
 
-    if runOpen3Suppressed("git", "show-ref", "--verify",
+    if runOpen3Suppressed('git', 'show-ref', '--verify',
                           "refs/remote/#{versionStr}") == 0
       return REMOTE
     end
@@ -129,28 +123,24 @@ class GitVersionType
     UNSPECIFIED
   end
 
-  def GitVersionType.typeToStr(type)
-    k = GitVersionType.constants.find {|k| GitVersionType.const_get(k) == type}
+  def self.typeToStr(type)
+    k = GitVersionType.constants.find { |k| GitVersionType.const_get(k) == type }
     return nil unless k
+
     "GitVersionType::#{k}"
   end
-
-  
 end
 
 # Detect whether a given git is a branch or a hash and then do a pull
 # if on a branch
 def gitPullIfOnBranch(version)
-
   versionType = GitVersionType.detect(version)
 
   puts "Doing git pull updates. '#{version}' is #{GitVersionType.typeToStr versionType}"
 
   case versionType
   when GitVersionType::UNSPECIFIED, GitVersionType::BRANCH
-    if runSystemSafe("git", "pull", "origin", version) != 0
-      onError "git pull update failed"
-    end
+    onError 'git pull update failed' if runSystemSafe('git', 'pull', 'origin', version) != 0
   end
 end
 
@@ -159,37 +149,31 @@ end
 # Warning: this must be ran in the folder that has the git repo that contains
 # the file
 def gitFixCRLFEndings(fileToCheckWith)
+  runOpen3Checked 'git', 'config', 'core.autocrlf', 'off'
 
-  runOpen3Checked "git", "config", "core.autocrlf", "off"
-
-  puts "Deleting files and re-checking them out"
-  `git ls-files`.strip.lines.each{|f|
-
+  puts 'Deleting files and re-checking them out'
+  `git ls-files`.strip.lines.each do |f|
     f = f.chomp.strip
-    
-    if f
-      FileUtils.rm f
-    end
-  }
-  
-  runOpen3Checked "git", "checkout", "."
 
-  onError("Line endings fix failed. See the troubleshooting in the build guide.") if
+    FileUtils.rm f if f
+  end
+
+  runOpen3Checked 'git', 'checkout', '.'
+
+  onError('Line endings fix failed. See the troubleshooting in the build guide.') if
     getFileLineEndings(fileToCheckWith) != "\n"
-  
-  success "Fixed. If you get 'missing separator' errors see the troubleshooting " +
-          "section in the help files"
-end
 
+  success "Fixed. If you get 'missing separator' errors see the troubleshooting " \
+          'section in the help files'
+end
 
 #
 # SVN things
 #
 def verifySVNUrl(wantedurl)
-
   match = `svn info`.strip.match(/.*URL:\s?(\S+).*/i)
 
-  onError("'svn info' unable to find URL with regex") if !match
+  onError("'svn info' unable to find URL with regex") unless match
 
   currenturl = match.captures[0]
 
@@ -199,9 +183,7 @@ def verifySVNUrl(wantedurl)
 
     success = false
 
-    if !runSystemSafe "svn", "relocate", wantedurl
-      warning "relocation probably failed"
-    end
+    warning 'relocation probably failed' unless runSystemSafe 'svn', 'relocate', wantedurl
 
     match = `svn info`.strip.match(/.*URL:\s?(\S+).*/i)
 
@@ -213,32 +195,27 @@ def verifySVNUrl(wantedurl)
       success = currenturl == wantedurl
     end
 
-    if !success
-      error "Failed to relocate. Deleting folder contents and re-checking out"
-      Dir.glob("*", File::FNM_DOTMATCH).reject{ |a| a =~ /^\.{1,2}$/ }.each{|i|
+    unless success
+      error 'Failed to relocate. Deleting folder contents and re-checking out'
+      Dir.glob('*', File::FNM_DOTMATCH).reject { |a| a =~ /^\.{1,2}$/ }.each do |i|
         puts "Deleting: #{i}"
         FileUtils.rm_rf(i)
-      }
+      end
 
-      if !runSystemSafe "svn", "co", wantedurl, "."
-        onError "Failed to checkout from svn after deleting previous contents"
+      unless runSystemSafe 'svn', 'co', wantedurl, '.'
+        onError 'Failed to checkout from svn after deleting previous contents'
       end
     end
 
-    success "svn URL updated"
+    success 'svn URL updated'
   end
 
-  info "svn URL is correct"
-  
+  info 'svn URL is correct'
 end
-
 
 # TODO: make this preserve symlinks, if wanted with the method copyPreserveSymlinks
 def runGlobberAndCopy(glob, targetFolder)
-  onError "globbing for library failed #{glob.LibName}" if not glob.run
-  
+  onError "globbing for library failed #{glob.LibName}" unless glob.run
+
   FileUtils.cp_r glob.getResult, targetFolder
 end
-
-
-

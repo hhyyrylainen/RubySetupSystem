@@ -1,24 +1,26 @@
 # Common ruby functions
+require 'English'
 require 'os'
 require 'colorize'
 require 'fileutils'
 require 'pathname'
 require 'open-uri'
-require "open3"
+require 'open3'
 require 'digest'
 require 'io/console'
 
+require_relative 'action_cache'
+
 # To get all possible colour values print String.colors
-#puts String.colors
+# puts String.colors
 
 # Error handling
 def onError(errordescription)
-  
-  puts
-  puts ("ERROR: " + errordescription).red
-  puts "Stack trace for error: ", caller
+  puts ''
+  puts(('ERROR: ' + errordescription).red)
+  puts 'Stack trace for error: ', caller
   # Uncomment the next line to allow rescuing this
-  #raise "onError called!"
+  # raise "onError called!"
   exit 1
 end
 
@@ -30,6 +32,7 @@ def info(message)
     puts message.to_s.colorize(:light_blue)
   end
 end
+
 def success(message)
   if OS.windows?
     puts message.to_s.colorize(:green)
@@ -37,6 +40,7 @@ def success(message)
     puts message.to_s.colorize(:light_green)
   end
 end
+
 def warning(message)
   if OS.windows?
     puts message.to_s.colorize(:red)
@@ -44,219 +48,199 @@ def warning(message)
     puts message.to_s.colorize(:light_yellow)
   end
 end
+
 def error(message)
   puts message.to_s.colorize(:red)
 end
 
 # Waits for a keypress
 def waitForKeyPress
-  print "Press any key to continue"
+  print 'Press any key to continue'
   got = STDIN.getch
   # Extra space to overwrite in case next output is short
   print "                         \r"
-  
+
   # Cancel on CTRL-C
   if got == "\x03"
-    puts "Got interrupt key, quitting"
+    puts 'Got interrupt key, quitting'
     exit 1
   end
 end
 
 # Runs command with system (escaped like open3 but can't be stopped if running a long time)
-def runSystemSafe(*cmdAndArgs)
-  if cmdAndArgs.length < 1
-    onError "Empty runSystemSafe command"
-  end
+def runSystemSafe(*cmd_and_args)
+  onError 'Empty runSystemSafe command' if cmd_and_args.empty?
 
-  if !File.exists? cmdAndArgs[0] or !Pathname.new(cmdAndArgs[0]).absolute?
+  if !File.exist?(cmd_and_args[0]) || !Pathname.new(cmd_and_args[0]).absolute?
     # check that the command exists if it is not a full path to a file
-    requireCMD cmdAndArgs[0]
+    requireCMD cmd_and_args[0]
   end
 
-  system(*cmdAndArgs)
-  $?.exitstatus
+  system(*cmd_and_args)
+  $CHILD_STATUS.exitstatus
 end
 
 # Runs Open3 for the commad, returns exit status
-def runOpen3(*cmdAndArgs, errorPrefix: "", redError: false)
+def runOpen3(*cmd_and_args, errorPrefix: '', redError: false)
+  # puts "Open3 debug:", cmd_and_args
 
-  # puts "Open3 debug:", cmdAndArgs
+  onError 'Empty runOpen3 command' if cmd_and_args.empty?
 
-  if cmdAndArgs.length < 1
-    onError "Empty runOpen3 command"
-  end
-
-  if !File.exists? cmdAndArgs[0] or !Pathname.new(cmdAndArgs[0]).absolute?
+  if !File.exist?(cmd_and_args[0]) || !Pathname.new(cmd_and_args[0]).absolute?
     # check that the command exists if it is not a full path to a file
-    requireCMD cmdAndArgs[0]
+    requireCMD cmd_and_args[0]
   end
 
-  Open3.popen3(*cmdAndArgs) {|stdin, stdout, stderr, wait_thr|
-
+  Open3.popen3(*cmd_and_args) do |_stdin, stdout, stderr, wait_thr|
     # These need to be threads to work nicely on windows
-    outThread = Thread.new{
-      stdout.each {|line|
+    out_thread = Thread.new do
+      stdout.each do |line|
         puts line
-      }
-    }
+      end
+    end
 
-    errThread = Thread.new{
-      stderr.each {|line|
+    err_thread = Thread.new do
+      stderr.each do |line|
         if redError
-          puts (errorPrefix + line).red
+          puts((errorPrefix + line).red)
         else
           puts errorPrefix + line
         end
-      }
-    }    
+      end
+    end
 
     exit_status = wait_thr.value
-    outThread.join
-    errThread.join
+    out_thread.join
+    err_thread.join
     return exit_status
-  }
+  end
 
   onError "Execution shouldn't reach here"
-  
 end
 
 # Runs Open3 for the commad, returns exit status and output string
-def runOpen3CaptureOutput(*cmdAndArgs)
+def runOpen3CaptureOutput(*cmd_and_args)
+  output = ''
 
-  output = ""
+  onError 'Empty runOpen3 command' if cmd_and_args.empty?
 
-  if cmdAndArgs.length < 1
-    onError "Empty runOpen3 command"
-  end
-
-  if !File.exists? cmdAndArgs[0] or !Pathname.new(cmdAndArgs[0]).absolute?
+  if !File.exist?(cmd_and_args[0]) || !Pathname.new(cmd_and_args[0]).absolute?
     # check that the command exists if it is not a full path to a file
-    requireCMD cmdAndArgs[0]
+    requireCMD cmd_and_args[0]
   end
 
-  Open3.popen3(*cmdAndArgs) {|stdin, stdout, stderr, wait_thr|
-
+  Open3.popen3(*cmd_and_args) do |_stdin, stdout, stderr, wait_thr|
     # These need to be threads to work nicely on windows
-    outThread = Thread.new{
-      stdout.each {|line|
+    out_thread = Thread.new do
+      stdout.each do |line|
         output.concat(line)
-      }
-    }
+      end
+    end
 
-    errThread = Thread.new{
-      stderr.each {|line|
+    err_thread = Thread.new do
+      stderr.each do |line|
         output.concat(line)
-      }
-    }    
+      end
+    end
 
     exit_status = wait_thr.value
-    outThread.join
-    errThread.join
+    out_thread.join
+    err_thread.join
     return exit_status, output
-  }
+  end
 
   onError "Execution shouldn't reach here"
 end
 
 # Runs Open3 for the commad, returns exit status. Restarts command a few times if fails to run
-def runOpen3StuckPrevention(*cmdAndArgs, errorPrefix: "", redError: false, retryCount: 5,
+def runOpen3StuckPrevention(*cmd_and_args, errorPrefix: '', redError: false, retryCount: 5,
                             stuckTimeout: 120)
 
-  if cmdAndArgs.length < 1
-    onError "Empty runOpen3 command"
-  end
+  onError 'Empty runOpen3 command' if cmd_and_args.empty?
 
-  if !File.exists? cmdAndArgs[0] or !Pathname.new(cmdAndArgs[0]).absolute?
+  if !File.exist?(cmd_and_args[0]) || !Pathname.new(cmd_and_args[0]).absolute?
     # check that the command exists if it is not a full path to a file
-    requireCMD cmdAndArgs[0]
+    requireCMD cmd_and_args[0]
   end
 
-  Open3.popen3(*cmdAndArgs) {|stdin, stdout, stderr, wait_thr|
+  Open3.popen3(*cmd_and_args) do |_stdin, stdout, stderr, wait_thr|
+    last_output_time = Time.now
 
-    lastOutputTime = Time.now
-
-    outThread = Thread.new{
-      stdout.each {|line|
+    out_thread = Thread.new do
+      stdout.each do |line|
         puts line
-        lastOutputTime = Time.now
-      }
-    }
+        last_output_time = Time.now
+      end
+    end
 
-    errThread = Thread.new{
-      stderr.each {|line|
+    err_thread = Thread.new do
+      stderr.each do |line|
         if redError
-          puts (errorPrefix + line).red
-      else
-        puts errorPrefix + line
+          puts((errorPrefix + line).red)
+        else
+          puts errorPrefix + line
         end
-        lastOutputTime = Time.now
-      }
-    }
+        last_output_time = Time.now
+      end
+    end
 
     # Handle timeouts
-    while wait_thr.join(10) == nil
+    while wait_thr.join(10).nil?
 
-      if Time.now - lastOutputTime >= stuckTimeout
-        warning "RubySetupSystem stuck prevention: #{Time.now - lastOutputTime} elapsed " +
-                "since last output from command"
+      next unless Time.now - last_output_time >= stuckTimeout
 
-        if retryCount > 0
-          info "Restarting it "
-          Process.kill("TERM", wait_thr.pid)
+      warning "RubySetupSystem stuck prevention: #{Time.now - last_output_time} elapsed " \
+              'since last output from command'
 
-          sleep(5)
-          return runOpen3StuckPrevention(*cmdAndArgs, errorPrefix: errorPrefix,
-                                         redError: redError, retryCount: retryCount - 1,
-                                         stuckTimeout: stuckTimeout)
-        else
-          warning "Restarts exhausted, going to wait until user interrupts us"
-          lastOutputTime = Time.now
-        end
+      if retryCount > 0
+        info 'Restarting it '
+        Process.kill('TERM', wait_thr.pid)
+
+        sleep(5)
+        return runOpen3StuckPrevention(*cmd_and_args, errorPrefix: errorPrefix,
+                                                      redError: redError,
+                                                      retryCount: retryCount - 1,
+                                                      stuckTimeout: stuckTimeout)
+      else
+        warning 'Restarts exhausted, going to wait until user interrupts us'
+        last_output_time = Time.now
       end
     end
     exit_status = wait_thr.value
 
-    outThread.kill
-    errThread.kill
+    out_thread.kill
+    err_thread.kill
     return exit_status
-  }
+  end
 
   onError "Execution shouldn't reach here"
-  
 end
 
 # Runs Open3 with suppressed output
-def runOpen3Suppressed(*cmdAndArgs)
+def runOpen3Suppressed(*cmd_and_args)
+  onError 'Empty runOpen3 command' if cmd_and_args.empty?
 
-  if cmdAndArgs.length < 1
-    onError "Empty runOpen3 command"
-  end
+  requireCMD cmd_and_args[0]
 
-  requireCMD cmdAndArgs[0]
+  Open3.popen2e(*cmd_and_args) do |_stdin, out, wait_thr|
+    out.each { |l| }
 
-  Open3.popen2e(*cmdAndArgs) {|stdin, out, wait_thr|
-
-    out.each {|l|}
-    
     exit_status = wait_thr.value
     return exit_status
-  }
+  end
 
   onError "Execution shouldn't reach here"
-  
 end
 
 # verifies that runOpen3 succeeded
-def runOpen3Checked(*cmdAndArgs, errorPrefix: "", redError: false)
-
-  result = runOpen3(*cmdAndArgs, errorPrefix: errorPrefix, redError: redError)
+def runOpen3Checked(*cmd_and_args, errorPrefix: '', redError: false)
+  result = runOpen3(*cmd_and_args, errorPrefix: errorPrefix, redError: redError)
 
   if result != 0
-    onError "Running command failed (if you try running this manually you need to " +
-            "make sure that all the comma separated parts are quoted if they aren't " +
-            "whole words): " + cmdAndArgs.join(", ")
+    onError 'Running command failed (if you try running this manually you need to ' \
+            "make sure that all the comma separated parts are quoted if they aren't " \
+            'whole words): ' + cmd_and_args.join(', ')
   end
-  
 end
 
 def pathAsArray
@@ -277,60 +261,55 @@ def which(cmd)
   # is somewhere, instead of allowing the suffix to change, but that
   # is probably fine
   if OS.windows?
-    if cmd.end_with? ".exe"
+    if cmd.end_with? '.exe'
       # 5 is length of ".exe"
       cmd = cmd[0..-5]
     end
   end
-  
+
   exts = pathExtsAsArray
   pathAsArray.each do |path|
-    exts.each { |ext|
+    exts.each do |ext|
       exe = File.join(path, "#{cmd}#{ext}")
       return exe if File.executable?(exe) && !File.directory?(exe)
-    }
+    end
   end
-  return nil
+  nil
 end
 
-
 def askRunSudo(*cmd)
-
   info "About to run '#{cmd.join ' '}' as sudo. Be prepared to type sudo password"
-  
+
   runOpen3Checked(*cmd)
-  
 end
 
 # Copies file to target folder while preserving symlinks
-def copyPreserveSymlinks(sourceFile, targetFolder)
+def copyPreserveSymlinks(source_file, target_folder)
+  if File.symlink? source_file
 
-  if File.symlink? sourceFile
+    link_data = File.readlink source_file
 
-    linkData = File.readlink sourceFile
-
-    targetFile = File.join(targetFolder, File.basename(sourceFile))
+    target_file = File.join(target_folder, File.basename(source_file))
 
     if File.symlink? target
 
-      existingLink = File.readlink targetFile
+      existing_link = File.readlink target_file
 
-      if linkData == existingLink
+      if link_data == existing_link
         # Already up to date
         return
       end
     end
 
-    FileUtils.ln_sf linkData, targetFile
-    
+    FileUtils.ln_sf link_data, target_file
+
   else
 
     # Recursive copy should work for normal files and directories
-    FileUtils.cp_r sourceFile, targetFolder, preserve: true
-    
+    FileUtils.cp_r source_file, target_folder, preserve: true
+
   end
 end
-
 
 # Downloads an URL to a file if it doesn't exist
 # \param hash The hash of the file. Generate by running this in irb:
@@ -338,83 +317,79 @@ end
 # hashmethod == 1 default hash
 # hashmethod == 2 is hash from require 'sha3'
 # hashmethod == 3 is sha1 for better compatibility with download sites that only give that
-def downloadURLIfTargetIsMissing(url, targetFile, hash, hashmethod = 1, skipcheckifdl = false,
+def downloadURLIfTargetIsMissing(url, target_file, hash, hashmethod = 1, skipcheckifdl = false,
                                  attempts = 5)
 
-  onError "no hash for file dl" if !hash
-  
-  if File.exists? targetFile
+  onError 'no hash for file dl' unless hash
 
-    if skipcheckifdl
-      return true
-    end
-    
-    info "Making sure already downloaded file is intact: '#{targetFile}'"
-    
+  if File.exist? target_file
+
+    return true if skipcheckifdl
+
+    info "Making sure already downloaded file is intact: '#{target_file}'"
+
   else
-    info "Downloading url: '#{url}' to file: '#{targetFile}'"
+    info "Downloading url: '#{url}' to file: '#{target_file}'"
 
-    begin 
-      File.open(targetFile, "wb") do |output|
+    begin
+      File.open(target_file, 'wb') do |output|
         # open method from open-uri
-        open(url, "rb") do |webDataStream|
-          output.write(webDataStream.read)
+        open(url, 'rb') do |web_data_stream|
+          output.write(web_data_stream.read)
         end
       end
-    rescue
-      error "Download failed"
-      FileUtils.rm_f targetFile
+    rescue StandardError
+      error 'Download failed'
+      FileUtils.rm_f target_file
 
-      if attempts < 1
-        raise
-      else
-        attempts -= 1
-        info "Attempting download again, attempts left: #{attempts}"
-        return downloadURLIfTargetIsMissing(url, targetFile, hash, hashmethod, skipcheckifdl,
-                                            attempts)
-      end
+      raise if attempts < 1
+
+      attempts -= 1
+      info "Attempting download again, attempts left: #{attempts}"
+      return downloadURLIfTargetIsMissing(url, target_file, hash, hashmethod, skipcheckifdl,
+                                          attempts)
     end
-    
-    onError "failed to write download to file" if !File.exists? targetFile    
+
+    onError 'failed to write download to file' unless File.exist? target_file
   end
 
   # Check hash
   if hashmethod == 1
-    dlHash = Digest::SHA2.new(256).hexdigest(File.read(targetFile))
+    dl_hash = Digest::SHA2.new(256).hexdigest(File.read(target_file))
   elsif hashmethod == 2
     require 'sha3'
-    dlHash = SHA3::Digest::SHA256.file(targetFile).hexdigest
+    dl_hash = SHA3::Digest::SHA256.file(target_file).hexdigest
   elsif hashmethod == 3
-    dlHash = Digest::SHA1.file(targetFile).hexdigest
+    dl_hash = Digest::SHA1.file(target_file).hexdigest
   else
     raise AssertionError
   end
 
-  if dlHash != hash
-    FileUtils.rm_f targetFile
+  if dl_hash != hash
+    FileUtils.rm_f target_file
 
     if attempts < 1
-      onError "Downloaded file hash doesn't match expected hash, #{dlHash} != #{hash}"
+      onError "Downloaded file hash doesn't match expected hash, #{dl_hash} != #{hash}"
     else
       attempts -= 1
-      error "Downloaded file hash doesn't match expected hash, #{dlHash} != #{hash}"
+      error "Downloaded file hash doesn't match expected hash, #{dl_hash} != #{hash}"
       info "Attempting download again, attempts left: #{attempts}"
-      return downloadURLIfTargetIsMissing(url, targetFile, hash, hashmethod, skipcheckifdl,
+      return downloadURLIfTargetIsMissing(url, target_file, hash, hashmethod, skipcheckifdl,
                                           attempts)
     end
   end
-  
-  success "Done downloading"
+
+  success 'Done downloading'
 end
 
 # Makes a windows path mingw friendly path
 def makeWindowsPathIntoMinGWPath(path)
-  modifiedPath = path.gsub(/\\/, '/')
-  modifiedPath.gsub(/^(\w+):[\\\/]/) { "/#{$1.downcase}/" }
+  modified_path = path.tr('\\', '/')
+  modified_path.gsub(%r{^(\w+):[\\/]}) { "/#{Regexp.last_match(1).downcase}/" }
 end
 
 # Returns current folder as something that can be used to switch directories in mingwg shell
-def getMINGWPWDPath()
+def getMINGWPWDPath
   makeWindowsPathIntoMinGWPath Dir.pwd
 end
 
@@ -428,27 +403,23 @@ end
 
 # Print data of str in hexadecimal
 def printBytes(str)
-
   puts "String '#{str}' as bytes:"
 
-  str.each_byte { |c|
-    puts c.to_s(16) + " : " + c.chr
-  }
+  str.each_byte do |c|
+    puts c.to_s(16) + ' : ' + c.chr
+  end
 
-  puts "end string"
-  
+  puts 'end string'
 end
 
-
 # Requires that command is found in path. Otherwise shows an error
-def requireCMD(cmdName, extraHelp = nil)
-
-  if(cmdName.start_with? "./" or File.exists? cmdName)
+def requireCMD(cmd_name, extraHelp = nil)
+  if cmd_name.start_with?('./') || File.exist?(cmd_name)
     # Skip relative paths
     return
   end
 
-  if which(cmdName) != nil
+  unless which(cmd_name).nil?
     # Command found
     return
   end
@@ -456,101 +427,91 @@ def requireCMD(cmdName, extraHelp = nil)
   # Windows specific checks
   if OS.windows?
     # There are a bunch of inbuilt stuff that aren't files so ignore them here
-    case cmdName
-    when "call"
+    case cmd_name
+    when 'call'
       return
-    when "start"
+    when 'start'
       return
-    when "mklink"
+    when 'mklink'
       return
     end
   end
 
   # Print current search path
-  puts ""
-  info "The following paths were searched for " +
-       pathExtsAsArray.map{|i| "'#{cmdName}#{i}'"}.join(' or ') + " but it wasn't found:"
+  puts ''
+  info 'The following paths were searched for ' +
+       pathExtsAsArray.map { |i| "'#{cmd_name}#{i}'" }.join(' or ') + " but it wasn't found:"
 
-  pathAsArray.each{|p|
+  pathAsArray.each do |p|
     puts p
-  }
-  
-  onError "Required program / tool '#{cmdName}' is not installed or missing from path.\n" +
-          "Please install it and make sure it is in path, then try again. " +
-          "(path is printed above for reference)" + (
-            if extraHelp then " " + extraHelp else "" end)  
-  
-end
+  end
 
+  onError "Required program / tool '#{cmd_name}' is not installed or missing from path.\n" \
+          'Please install it and make sure it is in path, then try again. ' \
+          '(path is printed above for reference)' + (
+            extraHelp ? ' ' + extraHelp : '')
+end
 
 # Path helper
 # For all tools that need to be in path but shouldn't be installed because of convenience
-def runWithModifiedPath(newPathEntries, prependPath=false)
-  
-  if !newPathEntries.kind_of?(Array)
-    newPathEntries = [newPathEntries]
-  end
-  
-  oldPath = ENV["PATH"]
+def runWithModifiedPath(new_path_entries, prependPath = false)
+  new_path_entries = [new_path_entries] unless new_path_entries.is_a?(Array)
 
-  onError "Failed to get env path" if oldPath == nil
+  old_path = ENV['PATH']
 
-  if OS.windows?
-    separator = ";"
-  else
-    separator = ":"
-  end
+  onError 'Failed to get env path' if old_path.nil?
 
-  if prependPath
-    newpath = newPathEntries.join(separator) + separator + oldPath
-  else
-    newpath = oldPath + separator + newPathEntries.join(separator)
-  end
+  separator = if OS.windows?
+                ';'
+              else
+                ':'
+              end
+
+  newpath = if prependPath
+              new_path_entries.join(separator) + separator + old_path
+            else
+              old_path + separator + new_path_entries.join(separator)
+            end
 
   info "Setting path to: #{newpath}"
-  ENV["PATH"] = newpath
-  
+  ENV['PATH'] = newpath
+
   begin
     yield
   ensure
-    info "Restored old path"
-    ENV["PATH"] = oldPath
-  end    
+    info 'Restored old path'
+    ENV['PATH'] = old_path
+  end
 end
 
+def getLinuxOS
+  return 'mac' if OS.mac?
 
-def getLinuxOS()
-
-  if OS.mac?
-    return "mac"
-  end
-  
-  if OS.windows?
-    raise "getLinuxOS called on Windows!"
-  end
+  raise 'getLinuxOS called on Windows!' if OS.windows?
 
   # Override OS type if wanted
-  if $pretendLinux
-    return $pretendLinux
-  end
+  return $pretendLinux if $pretendLinux
 
   # Pretend to be on fedora to get the package names correctly (as
   # they aren't attempted to be installed this is fine)
-  if (defined? "SkipPackageManager") && SkipPackageManager
-    return "fedora"
-  end
+  return 'fedora' if (defined? 'SkipPackageManager') && SkipPackageManager
 
   osrelease = `lsb_release -is`.strip
 
   onError "Failed to run 'lsb_release'. Make sure you have it installed" if osrelease.empty?
 
   osrelease.downcase
-
 end
 
+def fedora_compatible_oses
+  %w[fedora centos rhel]
+end
+
+def ubuntu_compatible_oses
+  ['ubuntu']
+end
 
 def isInSubdirectory(directory, possiblesub)
-
   path = Pathname.new(possiblesub)
 
   if path.fnmatch?(File.join(directory, '**'))
@@ -558,18 +519,12 @@ def isInSubdirectory(directory, possiblesub)
   else
     false
   end
-  
 end
 
-
 def createLinkIfDoesntExist(source, linkfile)
-
-  if File.exist? linkfile
-    return
-  end
+  return if File.exist? linkfile
 
   FileUtils.ln_sf source, linkfile
-  
 end
 
 # Sanitizes path (used by precompiled packager at least)
@@ -577,8 +532,8 @@ def sanitizeForPath(str)
   # Code from (modified) http://gavinmiller.io/2016/creating-a-secure-sanitization-function/
   # Bad as defined by wikipedia:
   # https://en.wikipedia.org/wiki/Filename#Reserved_characters_and_words
-  badChars = [ '/', '\\', '?', '%', '*', ':', '|', '"', '<', '>', '.', ' ' ]
-  badChars.each do |c|
+  bad_chars = ['/', '\\', '?', '%', '*', ':', '|', '"', '<', '>', '.', ' ']
+  bad_chars.each do |c|
     str.gsub!(c, '_')
   end
   str
@@ -589,19 +544,16 @@ end
 def getBreakpadSymbolInfo(data)
   match = data.match(/MODULE\s(\w+)\s(\w+)\s(\w+)\s(\S+)/)
 
-  if !match || match.captures.length != 4
-    raise "invalid breakpad data"
-  end
+  raise 'invalid breakpad data' if !match || match.captures.length != 4
 
   match.captures
 end
 
-
 # Returns name of 7zip on platform (7za on linux and 7z on windows)
 def p7zip
   if OS.windows?
-    "7z"
+    '7z'
   else
-    "7za"
+    '7za'
   end
 end

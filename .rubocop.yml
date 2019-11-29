@@ -3,3 +3,24 @@ Metrics/LineLength:
 
 Style/GlobalVars:
   Enabled: false
+
+Style/MultilineBlockChain:
+  Enabled: false
+
+Metrics/BlockLength:
+  Max: 250
+
+Metrics/ClassLength:
+  Max: 250
+
+Metrics/MethodLength:
+  Max: 100
+
+Metrics/AbcSize:
+  Max: 90
+
+Metrics/CyclomaticComplexity:
+  Max: 12
+
+Metrics/PerceivedComplexity:
+  Max: 12
