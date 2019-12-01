@@ -3,6 +3,7 @@
 # disableTests
 # disableDocs
 # disableTools
+# pic Enables position independent code
 class AOM < StandardCMakeDep
   def initialize(args)
     super('aom', 'aom', args)
@@ -16,6 +17,11 @@ class AOM < StandardCMakeDep
     @Options.push '-DENABLE_TOOLS=OFF' if args[:disableTools]
 
     @Options.push '-DENABLE_DOCS=OFF' if args[:disableDocs]
+
+    @Options.push "-DCMAKE_POSITION_INDEPENDENT_CODE=#{args[:pic] ? 'ON' : 'OFF'}"
+
+    # TODO: allow changing
+    @Options.push '-DAOM_TARGET_CPU=x86_64'
 
     # ENABLE_TESTDATA:BOOL=ON
 
