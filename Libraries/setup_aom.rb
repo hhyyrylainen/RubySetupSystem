@@ -18,8 +18,6 @@ class AOM < StandardCMakeDep
 
     @Options.push '-DENABLE_DOCS=OFF' if args[:disableDocs]
 
-    @Options.push "-DCMAKE_POSITION_INDEPENDENT_CODE=#{args[:pic] ? 'ON' : 'OFF'}"
-
     # TODO: allow changing
     @Options.push '-DAOM_TARGET_CPU=x86_64'
 
