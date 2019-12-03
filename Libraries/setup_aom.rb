@@ -90,36 +90,37 @@ class AOM < StandardCMakeDep
     super
   end
 
+  def DoInstall
+    if OS.linux?
+      super
+    else
+      # Manual install needed as AOM doesn't provide an install target on non-linux platforms
+      base = File.join(@Folder, "build/lib/#{CMakeBuildType}/")
+      target = File.join @InstallPath, 'lib/'
+
+      FileUtils.mkdir_p target
+
+      # libraries
+      FileUtils.cp File.join(base, 'aom.lib'), target
+
+      # include files
+      installer = CustomInstaller.new(@InstallPath, @Folder)
+
+      Dir[File.join(@Folder, 'aom', '*.h')].each do |file|
+        installer.addInclude file
+      end
+
+      installer.run
+    end
+  end
+
   def getInstalledFiles
     if OS.windows?
-      puts 'TODO: windows files'
-      nil
-      # [
-      #   "lib/avcodec-57.def",
-      #   "lib/avformat-57.def",
-      #   "lib/avutil-55.def",
-      #   "lib/swresample-2.def",
-      #   "lib/swscale-4.def",
+      [
+        'lib/aom.lib',
 
-      #   "bin/avcodec.lib",
-      #   "bin/avformat.lib",
-      #   "bin/avutil.lib",
-      #   "bin/swresample.lib",
-      #   "bin/swscale.lib",
-
-      #   "bin/avcodec-57.dll",
-      #   "bin/avformat-57.dll",
-      #   "bin/avutil-55.dll",
-      #   "bin/swresample-2.dll",
-      #   "bin/swscale-4.dll",
-
-      #   "include/libavcodec",
-      #   "include/libavformat",
-      #   "include/libavutil",
-      #   "include/libswresample",
-      #   "include/libswscale",
-
-      # ]
+        'include/aom'
+      ]
     else
       # onError "TODO: linux file list"
       nil
