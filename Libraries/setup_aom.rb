@@ -66,7 +66,8 @@ class AOM < StandardCMakeDep
 
         downloadURLIfTargetIsMissing(
           'https://boostslair.com/rubysetupsystem/extra/yasm-1.3.0-win64.exe',
-          @yasm_executable, 'd160b1d97266f3f28a71b4420a0ad2cd088a7977c2dd3b25af155652d8d8d91f'
+          @yasm_executable, 'f3376d71cc7273ea38514109e3ce93c2d1a69689dc8425194819bfa841880b0f',
+          2
         )
 
         onError 'yasm tool dl failed' unless File.exist? @yasm_executable
