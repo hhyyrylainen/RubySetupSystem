@@ -95,7 +95,7 @@ class AOM < StandardCMakeDep
       super
     else
       # Manual install needed as AOM doesn't provide an install target on non-linux platforms
-      base = File.join(@Folder, "build/lib/#{CMakeBuildType}/")
+      base = File.join(@Folder, "build/#{CMakeBuildType}/")
       target = File.join @InstallPath, 'lib/'
 
       FileUtils.mkdir_p target
