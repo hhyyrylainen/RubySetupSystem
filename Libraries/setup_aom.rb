@@ -20,6 +20,8 @@ class AOM < StandardCMakeDep
 
     # TODO: allow changing
     @Options.push '-DAOM_TARGET_CPU=x86_64'
+    @Options.push '-DCONFIG_AV1_ENCODER=0'
+    @Options.push '-DCONFIG_MULTITHREAD=1'
 
     # ENABLE_TESTDATA:BOOL=ON
 
