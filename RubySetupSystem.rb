@@ -1,4 +1,3 @@
-# coding: utf-8
 # A ruby script for downloading and installing C++ project dependencies
 # Made by Henri Hyyryläinen
 
@@ -26,130 +25,121 @@ $options = {}
 OptionParser.new do |opts|
   # Default banner is fine, scripts calling this can add their options and their banners
   # will be correct. See DockerImageCreator.rb for an example
-  #opts.banner = "Usage: Setup.rb [OPTIONS]"
+  # opts.banner = "Usage: Setup.rb [OPTIONS]"
 
-  opts.on("--[no-]sudo", "Run commands that need sudo. " +
-                         "This may be needed to run successfuly") do |b|
+  opts.on('--[no-]sudo', 'Run commands that need sudo. ' \
+                         'This may be needed to run successfuly') do |b|
     $options[:sudo] = b
-  end 
-  opts.on("--only-project", "Skip all dependencies setup") do |b|
+  end
+  opts.on('--only-project', 'Skip all dependencies setup') do |_b|
     $options[:onlyProject] = true
   end
 
-  opts.on("--no-subproject-deps", "Don't setup dependencies in a subproject " +
-                                  "(that uses RubySetupSystem)") do |b|
+  opts.on('--no-subproject-deps', "Don't setup dependencies in a subproject " \
+                                  '(that uses RubySetupSystem)') do |_b|
     $options[:noSubProjectDeps] = true
   end
 
-  opts.on("--only-deps", "Skip the main project setup") do |b|
+  opts.on('--only-deps', 'Skip the main project setup') do |_b|
     $options[:onlyDeps] = true
   end
 
   # TODO: should this be passed to sub setups
-  opts.on("--only-dep a,b,c", Array, "Only setup the specified dependencies") do |list|
+  opts.on('--only-dep a,b,c', Array, 'Only setup the specified dependencies') do |list|
     $options[:only] = list
   end
 
   # TODO: should this be passed to sub setups
-  opts.on("--skip-dep a,b,c", Array, "Skip setting up the specified dependencies") do |list|
+  opts.on('--skip-dep a,b,c', Array, 'Skip setting up the specified dependencies') do |list|
     $options[:skip] = list
   end
 
-  opts.on("--no-packagemanager", "Skip using the system package manager " +
-                                 "to download libraries") do |b|
+  opts.on('--no-packagemanager', 'Skip using the system package manager ' \
+                                 'to download libraries') do |_b|
     $options[:noPackager] = true
   end
 
-  opts.on("--pretend-linux OS", "Pretend that setup is ran on specified Linux OS. " +
-                                "A good choice is 'fedora' for getting package names if " +
+  opts.on('--pretend-linux OS', 'Pretend that setup is ran on specified Linux OS. ' \
+                                "A good choice is 'fedora' for getting package names if " \
                                 "your OS isn't supported by this setup") do |os|
     $pretendLinux = os
-  end 
+  end
 
-  opts.on("--no-updates", "Skips downloading dependencies / making sure they "+
-                          "are up to date") do |b|
+  opts.on('--no-updates', 'Skips downloading dependencies / making sure they ' \
+                          'are up to date') do |_b|
     $options[:noUpdates] = true
   end
 
-  opts.on("-j threads", "--parallel-compiles threads",
-          "Number of simultaneous compiler instances to run") do |j|
+  opts.on('-j threads', '--parallel-compiles threads',
+          'Number of simultaneous compiler instances to run') do |j|
     $options[:parallel] = j.to_i
   end
 
-  opts.on("--fully-parallel-project-compile",
-          "Even if not all cores are used for compiling dependencies (-j flag) the main " +
-          "project is compiled with all cores") do |b|
+  opts.on('--fully-parallel-project-compile',
+          'Even if not all cores are used for compiling dependencies (-j flag) the main ' \
+          'project is compiled with all cores') do |_b|
     $options[:projectFullParallel] = true
   end
 
-  opts.on("--project-parallel threads",
-          "Restricts fully parallel project compile to specific number of threads") do |t|
+  opts.on('--project-parallel threads',
+          'Restricts fully parallel project compile to specific number of threads') do |t|
     $options[:projectFullParallelLimit] = t.to_i
-  end  
+  end
 
-  opts.on("--[no-]precompiled", "Run with or without precompiled dependencies") do |b|
+  opts.on('--[no-]precompiled', 'Run with or without precompiled dependencies') do |b|
     $options[:precompiled] = b
-  end 
+  end
 
-  opts.on("-h", "--help", "Show this message") do
+  opts.on('-h', '--help', 'Show this message') do
     puts opts
-    if defined? extraHelp
-      puts extraHelp
-    end
+    puts extraHelp if defined? extraHelp
     exit
   end
 
   # If you want to add flags they need to be in this method instead of parseExtraArgs
-  if defined? getExtraOptions
-    getExtraOptions opts
-  end
-  
+  getExtraOptions opts if defined? getExtraOptions
 end.parse!
 
-if !ARGV.empty?
+unless ARGV.empty?
   # Let application specific args to be parsed
-  if defined? parseExtraArgs
-    parseExtraArgs
-  end
+  parseExtraArgs if defined? parseExtraArgs
 
-  if !ARGV.empty?
+  unless ARGV.empty?
 
-    onError("Unkown arguments. See --help. This was left unparsed: " + ARGV.join(' '))
+    onError('Unkown arguments. See --help. This was left unparsed: ' + ARGV.join(' '))
 
   end
 end
 
 ### Setup variables
-CMakeBuildType = "RelWithDebInfo"
-$compileThreads = if $options.include?(:parallel) then $options[:parallel] else
-                    Etc.nprocessors end
+CMakeBuildType = 'RelWithDebInfo'.freeze
+$compileThreads = $options.include?(:parallel) ? $options[:parallel] : Etc.nprocessors
 
 if $compileThreads > Etc.nprocessors
   $compileThreads = Etc.nprocessors
   puts "Limiting parallel compile to detected number of CPU cores: #{$compileThreads}"
 end
 
-
 # If set to false won't install libs that need sudo
-DoSudoInstalls = if $options.include?(:sudo) then $options[:sudo] else true end
+DoSudoInstalls = $options.include?(:sudo) ? $options[:sudo] : true
 
 # If true dependencies won't be updated from remote repositories
-SkipPullUpdates = if $options[:noUpdates] then true else false end
+SkipPullUpdates = $options[:noUpdates] ? true : false
 
 # If true skips all dependencies
-OnlyMainProject = if $options[:onlyProject] then true else false end
+OnlyMainProject = $options[:onlyProject] ? true : false
 
 # If true skips the main project
-OnlyDependencies = if $options[:onlyDeps] then true else false end
+OnlyDependencies = $options[:onlyDeps] ? true : false
 
 # If specified only deps on this list are ran (case insensitive)
-OnlySpecificDeps = if $options[:only] then $options[:only] else nil end
+OnlySpecificDeps = $options[:only] || nil
 
 # If specified these dependencies are skipped (case insensitive)
-NoSpecificDeps = if $options[:skip] then $options[:skip] else nil end
+NoSpecificDeps = $options[:skip] || nil
 
 # If true skips running package installs
-SkipPackageManager = if $options[:noPackager] then true else false end
+SkipPackageManager = $options[:noPackager] ? true : false
 
 # If true new version of depot tools and breakpad won't be fetched on install
 NoBreakpadUpdateOnWindows = false
@@ -164,11 +154,11 @@ $usePrecompiled = if $options.include?(:precompiled)
                     end
                   else
                     if !$stdout.isatty
-                      warning "--[no-]precompiled parameter give and not running in" +
-                              "interactive terminal, disabling precompiled"
+                      warning '--[no-]precompiled parameter give and not running in' \
+                              'interactive terminal, disabling precompiled'
                       false
-                   else
-                     "ask"
+                    else
+                      'ask'
                     end
                   end
 
@@ -180,38 +170,29 @@ TC = if OS.windows?
        # Leviathan needs by default vs 2017
        WindowsMSVC.new(VisualStudio2017.new)
      elsif OS.linux?
-       LinuxNative.new()
+       LinuxNative.new
      else
-       onError "No toolchain configured for this platform!"
+       onError 'No toolchain configured for this platform!'
      end
 
-# TODO create a variable for running the package manager on linux if possible
+# TODO: create a variable for running the package manager on linux if possible
+puts "Using toolchain: #{TC.name}"
 
 ### Commandline handling
 # TODO: add this
 
 if OS.linux?
-  HasDNF = which("dnf") != nil
-  
-  # Fail if lsb_release is missing
-  if which("lsb_release") == nil
+  HasDNF = !which('dnf').nil?
 
-    onError "lsb_release is missing, please install it."
-  end
-
-  if $pretendLinux
-    info "Pretending that current Linux OS is: #{$pretendLinux}"
-  end
+  info "Pretending that current Linux OS is: #{$pretendLinux}" if $pretendLinux
 else
   HasDNF = false
 end
-
 
 # This verifies that CurrentDir is good and assigns it to CurrentDir
 CurrentDir = checkRunFolder Dir.pwd
 
 ProjectDir = projectFolder CurrentDir
-
 
 # This function formats the current options like threads etc. to be
 # passed to a dependency that also uses RubySetupSystem
@@ -220,47 +201,38 @@ ProjectDir = projectFolder CurrentDir
 # for precompiled selection etc.
 def passOptionsToSubRubySetupSystemProject
   opts = []
-  if !$usePrecompiled.nil?
+  unless $usePrecompiled.nil?
     if $usePrecompiled == false
-      opts.push "--no-precompiled"
+      opts.push '--no-precompiled'
     elsif $usePrecompiled == true
-      opts.push "--precompiled"
+      opts.push '--precompiled'
     end
   end
 
-  if $options.include?(:parallel)
-    opts.push "-j #{$options[:parallel]}"
-  end
+  opts.push "-j #{$options[:parallel]}" if $options.include?(:parallel)
 
   if $options.include?(:sudo)
     if $options[:sudo]
-      opts.push "--sudo"
+      opts.push '--sudo'
     else
-      opts.push "--no-sudo"
+      opts.push '--no-sudo'
     end
   end
 
-  if $options.include?(:noPackager)
-    opts.push "--no-packagemanager"
-  end
+  opts.push '--no-packagemanager' if $options.include?(:noPackager)
 
-  if $options.include?(:noUpdates)
-    opts.push "--no-updates"
-  end
+  opts.push '--no-updates' if $options.include?(:noUpdates)
 
   # This option is handled here (translated to the right option)
-  if $options.include?(:noSubProjectDeps)
-    opts.push "--only-project"
-  end
+  opts.push '--only-project' if $options.include?(:noSubProjectDeps)
 
   if $pretendLinux
-    opts.push "--pretend-linux"
+    opts.push '--pretend-linux'
     opts.push $pretendLinux
   end
-  
+
   opts
 end
-
 
 #
 # Initial options / status print
@@ -269,9 +241,7 @@ end
 info "Running in dir '#{CurrentDir}'"
 puts "Project dir is '#{ProjectDir}'"
 
-if HasDNF
-  info "Using dnf package manager"
-end
+info 'Using dnf package manager' if HasDNF
 
 puts "Using #{$compileThreads} threads to compile, configuration: #{CMakeBuildType}"
 
@@ -279,7 +249,7 @@ if $options.include?(:projectFullParallel)
   puts "Main project uses all cores (#{Etc.nprocessors})"
   if $options.include?(:projectFullParallelLimit)
     if $options[:projectFullParallelLimit] > Etc.nprocessors
-      puts "Limiting project parallel to number of detected CPU cores."
+      puts 'Limiting project parallel to number of detected CPU cores.'
       $options[:projectFullParallelLimit] = Etc.nprocessors
     end
     puts "With extra limit set to #{$options[:projectFullParallelLimit]}"
@@ -292,53 +262,46 @@ puts "With use precompiled set to: #{$usePrecompiled}"
 # Most toolchains don't need this
 TC.setupEnv
 
-puts ""
-puts ""
+puts ''
+puts ''
 
-require_relative "Installer.rb"
-require_relative "RubyCommon.rb"
-require_relative "WindowsHelpers.rb"
+require_relative 'Installer.rb'
+require_relative 'RubyCommon.rb'
+require_relative 'WindowsHelpers.rb'
 require_relative 'CustomInstaller.rb'
 
 # Returns true if sudo should be enabled
 def shouldUseSudo(localOption, warnIfMismatch = true)
-
   if localOption
 
-    if !DoSudoInstalls
+    unless DoSudoInstalls
 
       if warnIfMismatch
 
-         warning "Sudo is globally disabled, but a command should be ran as sudo.\n" +
-                 "If something breaks please rerun with sudo allowed."
+        warning "Sudo is globally disabled, but a command should be ran as sudo.\n" \
+                'If something breaks please rerun with sudo allowed.'
       end
 
       return false
-      
+
     end
 
     return true
-    
+
   end
 
-  return false
+  false
 end
 
 # Returns "sudo" or "" based on options
 def getSudoCommand(localOption, warnIfMismatch = true)
+  return '' unless shouldUseSudo localOption, warnIfMismatch
 
-  if(!shouldUseSudo localOption, warnIfMismatch)
-    return ""
-  end
-  
-  return "sudo "
+  'sudo '
 end
 
-require_relative "LibraryCopy.rb"
+require_relative 'LibraryCopy.rb'
 
-require_relative "Dependency.rb"
+require_relative 'Dependency.rb'
 
 # Library installs are now in separate files in the Libraries sub directory
-
-
-

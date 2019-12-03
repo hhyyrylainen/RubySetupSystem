@@ -7,6 +7,9 @@ Style/GlobalVars:
 Style/MultilineBlockChain:
   Enabled: false
 
+Style/AsciiComments:
+  Enabled: false  
+
 Metrics/BlockLength:
   Max: 250
 

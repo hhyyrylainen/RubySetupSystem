@@ -121,9 +121,12 @@ class AOM < StandardCMakeDep
 
         'include/aom'
       ]
-    else
-      # onError "TODO: linux file list"
-      nil
+    elsif OS.linux?
+      [
+        'lib/libaom.a',
+
+        'include/aom'
+      ]
     end
   end
 end

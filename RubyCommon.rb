@@ -484,6 +484,14 @@ def runWithModifiedPath(new_path_entries, prependPath = false)
   end
 end
 
+def fetch_linux_distributor
+  os_release = `lsb_release -is`.strip
+
+  onError "Failed to run 'lsb_release'. Make sure you have it installed" if os_release.empty?
+
+  os_release.downcase
+end
+
 def getLinuxOS
   return 'mac' if OS.mac?
 
@@ -496,11 +504,18 @@ def getLinuxOS
   # they aren't attempted to be installed this is fine)
   return 'fedora' if (defined? 'SkipPackageManager') && SkipPackageManager
 
-  osrelease = `lsb_release -is`.strip
+  fetch_linux_distributor
+end
 
-  onError "Failed to run 'lsb_release'. Make sure you have it installed" if osrelease.empty?
+# Returns the OS version on Linux. For example `30` on Fedora 30
+def fetch_linux_os_version
+  `lsb_release -rs`.strip
+end
 
-  osrelease.downcase
+# Version of linux OS + version number getting without allowing
+# pretending. This is used for precompiled deps
+def linux_identification
+  "#{fetch_linux_distributor}_#{fetch_linux_os_version}"
 end
 
 def fedora_compatible_oses
@@ -509,6 +524,29 @@ end
 
 def ubuntu_compatible_oses
   ['ubuntu']
+end
+
+# Identifies a compiler based on the command
+def identify_compiler_version(executable, version_accuracy: :major)
+  raise 'unknown version accuracy' if version_accuracy != :major
+
+  _exit_status, output = runOpen3CaptureOutput executable, '--version'
+
+  match = output.match(/\(GCC\)\s+(\d+)\.(\d+)\.(\d+)/i)
+
+  if match
+    major = match.captures[0]
+    return "gcc_#{major}"
+  end
+
+  match = output.match(/clang\s+version\s+(\d+)\.(\d+)\.(\d+)/i)
+
+  if match
+    major = match.captures[0]
+    return "clang_#{major}"
+  end
+
+  raise 'could not detect compiler type or version'
 end
 
 def isInSubdirectory(directory, possiblesub)
