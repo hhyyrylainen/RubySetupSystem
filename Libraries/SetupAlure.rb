@@ -4,22 +4,20 @@
 # shared: set if dynamic version is built
 class Alure < StandardCMakeDep
   def initialize(args)
-    super("Alure", "alure", args)
+    super('Alure', 'alure', args)
 
     self.HandleStandardCMakeOptions
 
-    if args[:noExamples]
-      @Options.push "-DALURE_BUILD_EXAMPLES=OFF"
-    end
+    @Options.push '-DALURE_BUILD_EXAMPLES=OFF' if args[:noExamples]
 
-    self.HandleStaticAndSharedSelectors args, prefix: "ALURE_BUILD_"
+    self.HandleStaticAndSharedSelectors args, prefix: 'ALURE_BUILD_'
 
     # Prefer static libraries
     if args[:static] && !args[:shared]
       if OS.linux?
-        @Options.push "-DCMAKE_FIND_LIBRARY_SUFFIXES=.a"
+        @Options.push '-DCMAKE_FIND_LIBRARY_SUFFIXES=.a'
       elsif OS.windows?
-        @Options.push "-DCMAKE_FIND_LIBRARY_SUFFIXES=.lib"
+        @Options.push '-DCMAKE_FIND_LIBRARY_SUFFIXES=.lib'
       end
     end
 
@@ -29,23 +27,21 @@ class Alure < StandardCMakeDep
       @Options.push "-DCMAKE_INCLUDE_PATH=#{File.join args[:installPath], 'include'}"
     end
 
-    if !@RepoURL
-      @RepoURL = "https://github.com/kcat/alure.git"
-    end
+    @RepoURL ||= 'https://github.com/kcat/alure.git'
   end
 
   def depsList
     os = getLinuxOS
 
-    if os == "fedora" || os == "centos" || os == "rhel"
+    if os == 'fedora' || os == 'centos' || os == 'rhel'
       return [
-        "openal-soft-devel"
+        'openal-soft-devel'
       ]
     end
 
-    if os == "ubuntu"
+    if os == 'ubuntu'
       return [
-        "libopenal-dev"
+        'libopenal-dev'
       ]
     end
 
@@ -57,28 +53,36 @@ class Alure < StandardCMakeDep
   end
 
   def DoClone
-    runSystemSafe("git", "clone", @RepoURL) == 0
+    runSystemSafe('git', 'clone', @RepoURL) == 0
   end
 
   def DoUpdate
-    self.standardGitUpdate
+    standardGitUpdate
   end
 
   def getInstalledFiles
     if OS.windows?
       [
-        "lib/alure2.lib",
-        "bin/alure2.dll",
-        "include/AL/alure2.h",
-        "include/AL/alure2-alext.h",
-        "include/AL/alure2-aliases.h",
-        "include/AL/alure2-typeviews.h",
-        "include/AL/efx.h",
-        "include/AL/efx-presets.h",
+        'lib/alure2.lib',
+        'bin/alure2.dll',
+        'include/AL/alure2.h',
+        'include/AL/alure2-alext.h',
+        'include/AL/alure2-aliases.h',
+        'include/AL/alure2-typeviews.h',
+        'include/AL/efx.h',
+        'include/AL/efx-presets.h'
       ]
-    else
-      #onError "TODO: linux file list"
-      nil
+    elsif OS.linux?
+      [
+        'lib64/libalure2.so',
+
+        'include/AL/alure2.h',
+        'include/AL/alure2-alext.h',
+        'include/AL/alure2-aliases.h',
+        'include/AL/alure2-typeviews.h',
+        'include/AL/efx.h',
+        'include/AL/efx-presets.h'
+      ]
     end
   end
 end

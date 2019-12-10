@@ -1,33 +1,33 @@
 # Supported extra options:
-# 
+#
 class Opus < StandardCMakeDep
   def initialize(args)
-    super("Opus", "opus", args)
+    super('Opus', 'opus', args)
 
     self.HandleStandardCMakeOptions
 
-    if !@RepoURL
-      @RepoURL = "https://github.com/xiph/opus.git"
-    end
+    @RepoURL ||= 'https://github.com/xiph/opus.git'
   end
 
   def DoClone
-    runSystemSafe("git", "clone", @RepoURL) == 0
+    runSystemSafe('git', 'clone', @RepoURL) == 0
   end
 
   def DoUpdate
-    self.standardGitUpdate
+    standardGitUpdate
   end
 
   def getInstalledFiles
     if OS.windows?
       [
-        "lib/opus.lib",
-        "include/opus",
+        'lib/opus.lib',
+        'include/opus'
       ]
-    else
-      #onError "TODO: linux file list"
-      nil
+    elsif OS.linux?
+      [
+        'lib64/libopus.a',
+        'include/opus'
+      ]
     end
   end
 end

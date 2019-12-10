@@ -1,33 +1,33 @@
 # Supported extra options:
-# 
+#
 class Ogg < StandardCMakeDep
   def initialize(args)
-    super("Ogg", "ogg", args)
+    super('Ogg', 'ogg', args)
 
     self.HandleStandardCMakeOptions
 
-    if !@RepoURL
-      @RepoURL = "https://github.com/xiph/ogg.git"
-    end
+    @RepoURL ||= 'https://github.com/xiph/ogg.git'
   end
 
   def DoClone
-    runSystemSafe("git", "clone", @RepoURL) == 0
+    runSystemSafe('git', 'clone', @RepoURL) == 0
   end
 
   def DoUpdate
-    self.standardGitUpdate
+    standardGitUpdate
   end
 
   def getInstalledFiles
     if OS.windows?
       [
-        "lib/ogg.lib",
-        "include/ogg",
+        'lib/ogg.lib',
+        'include/ogg'
       ]
-    else
-      #onError "TODO: linux file list"
-      nil
+    elsif OS.linux?
+      [
+        'lib64/libogg.a',
+        'include/ogg'
+      ]
     end
   end
 end

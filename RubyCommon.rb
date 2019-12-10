@@ -595,3 +595,11 @@ def p7zip
     '7za'
   end
 end
+
+# Returns true if target is a child path of root
+def child_path?(root, target)
+  return false if target.size < root.size
+
+  target[0...root.size] == root &&
+    (target.size == root.size || target[root.size] == '/')
+end
