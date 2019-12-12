@@ -29,9 +29,19 @@ class BaseDatabase
 
   def info
     puts %(Base database "#{@Name}")
+    common_info
+  end
+
+  def common_info
+    puts %(has base url of "#{base_url}")
+    puts %(contains #{@Precompiled.length} precompiled dependencies")
   end
 
   def getPrecompiled(name)
+    get_precompiled name
+  end
+
+  def get_precompiled(name)
     @Precompiled[name]
   end
 
@@ -39,6 +49,12 @@ class BaseDatabase
     @Precompiled.select do |key, _value|
       key.include? name
     end.map { |_key, value| value }
+  end
+
+  def each
+    @Precompiled.each do |key, value|
+      yield key, value
+    end
   end
 
   def add(dep)
@@ -109,8 +125,7 @@ class Database < BaseDatabase
   def info
     puts %(Database "#{@Name}" from #{@URL})
     puts %(verified by key "#{@KeyFile}")
-    puts %(has base url of "#{base_url}")
-    puts %(contains #{@Precompiled.length} precompiled dependencies")
+    common_info
   end
 end
 
@@ -131,8 +146,15 @@ class LocalDatabase < BaseDatabase
     handle_loaded_data
   end
 
+  def read_from_file(file)
+    @Data = JSON.parse File.read(file)
+    handle_loaded_data
+    @base_url = @Data['baseurl']
+  end
+
   def info
     puts %(Local database "#{@Name}")
+    common_info
   end
 end
 
@@ -142,6 +164,12 @@ def load_database(name, url, key)
 rescue StandardError => e
   warning "Failed to download database #{name}, error: #{e}"
   false
+end
+
+def load_local_database_from_file(name, file)
+  db = LocalDatabase.new name
+  db.read_from_file file
+  db
 end
 
 def loadKeyFromFile(file)
