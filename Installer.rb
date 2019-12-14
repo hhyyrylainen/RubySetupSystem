@@ -132,7 +132,7 @@ class Installer
     # Determine what can be precompiled
     precompiled = {}
 
-    enabledLibs.each do |x|
+    enabled_libs.each do |x|
       pre = getSupportedPrecompiledPackage x
 
       precompiled[x.Name] = pre if pre
@@ -144,7 +144,7 @@ class Installer
 
       info 'Configuring and building dependencies'
 
-      enabledLibs.each do |x|
+      enabled_libs.each do |x|
         if precompiled.include? x.Name
 
           puts "Extracting precompiled dependency #{x.Name}"
