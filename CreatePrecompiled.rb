@@ -349,8 +349,11 @@ def run_packager
   puts "Packaging dependencies: #{$toPackageDeps}"
   puts "Target folder: #{DependencyInstallFolder}"
 
+  bundle_zip_name = "new_precompiled_for_#{describePlatform}.tar.xz"
+
   bundle_info = {
-    zip: File.join(DependencyInstallFolder, "new_precompiled_for_#{describePlatform}.tar.xz"),
+    zip_name: bundle_zip_name,
+    zip: File.join(DependencyInstallFolder, bundle_zip_name),
     dep_files: []
   }
 
@@ -383,7 +386,7 @@ def run_packager
           Pathname.new(DependencyInstallFolder)
         ).to_s
 
-        runOpen3Checked('tar', '-cJf', bundle_info[:zip], info_relative, *files)
+        runOpen3Checked('tar', '-cJf', bundle_zip_name, info_relative, *files)
       end
 
       raise 'Failed to create bundle' unless File.exist? bundle_info[:zip]
