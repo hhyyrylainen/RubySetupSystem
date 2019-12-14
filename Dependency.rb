@@ -492,6 +492,8 @@ class ZipDLDep < BaseDep
     when :tar
       # this isn't the only possible value with tar
       '.tar.bz2'
+    when :tar_xz
+      '.tar.xz'
     when :zip
       '.zip'
     when :p7zip

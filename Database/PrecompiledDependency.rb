@@ -14,8 +14,15 @@ class PrecompiledDependency
   attr_reader :FullName, :URL, :RelativeUnPack, :Hash, :ZipName
 
   def initialize(name, url, hash, relativeunpack = '')
+    @zip_type = :tar_xz
     @FullName = name
-    @ZipName = name + '.7z'
+    @ZipName = if @zip_type == :p7zip
+                 name + '.7z'
+               elsif @zip_type == :tar_xz
+                 name + '.tar.xz'
+               else
+                 onError 'unknown zip type in precompiled'
+               end
     @URL = url + @ZipName
     @Hash = hash
     @RelativeUnPack = relativeunpack
@@ -94,8 +101,15 @@ class PrecompiledDependency
     Dir.chdir(THIRD_PARTY_INSTALL) do
       info "Unzipping precompiled '#{@FullName}' to #{THIRD_PARTY_INSTALL}"
 
-      # Overwrite everything
-      runOpen3Checked(*p7zip, 'x', target_file, '-aoa')
+      # Overwrite everything on unzip
+
+      if @zip_type == :p7zip
+        runOpen3Checked(p7zip, 'x', target_file, '-aoa')
+      elsif @zip_type == :tar_xz
+        runOpen3Checked('tar', '-xf', target_file, '--overwrite')
+      else
+        onError 'unknown zip type'
+      end
 
       puts 'Verifying that unzipping created wanted files'
 

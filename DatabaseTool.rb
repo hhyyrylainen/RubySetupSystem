@@ -32,6 +32,11 @@ OptionParser.new do |opts|
     $options[:apply] = f
   end
 
+  opts.on('--[no-]override',
+          'When applying new precompiled deps overwrite unconditionally') do |b|
+    $options[:override] = b
+  end
+
   opts.on('-h', '--help', 'Show this message') do
     puts opts
     exit
@@ -115,7 +120,7 @@ class BundleApplyHandler
       puts "Unzip temporary folder is: #{path}"
       unzip_directory = path
 
-      result = runOpen3(p7zip, 'x', "-o#{unzip_directory}", bundle)
+      result = runOpen3('tar', '-xf', bundle, '-C', unzip_directory.to_s)
 
       raise 'unzip command failed to execute' unless result.to_i.zero?
 
@@ -132,7 +137,7 @@ class BundleApplyHandler
       bundle_info.info
 
       bundle_info.each do |key, value|
-        next if @db.get_precompiled(key)
+        next if $options[:override] != true && @db.get_precompiled(key)
 
         to_move_zip = File.join unzip_directory, value.ZipName
         puts "#{key} is a new precompiled dependency. At path: #{to_move_zip}"

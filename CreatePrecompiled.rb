@@ -11,6 +11,7 @@ require 'sha3'
 
 require 'optparse'
 require 'fileutils'
+require 'pathname'
 
 require_relative 'RubyCommon.rb'
 
@@ -112,8 +113,15 @@ def strip_files_if_needed(files)
 
     FileUtils.mv f, original_name
     to_restore.append(original: f, renamed: original_name)
-    # We use 'strip' to also copy the file
-    runOpen3Checked 'strip', '-o', f, original_name
+
+    params = ['-o', f, original_name]
+
+    # Only remove debug info as otherwise AR (.a) files get their indexes destroyed
+    params.append '--strip-debug' if File.extname(f) =~ /\.a/
+
+    # We use 'strip' to also copy the file in addition to stripping so
+    # that we don't have to do the copy ourselves
+    runOpen3Checked 'strip', *params
     onError 'Strip failed on file: ' + f.to_s unless File.exist? f
   end
 
@@ -168,8 +176,6 @@ def package_dependency(dep, bundle_info)
 
       link_target = File.join(File.dirname(f), File.readlink(full))
 
-      puts DependencyInstallFolder, link_target, File.dirname(f), f
-
       unless child_path?(DependencyInstallFolder,
                          File.join(DependencyInstallFolder, link_target))
         onError 'symbolic link to be installed points outside the dependency folder: ' +
@@ -188,7 +194,7 @@ def package_dependency(dep, bundle_info)
   info "Resolved #{total_links} symbolic links in packaged file list" if total_links > 0
 
   precompiled_name = instance.getNameForPrecompiled + '_' + CurrentPlatform
-  zip_name = precompiled_name + '.7z'
+  zip_name = precompiled_name + '.tar.xz'
   info_file = precompiled_name + '_info.txt'
   hash_file = precompiled_name + '_hash.txt'
 
@@ -214,7 +220,10 @@ def package_dependency(dep, bundle_info)
     # When bundling everything needs to be made clean
     File.unlink zip_name if File.exist?(zip_name) && $options[:bundle]
 
-    runSystemSafe(*[p7zip, 'a', zip_name, info_file, files].flatten)
+    info "Compressing files into #{zip_name}"
+
+    # Write a tar file with lzma compression
+    runSystemSafe('tar', '-cJf', zip_name, info_file, *files)
 
     restore_stripped_files files_to_restore
 
@@ -341,7 +350,7 @@ def run_packager
   puts "Target folder: #{DependencyInstallFolder}"
 
   bundle_info = {
-    zip: File.join(DependencyInstallFolder, "new_precompiled_for_#{describePlatform}.7z"),
+    zip: File.join(DependencyInstallFolder, "new_precompiled_for_#{describePlatform}.tar.xz"),
     dep_files: []
   }
 
@@ -363,15 +372,19 @@ def run_packager
     if bundle_info[:dep_files].empty?
       puts 'No dependencies were created, skipping bundling'
     else
+      Dir.chdir(DependencyInstallFolder)  do
+        files = bundle_info[:dep_files]
 
-      files = bundle_info[:dep_files].map { |f| File.join DependencyInstallFolder, f }
+        files.each do |f|
+          onError "dependency zip file doesn't exist: #{f}" unless File.exist? f
+        end
 
-      files.each do |f|
-        onError "dependency zip file doesn't exist: #{f}" unless File.exist? f
+        info_relative = Pathname.new(bundle_info[:db_file]).relative_path_from(
+          DependencyInstallFolder
+        ).to_s
+
+        runOpen3Checked('tar', '-cJf', bundle_info[:zip], info_relative, *files)
       end
-
-      runSystemSafe(p7zip, 'a', bundle_info[:zip], bundle_info[:db_file],
-                    *files)
 
       raise 'Failed to create bundle' unless File.exist? bundle_info[:zip]
 
