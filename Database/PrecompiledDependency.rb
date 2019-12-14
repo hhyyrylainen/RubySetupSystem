@@ -69,7 +69,7 @@ class PrecompiledDependency
     return false unless @for_dependency
 
     @for_dependency.getInstalledFiles.each do |f|
-      return false unless File.exist? f
+      return false unless File.exist? File.join THIRD_PARTY_INSTALL, f
     end
 
     true
