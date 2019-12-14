@@ -106,7 +106,8 @@ class PrecompiledDependency
       if @zip_type == :p7zip
         runOpen3Checked(p7zip, 'x', target_file, '-aoa')
       elsif @zip_type == :tar_xz
-        runOpen3Checked('tar', '-xf', target_file, '--overwrite')
+        # Force local is critical on windows, and nice on linux
+        runOpen3Checked('tar', '-xf', target_file, '--overwrite', '--force-local')
       else
         onError 'unknown zip type'
       end
