@@ -380,7 +380,7 @@ def run_packager
         end
 
         info_relative = Pathname.new(bundle_info[:db_file]).relative_path_from(
-          DependencyInstallFolder
+          Pathname.new(DependencyInstallFolder)
         ).to_s
 
         runOpen3Checked('tar', '-cJf', bundle_info[:zip], info_relative, *files)
