@@ -109,6 +109,11 @@ def runDockerCreate(libsList, mainProjectAsDep = nil, extraPackages: [], extraSt
   # And 7z
   packageNames.push 'p7zip'
 
+  # And make sure tar with lzma support is there
+  packageNames.push 'tar'
+  # On ubuntu this is called xz-utils
+  packageNames.push 'xz'
+
   # Optional
   packageNames.concat extraPackages
 
