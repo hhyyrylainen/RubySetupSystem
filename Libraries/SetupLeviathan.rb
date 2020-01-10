@@ -4,65 +4,61 @@
 # the install path is mostly ignored
 class Leviathan < BaseDep
   def initialize(args)
-    super("Leviathan", "Leviathan", args)
+    super('Leviathan', 'Leviathan', args)
 
     self.HandleStandardCMakeOptions
 
-    if !@RepoURL
-      @RepoURL = "https://github.com/hhyyrylainen/Leviathan.git"
-    end
+    @RepoURL ||= 'https://github.com/hhyyrylainen/Leviathan.git'
   end
 
   def depsList
     os = getLinuxOS
 
-    if os == "fedora" || os == "centos" || os == "rhel"
+    if os == 'fedora' || os == 'centos' || os == 'rhel'
       return [
-        "boost-devel", "SDL2-devel", "ImageMagick", "libXfixes-devel",
-        "subversion", "doxygen", "libXmu-devel", "git-lfs",
+        'boost-devel', 'SDL2-devel', 'ImageMagick', 'libXfixes-devel',
+        'subversion', 'doxygen', 'libXmu-devel', 'git-lfs'
       ]
     end
 
-    if os == "ubuntu"
+    if os == 'ubuntu'
       return [
-        "libboost-dev", "libsdl2-dev", "imagemagick", "libxfixes-dev",
-        "subversion", "doxygen", "libxmu-dev", "git-lfs",
+        'libboost-dev', 'libsdl2-dev', 'imagemagick', 'libxfixes-dev',
+        'subversion', 'doxygen', 'libxmu-dev', 'git-lfs'
       ]
     end
-    
+
     onError "#{@name} unknown packages for os: #{os}"
   end
 
   def installPrerequisites
-
     installDepsList depsList
-  end  
+  end
 
   def DoClone
-    runSystemSafe("git", "clone", @RepoURL) == 0
+    runSystemSafe('git', 'clone', @RepoURL) == 0
   end
 
   def DoUpdate
-    if !self.standardGitUpdate 
-      return false
-    end
-    runOpen3Checked("git", "submodule", "init")
-    runSystemSafe("git", "submodule", "update") == 0
-  end  
+    return false unless standardGitUpdate
+
+    runOpen3Checked('git', 'submodule', 'init')
+    runSystemSafe('git', 'submodule', 'update') == 0
+  end
 
   def DoSetup
     # TODO: find a way to run the leviathan dependencies here
     true
   end
-  
+
   def DoCompile
     # This step takes care of everything setup and compiling
-    runSystemSafe(*["ruby", "Setup.rb", passOptionsToSubRubySetupSystemProject].flatten) == 0
+    runSystemSafe(*['ruby', 'Setup.rb', passOptionsToSubRubySetupSystemProject].flatten) == 0
   end
-  
+
   def DoInstall
     # Installation not used
-    
+
     # Dir.chdir("build") do
     #   return self.cmakeUniversalInstallHelper
     # end
