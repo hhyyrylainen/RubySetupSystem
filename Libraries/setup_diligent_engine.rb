@@ -27,12 +27,12 @@ class DiligentEngine < StandardCMakeDep
     if fedora_compatible_oses.include? os
       return ['vulkan-headers', 'vulkan-loader', 'vulkan-loader-devel', 'vulkan-tools',
               'vulkan-validation-layers', 'libX11-devel', 'mesa-libGLU-devel',
-              'mesa-libGL-devel']
+              'mesa-libGL-devel', 'python3']
     end
 
     if ubuntu_compatible_oses.include? os
       return ['build-essential', 'libvulkan-dev', 'vulkan-tools', 'vulkan-validationlayers',
-              'libx11-dev', 'mesa-common-dev', 'mesa-utils', 'libgl-dev']
+              'libx11-dev', 'mesa-common-dev', 'mesa-utils', 'libgl-dev', 'python3-distutils']
     end
 
     onError "#{@name} unknown packages for os: #{os}"
