@@ -152,7 +152,7 @@ class BaseDep
             onError 'Failed to clone repository even after 5 attempts.' if i >= 5
 
             puts ''
-            error "Failed to clone #{@Name}. Deleting previous attempt and trying" \
+            error "Failed to clone #{@Name}. Deleting previous attempt and trying " \
                   'again in 5 seconds.'
             puts 'Press CTRL+C to cancel'
 
