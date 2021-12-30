@@ -80,7 +80,7 @@ def runSystemSafe(*cmd_and_args)
   $CHILD_STATUS.exitstatus
 end
 
-# Runs Open3 for the commad, returns exit status
+# Runs Open3 for the command, returns exit status
 def runOpen3(*cmd_and_args, errorPrefix: '', redError: false)
   # puts "Open3 debug:", cmd_and_args
 
@@ -147,6 +147,41 @@ def runOpen3CaptureOutput(*cmd_and_args)
     out_thread.join
     err_thread.join
     return exit_status, output
+  end
+
+  onError "Execution shouldn't reach here"
+end
+
+# Runs Open3 for the command, returns exit status, stdout, and stderr as strings
+def run_open3_capture_output_separate(*cmd_and_args)
+  output = ''
+  stderr_text = ''
+
+  onError 'Empty runOpen3 command' if cmd_and_args.empty?
+
+  if !File.exist?(cmd_and_args[0]) || !Pathname.new(cmd_and_args[0]).absolute?
+    # check that the command exists if it is not a full path to a file
+    requireCMD cmd_and_args[0]
+  end
+
+  Open3.popen3(*cmd_and_args) do |_stdin, stdout, stderr, wait_thr|
+    # These need to be threads to work nicely on windows
+    out_thread = Thread.new do
+      stdout.each do |line|
+        output.concat(line)
+      end
+    end
+
+    err_thread = Thread.new do
+      stderr.each do |line|
+        stderr_text.concat(line)
+      end
+    end
+
+    exit_status = wait_thr.value
+    out_thread.join
+    err_thread.join
+    return exit_status, output, stderr_text
   end
 
   onError "Execution shouldn't reach here"
@@ -260,11 +295,9 @@ def which(cmd)
   # Could actually rather check that this command with the .exe suffix
   # is somewhere, instead of allowing the suffix to change, but that
   # is probably fine
-  if OS.windows?
-    if cmd.end_with? '.exe'
-      # 5 is length of ".exe"
-      cmd = cmd[0..-5]
-    end
+  if OS.windows? && (cmd.end_with? '.exe')
+    # 5 is length of ".exe"
+    cmd = cmd[0..-5]
   end
 
   exts = pathExtsAsArray
