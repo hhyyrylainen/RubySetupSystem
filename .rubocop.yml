@@ -1,4 +1,4 @@
-Metrics/LineLength:
+Layout/LineLength:
   Max: 95
 
 Style/GlobalVars:
@@ -8,7 +8,7 @@ Style/MultilineBlockChain:
   Enabled: false
 
 Style/AsciiComments:
-  Enabled: false  
+  Enabled: false
 
 Metrics/BlockLength:
   Max: 250
