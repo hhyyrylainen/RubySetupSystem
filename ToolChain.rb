@@ -2,7 +2,7 @@
 # Right now just has linux system wide compiler which is always used for linux, and gcc
 # and msvc for windows
 
-require_relative 'VSVersion.rb'
+require_relative 'VSVersion'
 
 class ToolChain
   def name
