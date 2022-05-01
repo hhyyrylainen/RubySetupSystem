@@ -9,6 +9,20 @@ class BreakpadMinGW < BaseDep
     @RepoURL ||= 'https://github.com/DaemonEngine/breakpad.git'
   end
 
+  def depsList
+    os = getLinuxOS
+
+    return %w[python2 autoconf] if %w[fedora centos rhel].include?(os)
+
+    return %w[python2 autoconf] if os == 'ubuntu'
+
+    onError "#{@name} unknown packages for os: #{os}"
+  end
+
+  def installPrerequisites
+    installDepsList depsList
+  end
+
   def DoClone
     runSystemSafe('git', 'clone', @RepoURL, @Folder) == 0
   end
