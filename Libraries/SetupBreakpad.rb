@@ -1,4 +1,4 @@
-require_relative 'DepotTools.rb'
+require_relative 'DepotTools'
 
 # Google breakpad. Will automatically setup depot_tools if missing
 # Supported extra options:
@@ -10,6 +10,8 @@ class Breakpad < BaseDep
     @DepotFolder ||= File.join(CurrentDir, 'depot_tools')
 
     @DepotDependency = DepotTools.new(installPath: @DepotFolder)
+
+    @Version = 'main' if @Version == 'master'
 
     # This isn't actually used directly but must match what gclient wants
     @RepoURL = 'https://chromium.googlesource.com/breakpad/breakpad.git'
@@ -84,11 +86,9 @@ class Breakpad < BaseDep
           # #   File.join(@Folder, "src/src/tools/windows/dump_syms/dump_syms.sln"),
           # #   /release/i, "MultiThreadedDLL")
 
-        else
+        elsif runSystemSafe('./configure', "--prefix=#{@InstallPath}") != 0
 
-          if runSystemSafe('./configure', "--prefix=#{@InstallPath}") != 0
-            onError 'configure breakpad failed'
-          end
+          onError 'configure breakpad failed'
         end
       end
     end
@@ -125,7 +125,8 @@ class Breakpad < BaseDep
           end
 
           unless runVSCompiler $compileThreads,
-                               project: File.join(@Folder, 'src/src/tools/windows/dump_syms/dump_syms.vcxproj'),
+                               project: File.join(@Folder,
+                                                  'src/src/tools/windows/dump_syms/dump_syms.vcxproj'),
                                configuration: 'Release'
             return false
           end
