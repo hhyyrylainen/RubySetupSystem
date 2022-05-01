@@ -12,9 +12,9 @@ class BreakpadMinGW < BaseDep
   def depsList
     os = getLinuxOS
 
-    return %w[python2 autoconf] if %w[fedora centos rhel].include?(os)
+    return %w[python2 autoconf automake] if %w[fedora centos rhel].include?(os)
 
-    return %w[python2 autoconf] if os == 'ubuntu'
+    return %w[python2 autoconf automake] if os == 'ubuntu'
 
     onError "#{@name} unknown packages for os: #{os}"
   end
