@@ -2,7 +2,7 @@
 # use RubySetupSystem
 require 'optparse'
 
-require_relative 'RubyCommon.rb'
+require_relative 'RubyCommon'
 
 def checkRunFolder(suggested)
   buildFolder = File.join(suggested, 'build')
@@ -32,7 +32,7 @@ def extraHelp
   puts $extraParser
 end
 
-require_relative 'RubySetupSystem.rb'
+require_relative 'RubySetupSystem'
 
 # Read extraOptions
 $doBuild = $options.include?(:dockerbuild) ? $options[:dockerbuild] : false
@@ -54,7 +54,7 @@ def doDockerBuild(folder)
 end
 
 def writeCommonDockerFile(file, packageNames, extraSteps)
-  file.puts('FROM fedora:30')
+  file.puts('FROM fedora:35')
   file.puts('RUN dnf install -y --setopt=deltarpm=false ruby ruby-devel ' +
             packageNames.join(' ') + ' gcc make redhat-rpm-config fedora-repos-rawhide ' \
                                      'clang cmake && dnf clean all')
@@ -172,99 +172,99 @@ def runDockerCreate(libsList, mainProjectAsDep = nil, extraPackages: [], extraSt
     #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
     #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
     #  THE SOFTWARE.
-    file.puts <<-END
-ARG user=jenkins
-ARG group=jenkins
-ARG uid=1000
-ARG gid=1000
-ARG JENKINS_AGENT_HOME=/home/${user}
+    file.puts <<~END
+      ARG user=jenkins
+      ARG group=jenkins
+      ARG uid=1000
+      ARG gid=1000
+      ARG JENKINS_AGENT_HOME=/home/${user}
 
-ENV JENKINS_AGENT_HOME ${JENKINS_AGENT_HOME}
+      ENV JENKINS_AGENT_HOME ${JENKINS_AGENT_HOME}
 
-RUN groupadd -g ${gid} ${group} \
-    && useradd -d "${JENKINS_AGENT_HOME}" -u "${uid}" -g "${gid}" -m -s /bin/bash "${user}"
+      RUN groupadd -g ${gid} ${group} \
+          && useradd -d "${JENKINS_AGENT_HOME}" -u "${uid}" -g "${gid}" -m -s /bin/bash "${user}"
 
-# setup SSH server
-RUN sed -i 's/#PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config
-RUN sed -i 's/#RSAAuthentication.*/RSAAuthentication yes/' /etc/ssh/sshd_config
-RUN sed -i 's/#PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config
-RUN sed -i 's/#SyslogFacility.*/SyslogFacility AUTH/' /etc/ssh/sshd_config
-RUN sed -i 's/#LogLevel.*/LogLevel INFO/' /etc/ssh/sshd_config
-RUN mkdir /var/run/sshd
+      # setup SSH server
+      RUN sed -i 's/#PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config
+      RUN sed -i 's/#RSAAuthentication.*/RSAAuthentication yes/' /etc/ssh/sshd_config
+      RUN sed -i 's/#PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config
+      RUN sed -i 's/#SyslogFacility.*/SyslogFacility AUTH/' /etc/ssh/sshd_config
+      RUN sed -i 's/#LogLevel.*/LogLevel INFO/' /etc/ssh/sshd_config
+      RUN mkdir /var/run/sshd
 
-VOLUME "${JENKINS_AGENT_HOME}" "/tmp" "/run" "/var/run"
-WORKDIR "${JENKINS_AGENT_HOME}"
+      VOLUME "${JENKINS_AGENT_HOME}" "/tmp" "/run" "/var/run"
+      WORKDIR "${JENKINS_AGENT_HOME}"
 
-COPY setup-sshd /usr/bin/setup-sshd
+      COPY setup-sshd /usr/bin/setup-sshd
 
-EXPOSE 22
+      EXPOSE 22
 
-ENTRYPOINT ["setup-sshd"]
+      ENTRYPOINT ["setup-sshd"]
 
     END
 
-    File.write(jenkinsSetupSSHD, <<-END
-#!/bin/bash
+    File.write(jenkinsSetupSSHD, <<~END
+      #!/bin/bash
 
-set -ex
+      set -ex
 
-# The MIT License
-#
-#  Copyright (c) 2015, CloudBees, Inc.
-#
-#  Permission is hereby granted, free of charge, to any person obtaining a copy
-#  of this software and associated documentation files (the "Software"), to deal
-#  in the Software without restriction, including without limitation the rights
-#  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-#  copies of the Software, and to permit persons to whom the Software is
-#  furnished to do so, subject to the following conditions:
-#
-#  The above copyright notice and this permission notice shall be included in
-#  all copies or substantial portions of the Software.
-#
-#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-#  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-#  THE SOFTWARE.
+      # The MIT License
+      #
+      #  Copyright (c) 2015, CloudBees, Inc.
+      #
+      #  Permission is hereby granted, free of charge, to any person obtaining a copy
+      #  of this software and associated documentation files (the "Software"), to deal
+      #  in the Software without restriction, including without limitation the rights
+      #  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+      #  copies of the Software, and to permit persons to whom the Software is
+      #  furnished to do so, subject to the following conditions:
+      #
+      #  The above copyright notice and this permission notice shall be included in
+      #  all copies or substantial portions of the Software.
+      #
+      #  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+      #  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+      #  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+      #  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+      #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+      #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+      #  THE SOFTWARE.
 
-# Usage:
-#  docker run jenkinsci/ssh-slave <public key>
-# or
-#  docker run -e "JENKINS_SLAVE_SSH_PUBKEY=<public key>" jenkinsci/ssh-slave
+      # Usage:
+      #  docker run jenkinsci/ssh-slave <public key>
+      # or
+      #  docker run -e "JENKINS_SLAVE_SSH_PUBKEY=<public key>" jenkinsci/ssh-slave
 
-# key first
-echo "Leviathan jenkins dep container ssh setup."
-ssh-keygen -A
+      # key first
+      echo "Leviathan jenkins dep container ssh setup."
+      ssh-keygen -A
 
-write_key() {
-	mkdir -p "${JENKINS_AGENT_HOME}/.ssh"
-	echo "$1" > "${JENKINS_AGENT_HOME}/.ssh/authorized_keys"
-	chown -Rf jenkins:jenkins "${JENKINS_AGENT_HOME}/.ssh"
-	chmod 0700 -R "${JENKINS_AGENT_HOME}/.ssh"
-}
+      write_key() {
+      	mkdir -p "${JENKINS_AGENT_HOME}/.ssh"
+      	echo "$1" > "${JENKINS_AGENT_HOME}/.ssh/authorized_keys"
+      	chown -Rf jenkins:jenkins "${JENKINS_AGENT_HOME}/.ssh"
+      	chmod 0700 -R "${JENKINS_AGENT_HOME}/.ssh"
+      }
 
-if [[ $JENKINS_SLAVE_SSH_PUBKEY == ssh-* ]]; then
-  write_key "${JENKINS_SLAVE_SSH_PUBKEY}"
-fi
-if [[ $# -gt 0 ]]; then
-  if [[ $1 == ssh-* ]]; then
-    write_key "$1"
-    shift 1
-  else
-    exec "$@"
-  fi
-fi
+      if [[ $JENKINS_SLAVE_SSH_PUBKEY == ssh-* ]]; then
+        write_key "${JENKINS_SLAVE_SSH_PUBKEY}"
+      fi
+      if [[ $# -gt 0 ]]; then
+        if [[ $1 == ssh-* ]]; then
+          write_key "$1"
+          shift 1
+        else
+          exec "$@"
+        fi
+      fi
 
 
-# ensure variables passed to docker container are also exposed to ssh sessions
-env | grep _ >> /etc/environment
+      # ensure variables passed to docker container are also exposed to ssh sessions
+      env | grep _ >> /etc/environment
 
-exec /usr/sbin/sshd -D -e "${@}"
+      exec /usr/sbin/sshd -D -e "${@}"
     END
-  )
+    )
 
     FileUtils.chmod '+x', jenkinsSetupSSHD
   end
