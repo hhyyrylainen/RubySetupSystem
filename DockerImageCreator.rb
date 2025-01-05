@@ -54,7 +54,7 @@ def doDockerBuild(folder)
 end
 
 def writeCommonDockerFile(file, packageNames, extraSteps)
-  file.puts('FROM fedora:35')
+  file.puts('FROM fedora:41')
   file.puts('RUN dnf install -y --setopt=deltarpm=false ruby ruby-devel ' +
             packageNames.join(' ') + ' gcc make redhat-rpm-config fedora-repos-rawhide ' \
                                      'clang cmake && dnf clean all')
