@@ -1,13 +1,13 @@
 # A ruby script for downloading and installing C++ project dependencies
 # Made by Henri Hyyryläinen
 
-require_relative 'RubyCommon.rb'
-require_relative 'DepGlobber.rb'
+require_relative 'RubyCommon'
+require_relative 'DepGlobber'
 
-require_relative 'ToolChain.rb'
-require_relative 'VSVersion.rb'
+require_relative 'ToolChain'
+require_relative 'VSVersion'
 
-require_relative 'PrecompiledDB.rb'
+require_relative 'PrecompiledDB'
 
 require 'optparse'
 require 'fileutils'
@@ -152,14 +152,12 @@ $usePrecompiled = if $options.include?(:precompiled)
                     else
                       false
                     end
-                  else
-                    if !$stdout.isatty
-                      warning '--[no-]precompiled parameter give and not running in' \
+                  elsif !$stdout.isatty
+                    warning '--[no-]precompiled parameter given and not running in' \
                               'interactive terminal, disabling precompiled'
-                      false
-                    else
-                      'ask'
-                    end
+                    false
+                  else
+                    'ask'
                   end
 
 # On windows visual studio will be automatically opened if required
@@ -265,10 +263,10 @@ TC.setupEnv
 puts ''
 puts ''
 
-require_relative 'Installer.rb'
-require_relative 'RubyCommon.rb'
-require_relative 'WindowsHelpers.rb'
-require_relative 'CustomInstaller.rb'
+require_relative 'Installer'
+require_relative 'RubyCommon'
+require_relative 'WindowsHelpers'
+require_relative 'CustomInstaller'
 
 # Returns true if sudo should be enabled
 def shouldUseSudo(localOption, warnIfMismatch = true)
@@ -300,8 +298,8 @@ def getSudoCommand(localOption, warnIfMismatch = true)
   'sudo '
 end
 
-require_relative 'LibraryCopy.rb'
+require_relative 'LibraryCopy'
 
-require_relative 'Dependency.rb'
+require_relative 'Dependency'
 
 # Library installs are now in separate files in the Libraries sub directory
