@@ -12,9 +12,9 @@ class BreakpadMinGW < BaseDep
   def depsList
     os = getLinuxOS
 
-    return %w[python2 autoconf automake] if %w[fedora centos rhel].include?(os)
+    return %w[python3 autoconf automake] if %w[fedora centos rhel].include?(os)
 
-    return %w[python2 autoconf automake] if os == 'ubuntu'
+    return %w[python3 autoconf automake] if os == 'ubuntu'
 
     onError "#{@name} unknown packages for os: #{os}"
   end
@@ -34,7 +34,7 @@ class BreakpadMinGW < BaseDep
   end
 
   def DoSetup
-    runOpen3Checked 'python2', 'fetch-externals'
+    runOpen3Checked 'python3', 'fetch-externals'
     runOpen3Checked 'autoreconf', '-fvi'
 
     FileUtils.mkdir_p 'build'
